@@ -9,8 +9,8 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Brand tokens */
-    --brand-primary: 248 76% 65%; /* #6C5CE7 */
-    --brand-primary-variant: 248 80% 72%;
+    --brand-primary: 38 92% 55%; /* Amber */
+    --brand-primary-variant: 42 94% 61%;
     --brand-success: 170 100% 41%; /* #00D1B2 */
 
     /* Surfaces */
@@ -110,7 +110,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 

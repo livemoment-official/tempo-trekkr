@@ -74,7 +74,7 @@ export default function Chat() {
 
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md" style={{ backgroundImage: "var(--gradient-primary)" }} aria-hidden />
+          <img src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-8 w-auto" />
           <p className="text-sm text-muted-foreground">Cosa facciamo oggi? Puoi anche canticchiare 🎤</p>
         </div>
         <div className="flex flex-wrap gap-2">

@@ -14,12 +14,12 @@ const Header = () => {
           aria-label="LiveMoment Home"
           onClick={() => navigate("/")}
         >
-          <div
-            className="h-7 w-7 rounded-md"
-            style={{ backgroundImage: "var(--gradient-primary)" }}
-            aria-hidden
+          <img
+            src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png"
+            alt="Logo LiveMoment"
+            className="h-8 w-auto"
           />
-          <span className="text-base font-semibold tracking-tight">LiveMoment</span>
+          <span className="sr-only">LiveMoment</span>
         </button>
         <Button
           variant="hero"
