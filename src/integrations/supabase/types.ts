@@ -14,7 +14,246 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      availability: {
+        Row: {
+          created_at: string
+          end_at: string | null
+          id: string
+          is_on: boolean
+          start_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          is_on?: boolean
+          start_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          is_on?: boolean
+          start_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          description: string | null
+          discovery_on: boolean
+          host_id: string | null
+          id: string
+          place: Json | null
+          tags: string[] | null
+          ticketing: Json | null
+          title: string
+          updated_at: string
+          when_at: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          discovery_on?: boolean
+          host_id?: string | null
+          id?: string
+          place?: Json | null
+          tags?: string[] | null
+          ticketing?: Json | null
+          title: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          discovery_on?: boolean
+          host_id?: string | null
+          id?: string
+          place?: Json | null
+          tags?: string[] | null
+          ticketing?: Json | null
+          title?: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_user_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_user_id: string
+          id?: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_user_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      invites: {
+        Row: {
+          created_at: string
+          description: string | null
+          host_id: string
+          id: string
+          participants: string[] | null
+          place: Json | null
+          status: string
+          title: string
+          updated_at: string
+          when_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          host_id: string
+          id?: string
+          participants?: string[] | null
+          place?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          host_id?: string
+          id?: string
+          participants?: string[] | null
+          place?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Relationships: []
+      }
+      moments: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          description: string | null
+          host_id: string
+          id: string
+          is_public: boolean
+          participants: string[] | null
+          place: Json | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          when_at: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          host_id: string
+          id?: string
+          is_public?: boolean
+          participants?: string[] | null
+          place?: Json | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          host_id?: string
+          id?: string
+          is_public?: boolean
+          participants?: string[] | null
+          place?: Json | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          when_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          gallery: string[] | null
+          id: string
+          instagram_username: string | null
+          interests: string[] | null
+          job_title: string | null
+          location: Json | null
+          mood: string | null
+          name: string | null
+          onboarding_completed: boolean
+          preferred_moments: string[] | null
+          relationship_status: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          gallery?: string[] | null
+          id: string
+          instagram_username?: string | null
+          interests?: string[] | null
+          job_title?: string | null
+          location?: Json | null
+          mood?: string | null
+          name?: string | null
+          onboarding_completed?: boolean
+          preferred_moments?: string[] | null
+          relationship_status?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          gallery?: string[] | null
+          id?: string
+          instagram_username?: string | null
+          interests?: string[] | null
+          job_title?: string | null
+          location?: Json | null
+          mood?: string | null
+          name?: string | null
+          onboarding_completed?: boolean
+          preferred_moments?: string[] | null
+          relationship_status?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
