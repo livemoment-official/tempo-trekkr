@@ -20,6 +20,7 @@ export type Database = {
           end_at: string | null
           id: string
           is_on: boolean
+          shareable: boolean
           start_at: string | null
           updated_at: string
           user_id: string
@@ -29,6 +30,7 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_on?: boolean
+          shareable?: boolean
           start_at?: string | null
           updated_at?: string
           user_id: string
@@ -38,6 +40,7 @@ export type Database = {
           end_at?: string | null
           id?: string
           is_on?: boolean
+          shareable?: boolean
           start_at?: string | null
           updated_at?: string
           user_id?: string
@@ -256,7 +259,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      available_now: {
+        Row: {
+          availability_id: string | null
+          avatar_url: string | null
+          end_at: string | null
+          interests: string[] | null
+          is_on: boolean | null
+          job_title: string | null
+          mood: string | null
+          name: string | null
+          shareable: boolean | null
+          start_at: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
