@@ -26,8 +26,8 @@ const Header = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           variant="outline"
           size="icon"
           className="shrink-0"
-          onClick={onOpenSearch}
-          aria-label="Apri ricerca"
+          onClick={() => navigate("/esplora")}
+          aria-label="Apri Esplora"
         >
           <SearchIcon className="h-5 w-5" />
         </Button>
@@ -46,9 +46,12 @@ const BottomTabBar = () => {
 
   return (
     <nav className="sticky bottom-0 z-40 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto grid max-w-screen-sm grid-cols-3 px-2">
+      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-2">
         <NavLink to="/inviti" className={cn(base, isActive("/inviti") ? active : idle)}>
           <MessageSquareText /> <span>Inviti</span>
+        </NavLink>
+        <NavLink to="/esplora" className={cn(base, isActive("/esplora") ? active : idle)}>
+          <SearchIcon /> <span>Esplora</span>
         </NavLink>
         <NavLink to="/momenti" className={cn(base, isActive("/momenti") ? active : idle)}>
           <MapPin /> <span>Momenti</span>

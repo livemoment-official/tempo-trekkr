@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
+import { AvailabilityList } from "@/components/availability/AvailabilityList";
 export default function Profilo() {
   const location = useLocation();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
@@ -94,6 +96,20 @@ export default function Profilo() {
               <div className="text-sm font-medium">Relazione</div>
               <Input placeholder="Es. Single, In coppia…" />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardContent className="space-y-4 p-4">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Disponibilità</div>
+            <p className="text-sm text-muted-foreground">Indica quando sei libero per uscire o partecipare a eventi. Se rendi la disponibilità visibile, potrà comparire nelle ricerche ed esplora.</p>
+          </div>
+          <AvailabilityForm />
+          <div className="space-y-2">
+            <div className="text-sm font-medium">I tuoi slot</div>
+            <AvailabilityList />
           </div>
         </CardContent>
       </Card>

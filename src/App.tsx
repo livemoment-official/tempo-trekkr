@@ -11,6 +11,7 @@ import Inviti from "./pages/Inviti";
 import MomentiEventi from "./pages/MomentiEventi";
 import Profilo from "./pages/Profilo";
 import Crea from "./pages/Crea";
+import Esplora from "./pages/Esplora";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<Chat />} />
               <Route path="/inviti" element={<Inviti />} />
               <Route path="/momenti" element={<MomentiEventi />} />
+              <Route path="/esplora" element={<Esplora />} />
               <Route path="/profilo" element={<Profilo />} />
               <Route path="/crea" element={<Crea />} />
             </Route>
