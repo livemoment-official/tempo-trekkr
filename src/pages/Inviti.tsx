@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import { Input } from "@/components/ui/input";
 const InviteCard = ({ title, from, when }: { title: string; from: string; when: string }) => (
   <Card className="shadow-sm">
     <CardHeader className="pb-2">
@@ -35,10 +35,11 @@ export default function Inviti() {
       <h1 className="text-lg font-semibold">Inviti</h1>
 
       <Tabs defaultValue="ricevuti">
-        <TabsList className="grid grid-cols-3">
+        <TabsList className="grid grid-cols-4">
           <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
           <TabsTrigger value="inviati">Inviati</TabsTrigger>
           <TabsTrigger value="attesa">In attesa</TabsTrigger>
+          <TabsTrigger value="amici">Amici</TabsTrigger>
         </TabsList>
         <TabsContent value="ricevuti" className="space-y-3">
           <InviteCard title="Aperitivo live" from="Giorgia" when="Oggi 19:00" />
@@ -50,7 +51,20 @@ export default function Inviti() {
         <TabsContent value="attesa" className="space-y-3">
           <Card className="shadow-sm">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Nessun invito in attesa. Chiedi a CioCiPT di crearne uno!
+              Nessun invito in attesa. Chiedi all'AI di crearne uno!
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="amici" className="space-y-3">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Trova amici</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input placeholder="Cerca per nome o @username" aria-label="Cerca amici" />
+              <div className="text-sm text-muted-foreground">
+                Suggerimenti nelle vicinanze appariranno qui.
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

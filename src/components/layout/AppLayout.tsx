@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Calendar, User, Mic } from "lucide-react";
+import { MessageSquareText, MapPin, User, Search as SearchIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { SearchOverlay } from "@/components/search/SearchOverlay";
 
-const Header = () => {
+const Header = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -22,14 +23,13 @@ const Header = () => {
           <span className="sr-only">LiveMoment</span>
         </button>
         <Button
-          variant="hero"
-          size="sm"
-          className="gap-2"
-          onClick={() => navigate("/")}
-          aria-label="Apri CioCiPT"
+          variant="outline"
+          size="icon"
+          className="shrink-0"
+          onClick={onOpenSearch}
+          aria-label="Apri ricerca"
         >
-          <Mic className="opacity-90" />
-          <span className="hidden sm:inline">CioCiPT</span>
+          <SearchIcon className="h-5 w-5" />
         </Button>
       </div>
     </header>
@@ -63,17 +63,31 @@ const BottomTabBar = () => {
 
 export default function AppLayout() {
   const { pathname } = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
-      <Header />
-      <main className="flex-1 px-4 pb-20 pt-3 animate-fade-in">
+      <Header onOpenSearch={() => setSearchOpen(true)} />
+      <main className="flex-1 px-4 pb-24 pt-3 animate-fade-in">
         <Outlet />
       </main>
+
+      {/* Floating Create Button */}
+      <div className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2">
+        <NavLink to="/crea" aria-label="Crea un momento o invito">
+          <Button size="lg" className="shadow-lg">
+            <Plus className="mr-2 h-5 w-5" /> Crea
+          </Button>
+        </NavLink>
+      </div>
+
       <BottomTabBar />
+
+      {/* Search Overlay */}
+      <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   );
 }
