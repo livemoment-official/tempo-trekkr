@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { SearchOverlay } from "@/components/search/SearchOverlay";
+import { useAuth } from "@/contexts/AuthContext";
+import { GuestBanner } from "@/components/auth/GuestBanner";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const Header = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const navigate = useNavigate();
@@ -66,7 +69,9 @@ const BottomTabBar = () => {
 
 export default function AppLayout() {
   const { pathname } = useLocation();
+  const { isAuthenticated } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
@@ -74,17 +79,28 @@ export default function AppLayout() {
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
       <Header onOpenSearch={() => setSearchOpen(true)} />
+      {!isAuthenticated && <GuestBanner />}
       <main className="flex-1 px-4 pb-24 pt-3 animate-fade-in">
         <Outlet />
       </main>
 
       {/* Floating Create Button */}
       <div className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2">
-        <NavLink to="/crea" aria-label="Crea un momento o invito">
-          <Button size="lg" className="shadow-lg">
-            <Plus className="mr-2 h-5 w-5" /> Crea
-          </Button>
-        </NavLink>
+        <AuthGuard 
+          title="Accedi per creare"
+          description="Accedi per creare momenti, eventi o inviti"
+          fallback={
+            <Button size="lg" className="shadow-lg opacity-80">
+              <Plus className="mr-2 h-5 w-5" /> Accedi per creare
+            </Button>
+          }
+        >
+          <NavLink to="/crea" aria-label="Crea un momento o invito">
+            <Button size="lg" className="shadow-lg">
+              <Plus className="mr-2 h-5 w-5" /> Crea
+            </Button>
+          </NavLink>
+        </AuthGuard>
       </div>
 
       <BottomTabBar />

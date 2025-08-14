@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mic, Send, MapPin, UserPlus, MessageSquare } from "lucide-react";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
 
 const chips = [
   "Aperitivo live",
@@ -28,14 +30,24 @@ function PersonaCard({ name, tag }: { name: string; tag: string }) {
           <div className="text-xs text-muted-foreground">{tag}</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" aria-label={`Scrivi a ${name}`}>
-            <MessageSquare />
-            <span className="sr-only">Scrivi</span>
-          </Button>
-          <Button size="sm" aria-label={`Invita ${name}`}>
-            <UserPlus />
-            <span className="sr-only">Invita</span>
-          </Button>
+          <AuthGuard 
+            title="Accedi per scrivere"
+            description={`Accedi per iniziare una conversazione con ${name}`}
+          >
+            <Button variant="secondary" size="sm" aria-label={`Scrivi a ${name}`}>
+              <MessageSquare />
+              <span className="sr-only">Scrivi</span>
+            </Button>
+          </AuthGuard>
+          <AuthGuard 
+            title="Accedi per invitare"
+            description={`Accedi per invitare ${name} ad un momento`}
+          >
+            <Button size="sm" aria-label={`Invita ${name}`}>
+              <UserPlus />
+              <span className="sr-only">Invita</span>
+            </Button>
+          </AuthGuard>
         </div>
       </CardContent>
     </Card>
@@ -50,9 +62,14 @@ function SimpleCard({ title, meta }: { title: string; meta: string }) {
           <div className="text-sm font-medium">{title}</div>
           <div className="text-xs text-muted-foreground">{meta}</div>
         </div>
-        <Button variant="outline" size="sm">
-          <MapPin /> Vedi
-        </Button>
+        <AuthGuard 
+          title="Accedi per partecipare"
+          description="Accedi per vedere i dettagli e partecipare"
+        >
+          <Button variant="outline" size="sm">
+            <MapPin /> Partecipa
+          </Button>
+        </AuthGuard>
       </CardContent>
     </Card>
   );
