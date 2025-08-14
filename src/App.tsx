@@ -27,20 +27,20 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Chat />} />
-              <Route path="/inviti" element={<Inviti />} />
-              <Route path="/momenti" element={<MomentiEventi />} />
-              <Route path="/esplora" element={<Esplora />} />
-              <Route path="/profilo" element={<Profilo />} />
-              <Route path="/crea" element={<Crea />} />
-              <Route path="/crea/momento" element={<CreaMomento />} />
-              <Route path="/crea/evento" element={<CreaEvento />} />
-              <Route path="/crea/invito" element={<CreaInvito />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Esplora />} />
+                <Route path="/inviti" element={<Inviti />} />
+                <Route path="/momenti" element={<MomentiEventi />} />
+                <Route path="/esplora" element={<Esplora />} />
+                <Route path="/profilo" element={<Profilo />} />
+                <Route path="/crea" element={<Crea />} />
+                <Route path="/crea/momento" element={<CreaMomento />} />
+                <Route path="/crea/evento" element={<CreaEvento />} />
+                <Route path="/crea/invito" element={<CreaInvito />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
