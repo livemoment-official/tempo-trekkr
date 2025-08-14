@@ -89,11 +89,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithEmailOtp = async (email: string) => {
-    // Force OTP code for email instead of magic link
+    // Force OTP code for email instead of magic link by not setting emailRedirectTo
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,
+        emailRedirectTo: undefined, // This forces OTP code instead of magic link
       },
     });
     return { error: error?.message };
