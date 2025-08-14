@@ -9,6 +9,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signInWithOtp: (identifier: string) => Promise<{ error?: string }>;
+  signInWithEmailOtp: (email: string) => Promise<{ error?: string }>;
   verifyOtp: (identifier: string, token: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPhone = /^\+?\d[\d\s-()]+$/.test(identifier);
     
     if (isEmail) {
+      // For emails, use magic link (default behavior)
       const { error } = await supabase.auth.signInWithOtp({
         email: identifier,
         options: {
@@ -84,6 +86,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // For now, return an error asking for email or phone
       return { error: 'Inserisci email o numero di telefono per ricevere il codice' };
     }
+  };
+
+  const signInWithEmailOtp = async (email: string) => {
+    // Force OTP code for email instead of magic link
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+    return { error: error?.message };
   };
 
   const verifyOtp = async (identifier: string, token: string) => {
@@ -117,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signInWithApple,
     signInWithOtp,
+    signInWithEmailOtp,
     verifyOtp,
     signOut,
     isAuthenticated: !!user,

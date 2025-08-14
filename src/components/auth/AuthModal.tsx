@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, Smartphone, Apple } from 'lucide-react';
+import { Mail, Phone, Smartphone, Apple, Link, Hash } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -14,14 +14,15 @@ interface AuthModalProps {
   description?: string;
 }
 
-type AuthStep = 'providers' | 'otp-input' | 'otp-verify';
+type AuthStep = 'providers' | 'otp-input' | 'otp-verify' | 'email-options';
 
 export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", description = "Scegli come vuoi accedere" }: AuthModalProps) {
-  const { signInWithGoogle, signInWithApple, signInWithOtp, verifyOtp } = useAuth();
+  const { signInWithGoogle, signInWithApple, signInWithOtp, signInWithEmailOtp, verifyOtp } = useAuth();
   const [step, setStep] = useState<AuthStep>('providers');
   const [identifier, setIdentifier] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [authType, setAuthType] = useState<'magic-link' | 'otp-code'>('magic-link');
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -53,17 +54,64 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
       return;
     }
 
+    // Check if it's an email to show options
+    const isEmail = identifier.includes('@');
+    if (isEmail && step !== 'email-options') {
+      setStep('email-options');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const { error } = await signInWithOtp(identifier);
-      if (error) {
-        toast.error(error);
+      let result;
+      if (isEmail && authType === 'otp-code') {
+        result = await signInWithEmailOtp(identifier);
+      } else {
+        result = await signInWithOtp(identifier);
+      }
+
+      if (result.error) {
+        toast.error(result.error);
       } else {
         setStep('otp-verify');
-        toast.success('Codice inviato! Controlla i tuoi messaggi');
+        if (isEmail && authType === 'magic-link') {
+          toast.success('Link magico inviato! Controlla la tua email');
+        } else {
+          toast.success('Codice inviato! Controlla i tuoi messaggi');
+        }
       }
     } catch (error) {
-      toast.error('Errore durante l\'invio del codice');
+      toast.error('Errore durante l\'invio');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailOption = async (type: 'magic-link' | 'otp-code') => {
+    setAuthType(type);
+    setIsLoading(true);
+    try {
+      let result;
+      if (type === 'otp-code') {
+        result = await signInWithEmailOtp(identifier);
+      } else {
+        result = await signInWithOtp(identifier);
+      }
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        if (type === 'magic-link') {
+          toast.success('Link magico inviato! Controlla la tua email');
+          onOpenChange(false);
+          resetForm();
+        } else {
+          setStep('otp-verify');
+          toast.success('Codice a 6 cifre inviato! Controlla la tua email');
+        }
+      }
+    } catch (error) {
+      toast.error('Errore durante l\'invio');
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +145,7 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
     setIdentifier('');
     setOtpCode('');
     setIsLoading(false);
+    setAuthType('magic-link');
   };
 
   const handleClose = (open: boolean) => {
@@ -180,10 +229,61 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
                   disabled={isLoading || !identifier.trim()}
                   className="w-full h-12"
                 >
-                  {isLoading ? 'Invio...' : 'Invia codice'}
+                  {isLoading ? 'Invio...' : identifier.includes('@') ? 'Continua' : 'Invia codice'}
                 </Button>
               </div>
             </>
+          )}
+
+          {step === 'email-options' && (
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center space-y-2">
+                    <div className="font-medium">Come vuoi ricevere l'accesso?</div>
+                    <div className="text-sm text-muted-foreground">
+                      Scegli il metodo che preferisci per {identifier}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleEmailOption('magic-link')}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full h-14 flex items-center justify-start px-4 space-x-3"
+                >
+                  <Link className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">Link magico</div>
+                    <div className="text-sm text-muted-foreground">Accedi con un click dalla tua email</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => handleEmailOption('otp-code')}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full h-14 flex items-center justify-start px-4 space-x-3"
+                >
+                  <Hash className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <div className="font-medium">Codice a 6 cifre</div>
+                    <div className="text-sm text-muted-foreground">Inserisci il codice ricevuto via email</div>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  onClick={() => setStep('providers')}
+                  className="w-full"
+                >
+                  ← Torna indietro
+                </Button>
+              </div>
+            </div>
           )}
 
           {step === 'otp-verify' && (
@@ -191,7 +291,9 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
               <Card>
                 <CardContent className="p-4">
                   <div className="text-center space-y-2">
-                    <div className="font-medium">Codice inviato</div>
+                    <div className="font-medium">
+                      {authType === 'otp-code' ? 'Codice a 6 cifre inviato' : 'Codice inviato'}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       Controlla {identifier.includes('@') ? 'la tua email' : 'i tuoi messaggi'}
                     </div>
