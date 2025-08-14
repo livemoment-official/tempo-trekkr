@@ -24,13 +24,13 @@ export default function Crea() {
           <CardTitle className="text-base">Cosa vuoi creare?</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Button onClick={() => navigate("/momenti")} className="justify-start">
+          <Button onClick={() => navigate("/crea/momento")} className="justify-start">
             <Plus className="mr-2 h-4 w-4" /> Momento
           </Button>
-          <Button variant="secondary" onClick={() => navigate("/momenti")} className="justify-start">
+          <Button variant="secondary" onClick={() => navigate("/crea/evento")} className="justify-start">
             <CalendarPlus className="mr-2 h-4 w-4" /> Evento
           </Button>
-          <Button variant="outline" onClick={() => navigate("/inviti")} className="justify-start">
+          <Button variant="outline" onClick={() => navigate("/crea/invito")} className="justify-start">
             <MessageSquarePlus className="mr-2 h-4 w-4" /> Invito
           </Button>
         </CardContent>

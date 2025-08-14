@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      artists: {
+        Row: {
+          availability: Json | null
+          avatar_url: string | null
+          bio: string | null
+          contact_info: Json | null
+          created_at: string
+          genres: string[] | null
+          id: string
+          location: Json | null
+          name: string
+          pricing: Json | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          genres?: string[] | null
+          id?: string
+          location?: Json | null
+          name: string
+          pricing?: Json | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          genres?: string[] | null
+          id?: string
+          location?: Json | null
+          name?: string
+          pricing?: Json | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       availability: {
         Row: {
           created_at: string
@@ -200,6 +245,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -254,6 +332,54 @@ export type Database = {
           relationship_status?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      venues: {
+        Row: {
+          amenities: string[] | null
+          availability: Json | null
+          capacity: number | null
+          contact_info: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          images: Json | null
+          location: Json
+          name: string
+          pricing: Json | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          amenities?: string[] | null
+          availability?: Json | null
+          capacity?: number | null
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          location: Json
+          name: string
+          pricing?: Json | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          amenities?: string[] | null
+          availability?: Json | null
+          capacity?: number | null
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          location?: Json
+          name?: string
+          pricing?: Json | null
+          updated_at?: string
+          verified?: boolean
         }
         Relationships: []
       }
