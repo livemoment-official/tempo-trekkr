@@ -13,6 +13,7 @@ export default function MomentiEventi() {
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState<[number, number]>([18, 65]);
   const [maxDistance, setMaxDistance] = useState(50);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -121,7 +122,18 @@ export default function MomentiEventi() {
       
 
       {/* Filters */}
-      <MomentFilters selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} ageRange={ageRange} onAgeRangeChange={setAgeRange} maxDistance={maxDistance} onMaxDistanceChange={setMaxDistance} selectedMood={selectedMood} onMoodChange={setSelectedMood} />
+      <MomentFilters 
+        selectedCategory={selectedCategory} 
+        onCategoryChange={setSelectedCategory}
+        selectedSubcategories={selectedSubcategories}
+        onSubcategoriesChange={setSelectedSubcategories}
+        ageRange={ageRange} 
+        onAgeRangeChange={setAgeRange} 
+        maxDistance={maxDistance} 
+        onMaxDistanceChange={setMaxDistance} 
+        selectedMood={selectedMood} 
+        onMoodChange={setSelectedMood} 
+      />
 
       {/* View Toggle */}
       <div className="flex items-center gap-2">
