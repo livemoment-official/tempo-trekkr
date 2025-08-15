@@ -267,12 +267,12 @@ export function MomentFilters({
               {/* Mood */}
               <div className="space-y-3">
                 <label className="text-sm font-medium">Mood</label>
-                <Select value={selectedMood || ""} onValueChange={(value) => onMoodChange(value || null)}>
+                <Select value={selectedMood || "tutti"} onValueChange={(value) => onMoodChange(value === "tutti" ? null : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona un mood" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tutti i mood</SelectItem>
+                    <SelectItem value="tutti">Tutti i mood</SelectItem>
                     {moods.map((mood) => (
                       <SelectItem key={mood} value={mood}>
                         {mood}
