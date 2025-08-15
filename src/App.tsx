@@ -10,6 +10,7 @@ import AppLayout from "./components/layout/AppLayout";
 import Chat from "./pages/Chat";
 import Inviti from "./pages/Inviti";
 import MomentiEventi from "./pages/MomentiEventi";
+import MomentDetail from "./pages/MomentDetail";
 import Profilo from "./pages/Profilo";
 import Crea from "./pages/Crea";
 import Esplora from "./pages/Esplora";
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="/" element={<Esplora />} />
                 <Route path="/inviti" element={<Inviti />} />
                 <Route path="/momenti" element={<MomentiEventi />} />
+                <Route path="/momenti/:id" element={<MomentDetail />} />
                 <Route path="/esplora" element={<Esplora />} />
                 <Route path="/profilo" element={<Profilo />} />
                 <Route path="/crea" element={<Crea />} />
