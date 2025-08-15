@@ -89,7 +89,7 @@ export function MomentFilters({
 
   const activeFiltersCount = [
     selectedCategory,
-    selectedSubcategories.length > 0,
+    selectedSubcategories?.length > 0,
     selectedMood,
     ageRange[0] > 18 || ageRange[1] < 65,
     maxDistance < 50
@@ -102,6 +102,8 @@ export function MomentFilters({
   );
 
   const handleSubcategoryToggle = (subcategory: string) => {
+    if (!selectedSubcategories) return;
+    
     const updatedSubcategories = selectedSubcategories.includes(subcategory)
       ? selectedSubcategories.filter(s => s !== subcategory)
       : [...selectedSubcategories, subcategory];
@@ -179,7 +181,7 @@ export function MomentFilters({
                   onClick={() => handleSubcategoryToggle(subcategory)}
                 >
                   <Checkbox
-                    checked={selectedSubcategories.includes(subcategory)}
+                    checked={selectedSubcategories?.includes(subcategory) || false}
                     onChange={() => handleSubcategoryToggle(subcategory)}
                   />
                   <label className="flex-1 cursor-pointer text-sm font-medium">
@@ -193,7 +195,7 @@ export function MomentFilters({
               className="w-full"
               onClick={() => setCategorySheetOpen(false)}
             >
-              Conferma ({selectedSubcategories.length} selezionate)
+              Conferma ({selectedSubcategories?.length || 0} selezionate)
             </Button>
           </div>
         </SheetContent>
