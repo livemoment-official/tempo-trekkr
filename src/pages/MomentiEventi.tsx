@@ -14,6 +14,7 @@ export default function MomentiEventi() {
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState<[number, number]>([18, 65]);
   const [maxDistance, setMaxDistance] = useState(50);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -100,6 +101,8 @@ export default function MomentiEventi() {
       <MomentFilters
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
+        selectedSubcategories={selectedSubcategories}
+        onSubcategoriesChange={setSelectedSubcategories}
         ageRange={ageRange}
         onAgeRangeChange={setAgeRange}
         maxDistance={maxDistance}
