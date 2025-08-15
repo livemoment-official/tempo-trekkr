@@ -113,16 +113,16 @@ export function MomentFilters({
   return (
     <div className="space-y-4">
       {/* Main Category Pills */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
         <button
           onClick={() => {
             onCategoryChange(null);
             onSubcategoriesChange([]);
           }}
-          className={`flex flex-col items-center gap-1 p-3 rounded-full min-w-[80px] transition-all ${
+          className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
             !selectedCategory 
-              ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
-              : 'bg-secondary/50 text-secondary-foreground hover:bg-secondary/70'
+              ? 'gradient-brand text-brand-black shadow-brand scale-105' 
+              : 'bg-white text-foreground hover:bg-muted/30 shadow-card border border-border/40'
           }`}
         >
           <span className="text-2xl">🌟</span>
@@ -141,10 +141,10 @@ export function MomentFilters({
                 setCategorySheetOpen(true);
               }
             }}
-            className={`flex flex-col items-center gap-1 p-3 rounded-full min-w-[80px] transition-all ${
+            className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
               selectedCategory === category.id 
-                ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
-                : 'bg-secondary/50 text-secondary-foreground hover:bg-secondary/70'
+                ? 'gradient-brand text-brand-black shadow-brand scale-105' 
+                : 'bg-white text-foreground hover:bg-muted/30 shadow-card border border-border/40'
             }`}
           >
             <span className="text-2xl">{category.emoji}</span>
@@ -202,15 +202,15 @@ export function MomentFilters({
       </Sheet>
 
       {/* Advanced Filters */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="relative">
-              <Filter className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" className="relative rounded-xl shadow-card">
+              <Filter className="h-4 w-4 mr-2.5" strokeWidth={1.5} />
               Filtri Avanzati
               {activeFiltersCount > 0 && (
                 <Badge 
-                  variant="destructive" 
+                  variant="default" 
                   className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 >
                   {activeFiltersCount}
@@ -302,36 +302,36 @@ export function MomentFilters({
 
         {/* Active filters display */}
         {(selectedMood || ageRange[0] > 18 || ageRange[1] < 65 || maxDistance < 50) && (
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {selectedMood && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 {selectedMood}
                 <button 
                   onClick={() => onMoodChange(null)}
-                  className="ml-1 hover:text-destructive"
+                  className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
                 </button>
               </Badge>
             )}
             {(ageRange[0] > 18 || ageRange[1] < 65) && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 {ageRange[0]}-{ageRange[1]} anni
                 <button 
                   onClick={() => onAgeRangeChange([18, 65])}
-                  className="ml-1 hover:text-destructive"
+                  className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
                 </button>
               </Badge>
             )}
             {maxDistance < 50 && (
-              <Badge variant="secondary" className="text-xs">
-                <MapPin className="h-3 w-3 mr-1" />
+              <Badge variant="minimal" className="text-xs">
+                <MapPin className="h-3 w-3 mr-1" strokeWidth={1.5} />
                 {maxDistance}km
                 <button 
                   onClick={() => onMaxDistanceChange(50)}
-                  className="ml-1 hover:text-destructive"
+                  className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
                 </button>

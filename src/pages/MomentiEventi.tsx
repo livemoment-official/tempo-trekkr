@@ -136,19 +136,29 @@ export default function MomentiEventi() {
       />
 
       {/* View Toggle */}
-      <div className="flex items-center gap-2">
-        <Button variant={view === 'list' ? 'default' : 'secondary'} size="sm" onClick={() => setView('list')}>
-          <List className="h-4 w-4 mr-2" />
+      <div className="flex items-center gap-3">
+        <Button 
+          variant={view === 'list' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setView('list')}
+          className="rounded-xl"
+        >
+          <List className="h-4 w-4 mr-2.5" strokeWidth={1.5} />
           Lista
         </Button>
-        <Button variant={view === 'map' ? 'default' : 'secondary'} size="sm" onClick={() => setView('map')}>
-          <MapPin className="h-4 w-4 mr-2" />
+        <Button 
+          variant={view === 'map' ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setView('map')}
+          className="rounded-xl"
+        >
+          <MapPin className="h-4 w-4 mr-2.5" strokeWidth={1.5} />
           Mappa
         </Button>
       </div>
 
       {/* Content */}
-      {view === 'list' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {view === 'list' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMoments.map(moment => <MomentCard key={moment.id} {...moment} />)}
         </div> : <MomentsMap />}
 

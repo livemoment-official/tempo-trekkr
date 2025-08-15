@@ -8,40 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Brand tokens */
-    --brand-primary: 38 92% 55%; /* Amber */
-    --brand-primary-variant: 42 94% 61%;
-    --brand-success: 170 100% 41%; /* #00D1B2 */
+    /* Brand Colors - Live Moment */
+    --brand-primary: 45 100% 50%; /* #FFBA00 - Giallo Live Moment */
+    --brand-primary-variant: 33 100% 50%; /* #FF8A00 - Arancione gradient */
+    --brand-black: 0 0% 0%; /* #000000 - Nero */
+    --brand-white: 0 0% 100%; /* #FFFFFF - Bianco */
+    --brand-gray: 0 0% 96%; /* #F5F5F5 - Grigio chiaro */
 
-    /* Surfaces */
+    /* Surface Colors - Minimal Palette */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Brand as primary */
-    --primary: var(--brand-primary);
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Live Moment Yellow */
+    --primary: 45 100% 50%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Subtle Gray */
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Lighter Touch */
+    --muted: 0 0% 97%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Clean Highlight */
+    --accent: 0 0% 97%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders - Subtle & Clean */
+    --border: 0 0% 92%;
+    --input: 0 0% 92%;
+    --ring: 45 100% 50%;
 
     --radius: 0.75rem;
 
@@ -55,10 +61,11 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Effects */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-variant)));
-    --shadow-elev: 0 8px 24px hsl(var(--brand-primary) / 0.20);
-    --shadow-brand: 0 8px 24px hsl(var(--brand-primary) / 0.35);
+    /* Custom gradients and shadows for Live Moment */
+    --gradient-brand: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-variant)));
+    --shadow-brand: 0 2px 8px hsl(var(--brand-primary) / 0.12);
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.05);
+    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08);
   }
 
   .dark {
@@ -110,22 +117,50 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-normal;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
-  .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
-  .story-link { position: relative; }
-  .story-link::after {
-    content: "";
-    position: absolute;
-    left: 0; bottom: 0; height: 2px; width: 100%;
-    transform: scaleX(0); transform-origin: bottom right;
-    background: hsl(var(--primary));
-    transition: transform 300ms ease;
+  /* Modern micro-interactions */
+  .hover-scale {
+    @apply transition-all duration-200 ease-out hover:scale-[1.02];
   }
-  .story-link:hover::after {
-    transform: scaleX(1); transform-origin: bottom left;
+  
+  .press-scale {
+    @apply transition-all duration-100 ease-out active:scale-[0.98];
+  }
+  
+  .story-link {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
+  /* Live Moment specific utilities */
+  .gradient-brand {
+    background: var(--gradient-brand);
+  }
+  
+  .shadow-brand {
+    box-shadow: var(--shadow-brand);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  /* Icon states */
+  .icon-active {
+    @apply fill-current;
+  }
+  
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-out;
   }
 }

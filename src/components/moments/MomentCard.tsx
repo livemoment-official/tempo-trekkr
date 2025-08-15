@@ -79,27 +79,27 @@ export function MomentCard({
 
   return (
     <Card 
-      className="w-full max-w-sm mx-auto cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+      className="w-full max-w-sm mx-auto cursor-pointer transition-smooth hover:shadow-elevated group"
       onClick={handleCardClick}
     >
       {/* Hero Image - 1080x1440 ratio */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-lg">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-xl">
         {image ? (
           <img 
             src={image} 
             alt={title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <span className="text-6xl">{getCategoryEmoji(category)}</span>
+          <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center">
+            <span className="text-6xl opacity-60">{getCategoryEmoji(category)}</span>
           </div>
         )}
         
         {/* Category Badge */}
         <Badge 
-          variant="secondary" 
-          className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm"
+          variant="minimal" 
+          className="absolute top-4 left-4 bg-white/95 backdrop-blur-md border-white/40"
         >
           {getCategoryEmoji(category)} {category}
         </Badge>
@@ -108,54 +108,58 @@ export function MomentCard({
         {mood && (
           <Badge 
             variant="outline" 
-            className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm"
+            className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border-white/40"
           >
             {mood}
           </Badge>
         )}
 
         {/* Reactions Overlay */}
-        <div className="absolute bottom-3 right-3 flex gap-1">
+        <div className="absolute bottom-4 right-4 flex gap-2">
           {Object.entries(reactions).map(([type, count]) => {
+            if (count === 0) return null;
             const Icon = reactionIcons[type as keyof typeof reactionIcons];
+            const isActive = userReaction === type;
             return (
-              <Button
+              <button
                 key={type}
-                size="sm"
-                variant={userReaction === type ? "default" : "secondary"}
-                className="h-8 px-2 bg-background/90 backdrop-blur-sm hover:bg-background"
                 onClick={(e) => handleReaction(type, e)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-smooth ${
+                  isActive 
+                    ? 'gradient-brand text-brand-black shadow-brand' 
+                    : 'bg-white/95 backdrop-blur-md hover:bg-white border border-white/40 shadow-card'
+                }`}
               >
-                <Icon className="h-3 w-3 mr-1" />
-                <span className="text-xs">{count}</span>
-              </Button>
+                <Icon className={`h-3.5 w-3.5 ${isActive ? 'fill-current' : ''}`} strokeWidth={1.5} />
+                {count}
+              </button>
             );
           })}
         </div>
       </div>
 
       {/* Content Below Image */}
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-6 space-y-4">
         {/* Title */}
-        <h3 className="font-semibold text-lg leading-tight line-clamp-2">{title}</h3>
+        <h3 className="font-medium text-lg leading-tight line-clamp-2">{title}</h3>
         
         {/* Time & Location */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" strokeWidth={1.5} />
             <span>{time}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4" strokeWidth={1.5} />
             <span className="line-clamp-1">{location}</span>
           </div>
         </div>
 
         {/* Organizer */}
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
+        <div className="flex items-center gap-3 pt-2">
+          <Avatar className="h-9 w-9 ring-2 ring-border/20">
             <AvatarImage src={organizer.avatar} />
-            <AvatarFallback>{organizer.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-xs font-medium">{organizer.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{organizer.name}</p>
@@ -164,29 +168,30 @@ export function MomentCard({
         </div>
 
         {/* Participants & Actions */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
+            <Users className="h-4 w-4" strokeWidth={1.5} />
             <span>
-              {participants}{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
+              <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
             </span>
           </div>
           
           <Button
-            size="sm"
+            size="xs"
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               // Open chat with organizer
             }}
           >
-            <MessageCircle className="h-4 w-4" />
+            <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
 
         {/* Action Button */}
         <Button 
-          className="w-full" 
+          variant="outline"
+          className="w-full mt-4" 
           onClick={(e) => {
             e.stopPropagation();
             handleCardClick();
