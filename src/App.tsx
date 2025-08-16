@@ -17,6 +17,7 @@ import Esplora from "./pages/Esplora";
 import CreaMomento from "./pages/CreaMomento";
 import CreaEvento from "./pages/CreaEvento";
 import CreaInvito from "./pages/CreaInvito";
+import Agenda from "./pages/Agenda";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/crea/momento" element={<CreaMomento />} />
                 <Route path="/crea/evento" element={<CreaEvento />} />
                 <Route path="/crea/invito" element={<CreaInvito />} />
+                <Route path="/agenda" element={<Agenda />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

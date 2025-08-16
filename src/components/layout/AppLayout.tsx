@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, User, Search as SearchIcon, Plus } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -7,12 +7,15 @@ import { SearchOverlay } from "@/components/search/SearchOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { GuestBanner } from "@/components/auth/GuestBanner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 const Header = ({
   onOpenSearch
 }: {
   onOpenSearch: () => void;
 }) => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
   return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
         <button className="flex items-center gap-2 hover-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
@@ -20,6 +23,21 @@ const Header = ({
           <span className="sr-only">LiveMoment</span>
         </button>
         
+        {isAuthenticated && (
+          <div className="flex items-center gap-3">
+            <NavLink to="/agenda" className="relative">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Calendar className="h-4 w-4" />
+              </Button>
+              <NotificationBadge className="absolute -top-1 -right-1" />
+            </NavLink>
+            <NavLink to="/profilo" className="relative">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <User className="h-4 w-4" />
+              </Button>
+            </NavLink>
+          </div>
+        )}
       </div>
     </header>;
 };
@@ -30,18 +48,15 @@ const BottomTabBar = () => {
   const active = "text-primary font-medium";
   const idle = "text-muted-foreground";
   return <nav className="sticky bottom-0 z-40 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-2">
+      <div className="mx-auto grid max-w-screen-sm grid-cols-3 px-2">
         <NavLink to="/inviti" className={cn(base, isActive("/inviti") ? active : idle)}>
-          <MessageSquareText /> <span>Inviti</span>
+          <MessageSquareText className="h-5 w-5" /> <span>Inviti</span>
         </NavLink>
         <NavLink to="/esplora" className={cn(base, isActive("/esplora") ? active : idle)}>
-          <SearchIcon /> <span>Esplora</span>
+          <SearchIcon className="h-5 w-5" /> <span>Esplora</span>
         </NavLink>
         <NavLink to="/momenti" className={cn(base, isActive("/momenti") ? active : idle)}>
-          <MapPin /> <span>Momenti</span>
-        </NavLink>
-        <NavLink to="/profilo" className={cn(base, isActive("/profilo") ? active : idle)}>
-          <User /> <span>Profilo</span>
+          <MapPin className="h-5 w-5" /> <span>Momenti</span>
         </NavLink>
       </div>
     </nav>;
