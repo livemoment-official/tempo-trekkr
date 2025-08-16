@@ -38,7 +38,6 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
     }
   };
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -164,7 +163,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@email.com"
+                  placeholder="email@esempio.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -224,7 +223,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
                 onClick={handleGoogleAuth}
                 disabled={isLoading}
                 variant="outline"
-                className="w-full h-12 bg-transparent border-border text-muted-foreground hover:bg-muted/50"
+                className="w-full h-12 bg-white border-border text-black hover:bg-gray-50"
               >
                 <img 
                   src="https://developers.google.com/identity/images/g-logo.png" 
@@ -248,7 +247,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
                   <button
                     type="button"
                     onClick={() => setStep('signup')}
-                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
                   >
                     Crea Account
                   </button>
@@ -264,7 +263,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
                 <Input
                   id="signup-email"
                   type="email"
-                  placeholder="la-tua-email@esempio.com"
+                  placeholder="email@esempio.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -361,7 +360,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
                 <Input
                   id="reset-email"
                   type="email"
-                  placeholder="la-tua-email@esempio.com"
+                  placeholder="email@esempio.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
