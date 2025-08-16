@@ -15,12 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useCallback } from "react";
 import { MOMENT_CATEGORIES, MOOD_TAGS } from "@/constants/unifiedTags";
 import { TicketingSystem } from "@/components/TicketingSystem";
+import LocationSearchInput from "@/components/location/LocationSearchInput";
 
 interface MomentData {
   photos: string[];
   title: string;
   description: string;
   location: string;
+  locationCoordinates?: { lat: number; lng: number };
   ageRangeMin: number;
   ageRangeMax: number;
   maxParticipants: number | null;
@@ -224,14 +226,17 @@ export default function CreaMomento() {
             <Label htmlFor="location" className="text-base font-medium">
               Dove
             </Label>
-            <div className="relative mt-2">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="location"
+            <div className="mt-2">
+              <LocationSearchInput
                 value={momentData.location}
-                onChange={(e) => setMomentData({ ...momentData, location: e.target.value })}
-                placeholder="Bar Central, Milano..."
-                className="pl-10"
+                onChange={(value, coordinates) => 
+                  setMomentData({ 
+                    ...momentData, 
+                    location: value,
+                    locationCoordinates: coordinates
+                  })
+                }
+                placeholder="Cerca un luogo... (es. Bar Central, Milano)"
               />
             </div>
           </div>
