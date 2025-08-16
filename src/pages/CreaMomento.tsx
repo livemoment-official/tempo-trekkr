@@ -19,10 +19,7 @@ interface SimpleMomentData {
   location: string;
 }
 
-const popularTags = [
-  "Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", 
-  "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"
-];
+import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
 
 export default function CreaMomento() {
   const location = useLocation();
@@ -219,7 +216,7 @@ export default function CreaMomento() {
           <div>
             <Label className="text-base font-medium">Categorie</Label>
             <div className="mt-3 flex flex-wrap gap-2">
-              {popularTags.map((tag) => (
+              {MOMENT_CATEGORIES.map((tag) => (
                 <Badge
                   key={tag}
                   variant={selectedTags.includes(tag) ? "default" : "outline"}

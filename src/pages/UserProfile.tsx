@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { PersonalityBadge } from "@/components/profile/PersonalityBadge";
+import { PhotoGalleryCarousel } from "@/components/profile/PhotoGalleryCarousel";
 import { MessageCircle, UserPlus, CheckCircle, Instagram, MapPin, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
+import { useState } from "react";
 
 const fetchUserProfile = async (username: string) => {
   const { data, error } = await supabase
@@ -23,12 +25,23 @@ const fetchUserProfile = async (username: string) => {
 
 export default function UserProfile() {
   const { username } = useParams<{ username: string }>();
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user-profile', username],
     queryFn: () => fetchUserProfile(username!),
     enabled: !!username,
   });
+
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing);
+    // TODO: Implement follow API call
+  };
+
+  const handleMessage = () => {
+    // TODO: Implement message functionality
+    console.log('Opening chat with', profile?.username);
+  };
 
   if (isLoading) {
     return (
@@ -64,7 +77,8 @@ export default function UserProfile() {
     );
   }
 
-  const canMessage = profile.chat_permission === 'everyone';
+  const canMessage = profile.chat_permission === 'everyone' || 
+    (profile.chat_permission === 'followers_only' && isFollowing);
 
   return (
     <>
@@ -77,13 +91,23 @@ export default function UserProfile() {
       </Helmet>
 
       <div className="container mx-auto px-4 py-6 max-w-2xl space-y-6">
+        {/* Galleria foto principale */}
+        <Card>
+          <CardContent className="p-4">
+            <PhotoGalleryCarousel
+              photos={profile.gallery || []}
+              isOwnProfile={false}
+            />
+          </CardContent>
+        </Card>
+
         {/* Header del Profilo */}
         <Card>
           <CardHeader>
             <div className="flex items-start gap-6">
               <Avatar className="h-24 w-24">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-gradient-primary text-white text-xl font-medium">
+                <AvatarFallback className="bg-gradient-brand text-white text-xl font-medium">
                   {profile.name?.charAt(0) || profile.username?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -114,14 +138,19 @@ export default function UserProfile() {
                 
                 <div className="flex gap-2">
                   {canMessage && (
-                    <Button size="sm" className="flex-1">
+                    <Button size="sm" className="flex-1" onClick={handleMessage}>
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Messaggio
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button 
+                    size="sm" 
+                    variant={isFollowing ? "outline" : "default"} 
+                    className="flex-1"
+                    onClick={handleFollow}
+                  >
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Segui
+                    {isFollowing ? 'Seguendo' : 'Segui'}
                   </Button>
                 </div>
               </div>
