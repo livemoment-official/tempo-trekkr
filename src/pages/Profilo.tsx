@@ -11,6 +11,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
 import { AvailabilityList } from "@/components/availability/AvailabilityList";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
+import { OnboardingModal } from "@/components/profile/OnboardingModal";
 import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ export default function Profilo() {
   const { user, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
 
@@ -33,22 +35,37 @@ export default function Profilo() {
     if (!user) return;
 
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // Ignore "not found" error
-        throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, trigger onboarding
+          setShowOnboarding(true);
+        } else {
+          console.error('Error fetching profile:', error);
+        }
+      } else {
+        setProfile(data);
+        // Check if onboarding is needed
+        if (!data.onboarding_completed) {
+          setShowOnboarding(true);
+        }
       }
-
-      setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    fetchProfile(); // Reload profile data
   };
 
   if (!isAuthenticated) {
@@ -225,6 +242,11 @@ export default function Profilo() {
           />
         </DialogContent>
       </Dialog>
+
+      <OnboardingModal 
+        open={showOnboarding} 
+        onComplete={handleOnboardingComplete}
+      />
     </div>
   );
 }

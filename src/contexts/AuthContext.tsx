@@ -32,6 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        
+        // Trigger profile creation for new signups
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            // Check if profile exists, create if not
+            checkAndCreateProfile(session.user.id);
+          }, 1000);
+        }
       }
     );
 
@@ -44,6 +52,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAndCreateProfile = async (userId: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (!profile) {
+        // Create profile if it doesn't exist
+        await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            name: '',
+            username: `user_${userId.slice(0, 8)}`,
+            onboarding_completed: false
+          });
+      }
+    } catch (error) {
+      console.error('Error checking/creating profile:', error);
+    }
+  };
 
   const signInWithGoogle = async () => {
     try {
