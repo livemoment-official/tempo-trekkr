@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserProfileCard } from "@/components/profile/UserProfileCard";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -60,6 +61,20 @@ export default function Esplora() {
         .eq("is_public", true)
         .order("when_at", { ascending: true })
         .limit(12);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const suggestedProfilesQ = useQuery({
+    queryKey: ["suggested_profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("privacy_level", "public")
+        .order("created_at", { ascending: false })
+        .limit(6);
       if (error) throw error;
       return data ?? [];
     },
@@ -151,6 +166,23 @@ export default function Esplora() {
             ))}
             {availableNowQ.data?.length === 0 && (
               <div className="text-sm text-muted-foreground">Nessuno disponibile in questo momento.</div>
+            )}
+          </div>
+        </Section>
+
+        <Section title="Persone da scoprire">
+          <div className="space-y-3">
+            {suggestedProfilesQ.data?.map((profile: any) => (
+              <UserProfileCard 
+                key={profile.id} 
+                profile={profile} 
+                compact={true}
+                onFollow={() => console.log('Follow', profile.username)}
+                onMessage={() => console.log('Message', profile.username)}
+              />
+            ))}
+            {suggestedProfilesQ.data?.length === 0 && (
+              <div className="text-sm text-muted-foreground">Nessun profilo suggerito al momento.</div>
             )}
           </div>
         </Section>
