@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, MapPin } from "lucide-react";
+import LocationSearchInput from "@/components/location/LocationSearchInput";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 interface InviteDetailsStepProps {
@@ -25,12 +26,12 @@ export default function InviteDetailsStep({
       });
     }
   };
-  const handleLocationChange = (name: string) => {
+  const handleLocationChange = (name: string, coordinates?: { lat: number; lng: number }) => {
     onChange({
       ...data,
       location: {
-        ...data.location,
-        name
+        name,
+        coordinates: coordinates ? [coordinates.lat, coordinates.lng] : null
       }
     });
   };
@@ -68,9 +69,12 @@ export default function InviteDetailsStep({
 
       <div>
         <Label htmlFor="location">Dove</Label>
-        <div className="relative mt-2">
-          <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input id="location" value={data.location.name} onChange={e => handleLocationChange(e.target.value)} placeholder="Suggerisci un posto..." className="pl-10" />
+        <div className="mt-2">
+          <LocationSearchInput
+            value={data.location.name}
+            onChange={handleLocationChange}
+            placeholder="Suggerisci un posto..."
+          />
         </div>
       </div>
 
@@ -83,7 +87,9 @@ export default function InviteDetailsStep({
       </div>
 
       <div className="flex justify-end">
-        
+        <Button onClick={onNext}>
+          Continua
+        </Button>
       </div>
     </div>;
 }

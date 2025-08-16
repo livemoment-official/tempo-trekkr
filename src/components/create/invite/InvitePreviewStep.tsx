@@ -6,23 +6,46 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useCreateInvite } from "@/hooks/useInvites";
 interface InvitePreviewStepProps {
   data: any;
 }
 export default function InvitePreviewStep({
   data
 }: InvitePreviewStepProps) {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const createInvite = useCreateInvite();
+  
   const handleSendInvites = async () => {
     try {
+      if (!data.activity.title || data.selectedPeople.length === 0) {
+        toast({
+          title: "Errore",
+          description: "Attività e persone sono obbligatori",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      await createInvite.mutateAsync({
+        title: data.activity.title,
+        description: data.message || `Attività: ${data.activity.title}`,
+        participants: data.selectedPeople,
+        when_at: data.date?.toISOString(),
+        place: data.location.name ? {
+          name: data.location.name,
+          coordinates: data.location.coordinates
+        } : null
+      });
+
       toast({
         title: "Inviti inviati!",
         description: `${data.selectedPeople.length} persone hanno ricevuto il tuo invito`
       });
+      
       window.location.href = "/inviti";
     } catch (error) {
+      console.error('Send invites error:', error);
       toast({
         title: "Errore",
         description: "Non è stato possibile inviare gli inviti",
@@ -79,7 +102,13 @@ export default function InvitePreviewStep({
       </Card>
 
       <div className="flex justify-end">
-        
+        <Button 
+          onClick={handleSendInvites}
+          disabled={!data.activity.title || data.selectedPeople.length === 0 || createInvite.isPending}
+          className="min-w-32"
+        >
+          {createInvite.isPending ? "Invio..." : "Invia Inviti"}
+        </Button>
       </div>
     </div>;
 }

@@ -14,6 +14,12 @@ interface EventData {
   description: string;
   tags: string[];
   date: Date | null;
+  startTime: string;
+  endTime: string;
+  location: {
+    name: string;
+    coordinates: [number, number] | null;
+  };
   capacity: number | null;
   ticketing: any;
   selectedArtists: string[];
@@ -23,6 +29,7 @@ interface EventData {
     message: string;
     type: "open" | "invite_only";
   };
+  photos: string[];
 }
 export default function CreaEvento() {
   const location = useLocation();
@@ -34,6 +41,9 @@ export default function CreaEvento() {
     description: "",
     tags: [],
     date: null,
+    startTime: "",
+    endTime: "",
+    location: { name: "", coordinates: null },
     capacity: null,
     ticketing: null,
     selectedArtists: [],
@@ -42,7 +52,8 @@ export default function CreaEvento() {
       enabled: false,
       message: "",
       type: "open"
-    }
+    },
+    photos: []
   });
   const steps = [{
     id: 1,

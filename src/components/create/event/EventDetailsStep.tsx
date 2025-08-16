@@ -4,7 +4,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import LocationSearchInput from "@/components/location/LocationSearchInput";
+import { X, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 import { useState } from "react";
 interface EventDetailsStepProps {
   data: any;
@@ -34,9 +39,23 @@ export default function EventDetailsStep({
       tags: data.tags.filter((tag: string) => tag !== tagToRemove)
     });
   };
+  const handleDateSelect = (date: Date | undefined) => {
+    onChange({ ...data, date });
+  };
+
+  const handleLocationChange = (name: string, coordinates?: { lat: number; lng: number }) => {
+    onChange({ 
+      ...data, 
+      location: { 
+        name, 
+        coordinates: coordinates ? [coordinates.lat, coordinates.lng] : null 
+      }
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (data.title.trim()) {
+    if (data.title.trim() && data.date && data.startTime) {
       onNext();
     }
   };
@@ -127,8 +146,75 @@ export default function EventDetailsStep({
       })} placeholder="Es. 25.00" className="mt-2" min="0" step="0.01" />
         </div>}
 
+      {/* Date and Time */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label className="text-base font-medium">Data evento *</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal mt-2"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {data.date ? format(data.date, "PPP", { locale: it }) : "Seleziona data"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={data.date}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < new Date()}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <Label htmlFor="startTime" className="text-base font-medium">Ora inizio *</Label>
+          <Input
+            id="startTime"
+            type="time"
+            value={data.startTime}
+            onChange={(e) => onChange({ ...data, startTime: e.target.value })}
+            className="mt-2"
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="endTime" className="text-base font-medium">Ora fine</Label>
+          <Input
+            id="endTime"
+            type="time"
+            value={data.endTime}
+            onChange={(e) => onChange({ ...data, endTime: e.target.value })}
+            className="mt-2"
+          />
+        </div>
+      </div>
+
+      {/* Location */}
+      <div>
+        <Label className="text-base font-medium">Location</Label>
+        <div className="mt-2">
+          <LocationSearchInput
+            value={data.location.name}
+            onChange={handleLocationChange}
+            placeholder="Dove si svolgerà l'evento..."
+          />
+        </div>
+      </div>
+
       <div className="flex justify-end">
-        
+        <Button 
+          type="submit" 
+          disabled={!data.title.trim() || !data.date || !data.startTime}
+        >
+          Continua
+        </Button>
       </div>
     </form>;
 }
