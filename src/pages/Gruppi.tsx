@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -146,6 +146,7 @@ const GroupCard = ({ group, type = "user" }: {
   group: any; 
   type?: "user" | "city" | "friend" | "moment" 
 }) => {
+  const navigate = useNavigate();
   if (type === "city") {
     return (
       <Card className="mb-3">
@@ -164,7 +165,12 @@ const GroupCard = ({ group, type = "user" }: {
               Accedi
             </Button>
           }>
-            <Button variant="outline" size="sm" className="rounded-xl">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="rounded-xl"
+              onClick={() => navigate(`/chat/city/${group.toLowerCase().replace(/\s+/g, '-')}`)}
+            >
               Entra
             </Button>
           </AuthGuard>
@@ -176,7 +182,10 @@ const GroupCard = ({ group, type = "user" }: {
   if (type === "friend") {
     return (
       <Card className="mb-3">
-        <CardContent className="flex items-center justify-between p-4">
+        <CardContent 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => navigate(`/chat/friend/${group.id}`)}
+        >
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-xl">
               {group.avatar}
@@ -202,7 +211,10 @@ const GroupCard = ({ group, type = "user" }: {
   if (type === "moment") {
     return (
       <Card className="mb-3">
-        <CardContent className="flex items-center justify-between p-4">
+        <CardContent 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => navigate(`/chat/moment/${group.id}`)}
+        >
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <Users className="h-6 w-6 text-primary" />
@@ -256,6 +268,7 @@ const GroupCard = ({ group, type = "user" }: {
 
 export default function Gruppi() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProvince = provincieItaliane.filter(provincia =>

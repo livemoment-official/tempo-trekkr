@@ -23,6 +23,7 @@ import {
   Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModal";
 
 export default function MomentDetail() {
   const { id } = useParams();
@@ -31,6 +32,7 @@ export default function MomentDetail() {
   const [isParticipating, setIsParticipating] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Mock moment data - in real app, fetch from database
   const moment = {
@@ -111,13 +113,16 @@ export default function MomentDetail() {
   };
 
   const handleParticipate = () => {
-    setIsParticipating(!isParticipating);
-    toast({
-      title: isParticipating ? "Partecipazione rimossa" : "Partecipazione confermata!",
-      description: isParticipating 
-        ? "Non parteciperai più a questo momento" 
-        : "Ti aspettiamo! Riceverai una notifica con i dettagli"
-    });
+    if (!isParticipating) {
+      setIsParticipating(true);
+      setShowConfirmModal(true);
+    } else {
+      setIsParticipating(false);
+      toast({
+        title: "Partecipazione rimossa",
+        description: "Non parteciperai più a questo momento"
+      });
+    }
   };
 
   const handleReaction = (reactionType: string) => {
@@ -369,6 +374,14 @@ export default function MomentDetail() {
             {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
           </Button>
         </div>
+
+        {/* Participation Confirmation Modal */}
+        <ParticipationConfirmModal
+          open={showConfirmModal}
+          onOpenChange={setShowConfirmModal}
+          momentTitle={moment.title}
+          momentId={moment.id}
+        />
       </div>
     </div>
   );

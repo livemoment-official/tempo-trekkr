@@ -20,6 +20,7 @@ import CreaEvento from "./pages/CreaEvento";
 import CreaInvito from "./pages/CreaInvito";
 import Agenda from "./pages/Agenda";
 import UserProfile from "./pages/UserProfile";
+import ChatFullscreen from "./pages/ChatFullscreen";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,8 @@ const App = () => (
                 <Route path="/crea/invito" element={<CreaInvito />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/profilo/:username" element={<UserProfile />} />
+                <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
+                <Route path="/moment/:id" element={<MomentDetail />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

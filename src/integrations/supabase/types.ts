@@ -116,15 +116,62 @@ export type Database = {
         }
         Relationships: []
       }
+      event_participants: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          payment_status: string | null
+          status: string
+          stripe_payment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          payment_status?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          payment_status?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
+          age_range_max: number | null
+          age_range_min: number | null
           capacity: number | null
           created_at: string
           description: string | null
           discovery_on: boolean
           host_id: string | null
           id: string
+          max_participants: number | null
+          mood_tag: string | null
+          photos: string[] | null
           place: Json | null
+          registration_status: string | null
           tags: string[] | null
           ticketing: Json | null
           title: string
@@ -132,13 +179,19 @@ export type Database = {
           when_at: string | null
         }
         Insert: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           capacity?: number | null
           created_at?: string
           description?: string | null
           discovery_on?: boolean
           host_id?: string | null
           id?: string
+          max_participants?: number | null
+          mood_tag?: string | null
+          photos?: string[] | null
           place?: Json | null
+          registration_status?: string | null
           tags?: string[] | null
           ticketing?: Json | null
           title: string
@@ -146,13 +199,19 @@ export type Database = {
           when_at?: string | null
         }
         Update: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           capacity?: number | null
           created_at?: string
           description?: string | null
           discovery_on?: boolean
           host_id?: string | null
           id?: string
+          max_participants?: number | null
+          mood_tag?: string | null
+          photos?: string[] | null
           place?: Json | null
+          registration_status?: string | null
           tags?: string[] | null
           ticketing?: Json | null
           title?: string
@@ -292,45 +351,107 @@ export type Database = {
           },
         ]
       }
+      moment_participants: {
+        Row: {
+          created_at: string
+          id: string
+          moment_id: string | null
+          payment_status: string | null
+          status: string
+          stripe_payment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moment_id?: string | null
+          payment_status?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moment_id?: string | null
+          payment_status?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_participants_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "moments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moments: {
         Row: {
+          age_range_max: number | null
+          age_range_min: number | null
           capacity: number | null
           created_at: string
           description: string | null
           host_id: string
           id: string
           is_public: boolean
+          max_participants: number | null
+          mood_tag: string | null
           participants: string[] | null
+          photos: string[] | null
           place: Json | null
+          registration_status: string | null
           tags: string[] | null
+          ticketing: Json | null
           title: string
           updated_at: string
           when_at: string | null
         }
         Insert: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           capacity?: number | null
           created_at?: string
           description?: string | null
           host_id: string
           id?: string
           is_public?: boolean
+          max_participants?: number | null
+          mood_tag?: string | null
           participants?: string[] | null
+          photos?: string[] | null
           place?: Json | null
+          registration_status?: string | null
           tags?: string[] | null
+          ticketing?: Json | null
           title: string
           updated_at?: string
           when_at?: string | null
         }
         Update: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           capacity?: number | null
           created_at?: string
           description?: string | null
           host_id?: string
           id?: string
           is_public?: boolean
+          max_participants?: number | null
+          mood_tag?: string | null
           participants?: string[] | null
+          photos?: string[] | null
           place?: Json | null
+          registration_status?: string | null
           tags?: string[] | null
+          ticketing?: Json | null
           title?: string
           updated_at?: string
           when_at?: string | null

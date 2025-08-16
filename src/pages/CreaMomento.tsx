@@ -8,18 +8,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Upload, X, MapPin, Calendar } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Upload, X, MapPin, Calendar, Users, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCallback } from "react";
+import { MOMENT_CATEGORIES, MOOD_TAGS } from "@/constants/unifiedTags";
+import { TicketingSystem } from "@/components/TicketingSystem";
 
-interface SimpleMomentData {
+interface MomentData {
   photos: string[];
   title: string;
   description: string;
   location: string;
+  ageRangeMin: number;
+  ageRangeMax: number;
+  maxParticipants: number | null;
+  moodTag: string;
+  ticketing: {
+    enabled: boolean;
+    price: number;
+    currency: string;
+    maxTickets?: number;
+    ticketType: "standard" | "vip" | "early_bird";
+    description?: string;
+  };
 }
-
-import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
 
 export default function CreaMomento() {
   const location = useLocation();
@@ -27,11 +41,21 @@ export default function CreaMomento() {
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/momento";
   const { toast } = useToast();
   
-  const [momentData, setMomentData] = useState<SimpleMomentData>({
+  const [momentData, setMomentData] = useState<MomentData>({
     photos: [],
     title: "",
     description: "",
-    location: ""
+    location: "",
+    ageRangeMin: 18,
+    ageRangeMax: 65,
+    maxParticipants: null,
+    moodTag: "",
+    ticketing: {
+      enabled: false,
+      price: 0,
+      currency: "EUR",
+      ticketType: "standard"
+    }
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -211,6 +235,83 @@ export default function CreaMomento() {
               />
             </div>
           </div>
+
+          {/* Range di età */}
+          <div>
+            <Label className="text-base font-medium">Range di età preferibile</Label>
+            <div className="mt-3 space-y-4">
+              <div className="px-3">
+                <Slider
+                  value={[momentData.ageRangeMin, momentData.ageRangeMax]}
+                  onValueChange={(values) => 
+                    setMomentData({ 
+                      ...momentData, 
+                      ageRangeMin: values[0], 
+                      ageRangeMax: values[1] 
+                    })
+                  }
+                  min={16}
+                  max={80}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{momentData.ageRangeMin} anni</span>
+                <span>{momentData.ageRangeMax} anni</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Numero massimo partecipanti */}
+          <div>
+            <Label htmlFor="maxParticipants" className="text-base font-medium">
+              Numero massimo partecipanti
+            </Label>
+            <div className="relative mt-2">
+              <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="maxParticipants"
+                type="number"
+                min="1"
+                max="1000"
+                value={momentData.maxParticipants || ""}
+                onChange={(e) => setMomentData({ 
+                  ...momentData, 
+                  maxParticipants: e.target.value ? parseInt(e.target.value) : null
+                })}
+                placeholder="Illimitati"
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Mood Tag */}
+          <div>
+            <Label className="text-base font-medium">Mood dell'evento</Label>
+            <Select 
+              value={momentData.moodTag} 
+              onValueChange={(value) => setMomentData({ ...momentData, moodTag: value })}
+            >
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Seleziona il mood..." />
+              </SelectTrigger>
+              <SelectContent>
+                {MOOD_TAGS.map((mood) => (
+                  <SelectItem key={mood} value={mood}>
+                    {mood}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Sistema Ticketing */}
+          <TicketingSystem
+            data={momentData.ticketing}
+            onChange={(ticketing) => setMomentData({ ...momentData, ticketing })}
+            maxParticipants={momentData.maxParticipants || undefined}
+          />
 
           {/* Tags */}
           <div>
