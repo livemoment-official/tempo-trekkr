@@ -88,7 +88,7 @@ export const ChatPermissionSettings = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <RadioGroup value={selectedPermission} onValueChange={setSelectedPermission}>
+        <RadioGroup value={selectedPermission} onValueChange={(value) => setSelectedPermission(value as ChatPermission)}>
           {permissionOptions.map((option) => {
             const IconComponent = option.icon;
             return (
