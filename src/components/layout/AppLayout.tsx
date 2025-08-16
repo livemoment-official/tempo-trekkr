@@ -14,7 +14,10 @@ const Header = ({
   onOpenSearch: () => void;
 }) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Debug log per verificare lo stato di autenticazione
+  console.log('Header - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
   
   return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
@@ -23,21 +26,20 @@ const Header = ({
           <span className="sr-only">LiveMoment</span>
         </button>
         
-        {isAuthenticated && (
-          <div className="flex items-center gap-3">
-            <NavLink to="/agenda" className="relative">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Calendar className="h-4 w-4" />
-              </Button>
-              <NotificationBadge className="absolute -top-1 -right-1" />
-            </NavLink>
-            <NavLink to="/profilo" className="relative">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <User className="h-4 w-4" />
-              </Button>
-            </NavLink>
-          </div>
-        )}
+        {/* Mostra sempre le icone per debug, poi rimuoveremo questa riga */}
+        <div className="flex items-center gap-3">
+          <NavLink to="/agenda" className="relative">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
+              <Calendar className="h-4 w-4" />
+            </Button>
+            <NotificationBadge className="absolute -top-1 -right-1" />
+          </NavLink>
+          <NavLink to="/profilo" className="relative">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
+              <User className="h-4 w-4" />
+            </Button>
+          </NavLink>
+        </div>
       </div>
     </header>;
 };
