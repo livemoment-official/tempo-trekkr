@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Lock, Apple, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -15,11 +14,11 @@ interface AuthModalProps {
   description?: string;
 }
 
-type AuthStep = 'mode-selection' | 'login' | 'signup' | 'forgot-password';
+type AuthStep = 'email-login' | 'signup' | 'forgot-password';
 
-export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment", description = "Accedi al tuo account o creane uno nuovo" }: AuthModalProps) {
-  const { signInWithGoogle, signInWithApple, signUp, signIn, resetPassword } = useAuth();
-  const [step, setStep] = useState<AuthStep>('mode-selection');
+export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment", description = "Per favore accedi o registrati qui sotto." }: AuthModalProps) {
+  const { signInWithGoogle, signUp, signIn, resetPassword } = useAuth();
+  const [step, setStep] = useState<AuthStep>('email-login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -39,17 +38,6 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
     }
   };
 
-  const handleAppleAuth = async () => {
-    setIsLoading(true);
-    try {
-      await signInWithApple();
-      // Don't close modal here, let the auth state change handle it
-    } catch (error) {
-      toast.error('Errore durante l\'accesso con Apple');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +95,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
         }
       } else {
         toast.success('Account creato! Puoi ora accedere');
-        setStep('login');
+        setStep('email-login');
         setPassword('');
         setConfirmPassword('');
       }
@@ -132,7 +120,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
         toast.error(error);
       } else {
         toast.success('Link per il reset password inviato alla tua email');
-        setStep('login');
+        setStep('email-login');
       }
     } catch (error) {
       toast.error('Errore durante l\'invio dell\'email');
@@ -142,7 +130,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
   };
 
   const resetForm = () => {
-    setStep('mode-selection');
+    setStep('email-login');
     setEmail('');
     setPassword('');
     setConfirmPassword('');
@@ -158,9 +146,9 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md border-0 bg-background/95 backdrop-blur-sm">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-semibold">
+          <DialogTitle className="text-center text-xl font-semibold text-foreground">
             {title}
           </DialogTitle>
           {description && (
@@ -168,132 +156,103 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
           )}
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {step === 'mode-selection' && (
-            <>
-              {/* Social Auth Options */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleGoogleAuth}
-                  disabled={isLoading}
-                  className="w-full h-12 bg-white text-black border border-border hover:bg-gray-50"
-                >
-                  <img 
-                    src="https://developers.google.com/identity/images/g-logo.png" 
-                    alt="Google" 
-                    className="w-5 h-5 mr-3" 
-                  />
-                  Continua con Google
-                </Button>
-
-                <Button
-                  onClick={handleAppleAuth}
-                  disabled={isLoading}
-                  className="w-full h-12 bg-black text-white hover:bg-gray-900"
-                >
-                  <Apple className="w-5 h-5 mr-3" />
-                  Continua con Apple
-                </Button>
+        <div className="space-y-6 py-4">
+          {step === 'email-login' && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-background border-border"
+                />
               </div>
+
+              {password && (
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-foreground">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="La tua password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="bg-background border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 bg-white text-black hover:bg-gray-100"
+              >
+                {isLoading ? 'Caricamento...' : 'Continua con l\'email'}
+              </Button>
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                  <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">oppure</span>
                 </div>
               </div>
 
-              {/* Email/Password Options */}
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setStep('login')}
-                  variant="outline"
-                  className="w-full h-12"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Accedi con Email
-                </Button>
-
-                <Button
-                  onClick={() => setStep('signup')}
-                  className="w-full h-12"
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  Crea Account
-                </Button>
-              </div>
-            </>
-          )}
-
-          {step === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="la-tua-email@esempio.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="La tua password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
               <Button
-                type="submit"
+                type="button"
+                onClick={handleGoogleAuth}
                 disabled={isLoading}
-                className="w-full h-12"
+                variant="outline"
+                className="w-full h-12 bg-transparent border-border text-muted-foreground hover:bg-muted/50"
               >
-                {isLoading ? 'Accesso in corso...' : 'Accedi'}
+                <img 
+                  src="https://developers.google.com/identity/images/g-logo.png" 
+                  alt="Google" 
+                  className="w-4 h-4 mr-3" 
+                />
+                Accedi con Google
               </Button>
 
-              <div className="flex flex-col space-y-2">
+              <div className="flex flex-col space-y-2 pt-4">
                 <Button
                   type="button"
                   variant="link"
                   onClick={() => setStep('forgot-password')}
-                  className="text-sm"
+                  className="text-sm text-muted-foreground hover:text-foreground p-0"
                 >
                   Password dimenticata?
                 </Button>
                 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setStep('mode-selection')}
-                  className="w-full"
-                >
-                  ← Torna indietro
-                </Button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setStep('signup')}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    Crea Account
+                  </button>
+                </div>
               </div>
             </form>
           )}
@@ -375,26 +334,15 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
               </Button>
 
               <div className="flex flex-col space-y-2">
-                <p className="text-sm text-center text-muted-foreground">
-                  Hai già un account?{' '}
-                  <Button
+                <div className="text-center">
+                  <button
                     type="button"
-                    variant="link"
-                    onClick={() => setStep('login')}
-                    className="p-0 h-auto font-medium"
+                    onClick={() => setStep('email-login')}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
                   >
-                    Accedi qui
-                  </Button>
-                </p>
-                
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setStep('mode-selection')}
-                  className="w-full"
-                >
-                  ← Torna indietro
-                </Button>
+                    Hai già un account? Accedi qui
+                  </button>
+                </div>
               </div>
             </form>
           )}
@@ -431,7 +379,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setStep('login')}
+                onClick={() => setStep('email-login')}
                 className="w-full"
               >
                 ← Torna al login
@@ -440,10 +388,10 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment
           )}
         </div>
 
-        <div className="text-xs text-center text-muted-foreground">
+        <div className="text-xs text-center text-muted-foreground pt-4">
           Continuando accetti i nostri{' '}
-          <span className="underline">Termini di Servizio</span> e{' '}
-          <span className="underline">Privacy Policy</span>
+          <span className="underline cursor-pointer hover:text-foreground">Termini di Servizio</span> e{' '}
+          <span className="underline cursor-pointer hover:text-foreground">Privacy Policy</span>
         </div>
       </DialogContent>
     </Dialog>
