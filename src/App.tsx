@@ -47,7 +47,8 @@ const App = () => (
                 <Route path="/crea/invito" element={<CreaInvito />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/profilo/:username" element={<UserProfile />} />
-                <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
+        <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
+        <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
               </Route>
               <Route path="*" element={<NotFound />} />

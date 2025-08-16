@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mic, Send, MapPin, UserPlus, MessageSquare } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
+import { ConversationList } from "@/components/chat/ConversationList";
 
 const chips = [
   "Aperitivo live",
@@ -133,16 +135,29 @@ export default function Chat() {
         </div>
       </section>
 
-      <section className="rounded-xl border p-4 shadow-sm">
-        <div className="mb-3 flex items-center gap-2">
-          <Badge variant="secondary">Oggi</Badge>
-          <span className="text-sm font-medium">Momenti & Eventi vicini</span>
-        </div>
-        <div className="space-y-2">
-          <SimpleCard title="Open mic al Parco" meta="19:30 · 0.8 km · live/acustico" />
-          <SimpleCard title="Concerto afterwork" meta="20:00 · 2.1 km · live" />
-        </div>
-      </section>
+      <Tabs defaultValue="discover" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="discover">Scopri</TabsTrigger>
+          <TabsTrigger value="messages">Messaggi</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="discover" className="space-y-4">
+          <section className="rounded-xl border p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <Badge variant="secondary">Oggi</Badge>
+              <span className="text-sm font-medium">Momenti & Eventi vicini</span>
+            </div>
+            <div className="space-y-2">
+              <SimpleCard title="Open mic al Parco" meta="19:30 · 0.8 km · live/acustico" />
+              <SimpleCard title="Concerto afterwork" meta="20:00 · 2.1 km · live" />
+            </div>
+          </section>
+        </TabsContent>
+        
+        <TabsContent value="messages">
+          <ConversationList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

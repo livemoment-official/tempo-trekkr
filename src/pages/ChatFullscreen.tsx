@@ -15,130 +15,87 @@ import {
   Users
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useGroupChat } from "@/hooks/useGroupChat";
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ChatFullscreen() {
-  const { type, id } = useParams(); // type: 'moment', 'city', 'friend'
+  const { type, id } = useParams(); // type: 'moment', 'event', 'city', 'conversation'
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
-  const [chatInfo, setChatInfo] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Handle different chat types
+  const isGroupChat = type === 'moment' || type === 'event' || type === 'city';
+  const isConversation = type === 'conversation';
+  
+  // Group chat hook
+  const groupChatType = (type === 'moment' || type === 'event' || type === 'city') ? type : 'moment';
+  const {
+    messages: groupMessages,
+    groupInfo,
+    isLoading: groupLoading,
+    isSending: groupSending,
+    sendMessage: sendGroupMessage
+  } = useGroupChat(groupChatType, isGroupChat ? (id || '') : '');
+  
+  // Private conversation hook
+  const {
+    messages: conversationMessages,
+    conversations,
+    isLoading: conversationLoading,
+    isSending: conversationSending,
+    loadMessages,
+    sendMessage: sendConversationMessage
+  } = useChat(isConversation ? id : undefined);
 
-  // Mock data - sostituire con chiamate API reali
-  useEffect(() => {
-    const loadChatData = async () => {
-      setIsLoading(true);
-      
-      // Simulazione caricamento dati basato sul tipo
-      let mockChatInfo;
-      let mockMessages;
+  // Determine which data to use
+  const messages = isGroupChat ? groupMessages : conversationMessages;
+  const isLoading = isGroupChat ? groupLoading : conversationLoading;
+  const isSending = isGroupChat ? groupSending : conversationSending;
+  
+  // Get conversation info for private chats
+  const conversation = conversations.find(conv => conv.id === id);
+  const chatInfo = isGroupChat 
+    ? groupInfo 
+    : conversation 
+      ? {
+          id: conversation.id,
+          title: conversation.other_participant?.name || 'Conversazione',
+          subtitle: 'Chat privata',
+          type: 'conversation' as const
+        }
+      : null;
 
-      switch (type) {
-        case 'moment':
-          mockChatInfo = {
-            title: "Aperitivo sui Navigli",
-            subtitle: "12 membri • Oggi alle 18:30",
-            type: "moment",
-            location: "Navigli, Milano",
-            date: "Oggi",
-            time: "18:30",
-            memberCount: 12
-          };
-          mockMessages = [
-            {
-              id: '1',
-              user_id: 'user1',
-              user_name: 'Marco R.',
-              content: 'Chi porta la chitarra stasera? 🎸',
-              created_at: new Date(Date.now() - 120000).toISOString(),
-              isOrganizer: true
-            },
-            {
-              id: '2',
-              user_id: 'user2', 
-              user_name: 'Sofia M.',
-              content: 'Io! Non vedo l\'ora 😊',
-              created_at: new Date(Date.now() - 60000).toISOString(),
-              isOrganizer: false
-            }
-          ];
-          break;
-          
-        case 'city':
-          mockChatInfo = {
-            title: "Gruppo Milano",
-            subtitle: "248 membri online",
-            type: "city",
-            memberCount: 248
-          };
-          mockMessages = [
-            {
-              id: '3',
-              user_id: 'user3',
-              user_name: 'Alessandro T.',
-              content: 'Qualcuno per una birra in zona Brera?',
-              created_at: new Date(Date.now() - 300000).toISOString(),
-              isOrganizer: false
-            }
-          ];
-          break;
-          
-        case 'friend':
-          mockChatInfo = {
-            title: "Giulia Rossi",
-            subtitle: "Online ora",
-            type: "friend",
-            isOnline: true
-          };
-          mockMessages = [
-            {
-              id: '4',
-              user_id: 'friend1',
-              user_name: 'Giulia R.',
-              content: 'Ci vediamo domani al concerto?',
-              created_at: new Date(Date.now() - 180000).toISOString(),
-              isOrganizer: false
-            }
-          ];
-          break;
-      }
-
-      setChatInfo(mockChatInfo);
-      setMessages(mockMessages || []);
-      setIsLoading(false);
-    };
-
-    loadChatData();
-  }, [type, id]);
-
-  // Auto scroll to bottom quando arrivano nuovi messaggi
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
+  // Load conversation messages if it's a private chat
+  useEffect(() => {
+    if (isConversation && id) {
+      loadMessages(id);
+    }
+  }, [isConversation, id, loadMessages]);
 
-    const newMessage = {
-      id: Date.now().toString(),
-      user_id: 'current_user',
-      user_name: 'Tu',
-      content: message,
-      created_at: new Date().toISOString(),
-      isOrganizer: false
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessage("");
-
-    toast({
-      title: "Messaggio inviato",
-      description: "Il tuo messaggio è stato inviato al gruppo"
-    });
+  // Handle sending message
+  const handleSendMessage = async () => {
+    if (!message.trim() || isSending) return;
+    
+    try {
+      if (isGroupChat) {
+        await sendGroupMessage(message);
+      } else if (isConversation && id) {
+        await sendConversationMessage(message, id);
+      }
+      setMessage("");
+    } catch (error) {
+      // Error is handled in the hooks
+    }
   };
 
   const handleShare = async () => {
@@ -183,39 +140,39 @@ export default function ChatFullscreen() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
-        <title>LiveMoment · {chatInfo?.title}</title>
-        <meta name="description" content={`Chat ${chatInfo?.title}`} />
+        <title>Chat · {chatInfo?.title || "LiveMoment"}</title>
+        <meta name="description" content={`Chat di gruppo per ${chatInfo?.title || "LiveMoment"}`} />
       </Helmet>
 
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+        <div className="flex items-center gap-4 p-4">
           <Button 
             variant="ghost" 
-            size="sm"
+            size="icon"
             onClick={() => navigate(-1)}
+            aria-label="Torna indietro"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           
           <div className="flex-1 min-w-0">
-            <h1 className="font-semibold truncate">{chatInfo?.title}</h1>
-            <p className="text-sm text-muted-foreground truncate">
-              {chatInfo?.subtitle}
-            </p>
+            <h1 className="text-lg font-semibold">{chatInfo?.title}</h1>
+            <p className="text-sm text-muted-foreground">{chatInfo?.subtitle}</p>
           </div>
 
           <div className="flex items-center gap-2">
             {chatInfo?.type === 'moment' && (
               <Button 
                 variant="ghost" 
-                size="sm"
+                size="icon"
                 onClick={handleShare}
+                aria-label="Condividi"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
             )}
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="icon" aria-label="Altre opzioni">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </div>
@@ -223,74 +180,87 @@ export default function ChatFullscreen() {
       </header>
 
       {/* Info Banner per momenti */}
-      {chatInfo?.type === 'moment' && (
-        <div className="bg-primary/5 border-b p-4">
-          <div className="container mx-auto flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span>{chatInfo.date} alle {chatInfo.time}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span>{chatInfo.location}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4 text-primary" />
-              <span>{chatInfo.memberCount} membri</span>
-            </div>
+      {(groupInfo?.type === 'moment' || groupInfo?.type === 'event') && (
+        <div className="border-b bg-muted/50 p-4">
+          <div className="flex items-center gap-4 text-sm">
+            {groupInfo.date && groupInfo.time && (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{groupInfo.date} • {groupInfo.time}</span>
+              </div>
+            )}
+            {groupInfo.location && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                <span>{groupInfo.location}</span>
+              </div>
+            )}
+            {groupInfo.memberCount !== undefined && (
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                <span>{groupInfo.memberCount} membri</span>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-4 py-4 space-y-4">
-          {messages.map((msg) => (
-            <div key={msg.id} className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-xs">
-                  {msg.user_name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-sm">{msg.user_name}</span>
-                  {msg.isOrganizer && (
-                    <Badge variant="secondary" className="text-xs">
-                      Organizzatore
-                    </Badge>
-                  )}
-                  <span className="text-xs text-muted-foreground">
-                    {formatTime(msg.created_at)}
-                  </span>
+      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        {messages.map((msg) => {
+          const isOwn = msg.sender_id === user?.id;
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`flex gap-3 max-w-[80%] ${isOwn ? 'flex-row-reverse' : ''}`}>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={msg.sender?.avatar_url} />
+                  <AvatarFallback>
+                    {msg.sender?.name?.slice(0, 2).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className={`space-y-1 ${isOwn ? 'text-right' : ''}`}>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{msg.sender?.name || 'Utente'}</span>
+                    <span>{formatTime(msg.created_at)}</span>
+                  </div>
+                  <div
+                    className={`rounded-lg p-3 ${
+                      isOwn
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
-                <p className="text-sm break-words">{msg.content}</p>
               </div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
-      <div className="border-t bg-background">
-        <div className="container mx-auto p-4">
-          <div className="flex gap-2">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Scrivi un messaggio..."
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1"
-            />
-            <Button 
-              onClick={sendMessage} 
-              disabled={!message.trim()}
-              size="sm"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+      <div className="border-t bg-background p-4">
+        <div className="flex gap-2">
+          <Input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Scrivi un messaggio..."
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            className="flex-1"
+          />
+          <Button 
+            size="icon" 
+            onClick={handleSendMessage}
+            disabled={!message.trim() || isSending}
+            aria-label="Invia messaggio"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
