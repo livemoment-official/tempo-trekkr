@@ -1,230 +1,294 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Users, MessageCircle, Navigation } from "lucide-react";
+import { MapPin, Clock, Users, MessageCircle, Navigation, AlertCircle } from "lucide-react";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Temporary component until Mapbox is properly configured
-export function MomentsMap() {
-  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [showLocationPrompt, setShowLocationPrompt] = useState(true);
+interface MomentMapProps {
+  moments?: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    when_at?: string;
+    place?: {
+      lat: number;
+      lng: number;
+      name: string;
+      address?: string;
+    };
+    host?: {
+      name: string;
+      avatar_url?: string;
+    };
+    participants?: string[];
+    max_participants?: number;
+    mood_tag?: string;
+  }>;
+  onMomentClick?: (momentId: string) => void;
+}
 
-  // Mock moments data for map
-  const mockMoments = [
-    {
-      id: '1',
-      title: 'Aperitivo al tramonto',
-      category: 'aperitivo',
-      location: { lat: 45.4642, lng: 9.1900, name: 'Navigli, Milano' },
-      time: '18:30',
-      organizer: { name: 'Marco R.', avatar: '' },
-      participants: 8,
-      maxParticipants: 15
-    },
-    {
-      id: '2', 
-      title: 'Calcetto nel parco',
-      category: 'calcio',
-      location: { lat: 45.4722, lng: 9.1815, name: 'Parco Sempione' },
-      time: '20:00',
-      organizer: { name: 'Luca M.', avatar: '' },
-      participants: 12,
-      maxParticipants: 22
-    },
-    {
-      id: '3',
-      title: 'Festa in casa',
-      category: 'feste',
-      location: { lat: 45.4545, lng: 9.1696, name: 'Brera' },
-      time: '21:30',
-      organizer: { name: 'Sofia B.', avatar: '' },
-      participants: 25,
-      maxParticipants: 30
+export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const { user } = useAuth();
+  const { location, permission, requestLocation } = useGeolocation();
+  const { updateLocation } = useUserLocation();
+  const [selectedMoment, setSelectedMoment] = useState<any>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>('');
+
+  // Get Mapbox token from Edge Function
+  useEffect(() => {
+    const fetchMapboxToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        if (error) throw error;
+        if (data.success && data.token) {
+          setMapboxToken(data.token);
+        }
+      } catch (error) {
+        console.error('Error fetching Mapbox token:', error);
+        // Keep placeholder token to show configuration message
+        setMapboxToken('pk.your_mapbox_token_here');
+      }
+    };
+
+    fetchMapboxToken();
+  }, []);
+
+  // Request location permission if not granted
+  useEffect(() => {
+    if (permission.prompt && !permission.loading) {
+      // Auto-request location for better UX
+      // requestLocation();
     }
-  ];
+  }, [permission, requestLocation]);
 
-  const [selectedMoment, setSelectedMoment] = useState<typeof mockMoments[0] | null>(null);
+  // Save location to profile when obtained
+  useEffect(() => {
+    if (location && user) {
+      updateLocation(location);
+    }
+  }, [location, user, updateLocation]);
 
-  const getCategoryEmoji = (cat: string) => {
-    const categories: Record<string, string> = {
-      'calcio': '⚽',
-      'aperitivo': '🍺',
-      'feste': '🎉',
-      'casa': '🏠',
-      'sport': '🏃',
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || map.current || !mapboxToken || mapboxToken === 'pk.your_mapbox_token_here') return;
+
+    mapboxgl.accessToken = mapboxToken;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: location ? [location.lng, location.lat] : [9.1900, 45.4642], // Default to Milan
+      zoom: location ? 14 : 12,
+      pitch: 0
+    });
+
+    // Add navigation controls
+    map.current.addControl(
+      new mapboxgl.NavigationControl({
+        visualizePitch: true,
+      }),
+      'top-right'
+    );
+
+    // Add user location marker if available
+    if (location) {
+      new mapboxgl.Marker({
+        color: '#3b82f6'
+      })
+      .setLngLat([location.lng, location.lat])
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 })
+        .setHTML('<div class="text-sm font-medium">La tua posizione</div>')
+      )
+      .addTo(map.current);
+    }
+
+    return () => {
+      map.current?.remove();
+    };
+  }, [mapboxToken, location]);
+
+  // Add moment markers
+  useEffect(() => {
+    if (!map.current || !moments.length) return;
+
+    // Clear existing markers (in real implementation, you'd manage markers better)
+    const markers: mapboxgl.Marker[] = [];
+
+    moments.forEach((moment) => {
+      if (!moment.place?.lat || !moment.place?.lng) return;
+
+      const markerEl = document.createElement('div');
+      markerEl.className = 'moment-marker';
+      markerEl.innerHTML = `
+        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">
+          ${getMoodEmoji(moment.mood_tag)}
+        </div>
+      `;
+
+      const marker = new mapboxgl.Marker(markerEl)
+        .setLngLat([moment.place.lng, moment.place.lat])
+        .addTo(map.current!);
+
+      // Add click handler
+      markerEl.addEventListener('click', () => {
+        setSelectedMoment(moment);
+        onMomentClick?.(moment.id);
+      });
+
+      markers.push(marker);
+    });
+
+    return () => {
+      markers.forEach(marker => marker.remove());
+    };
+  }, [moments, onMomentClick]);
+
+  const getMoodEmoji = (mood?: string) => {
+    const moods: Record<string, string> = {
+      'chill': '😌',
+      'party': '🎉',
+      'sport': '⚽',
+      'cultura': '🎭',
+      'aperitivo': '🍹',
       'musica': '🎵',
       'arte': '🎨',
-      'cibo': '🍕',
-      'natura': '🌿'
+      'cibo': '🍽️'
     };
-    return categories[cat.toLowerCase()] || '✨';
+    return moods[mood || 'chill'] || '📍';
   };
 
-  const requestLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-          setShowLocationPrompt(false);
-        },
-        (error) => {
-          console.error('Errore geolocalizzazione:', error);
-          setShowLocationPrompt(false);
-        }
-      );
-    }
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('it-IT', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
+
+  if (mapboxToken === 'pk.your_mapbox_token_here') {
+    return (
+      <div className="relative w-full h-[600px] bg-muted rounded-lg flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground" />
+            <div>
+              <h3 className="font-semibold mb-2">Mapbox Token Required</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Per visualizzare la mappa è necessario configurare un token Mapbox. 
+                Il token è stato aggiunto ai secrets di Supabase.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Registrati su mapbox.com per ottenere un token gratuito e configuralo nei secrets di Supabase.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative h-[70vh] w-full">
-      {/* Temporary Map Placeholder */}
-      <div className="relative w-full h-full bg-gradient-to-br from-green-100 to-blue-100 rounded-lg overflow-hidden">
-        {/* Map Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-sky-50">
-          {/* Grid lines to simulate map */}
-          <div className="absolute inset-0 opacity-20">
-            {[...Array(10)].map((_, i) => (
-              <div key={`h-${i}`} className="absolute w-full h-px bg-gray-300" style={{ top: `${i * 10}%` }} />
-            ))}
-            {[...Array(10)].map((_, i) => (
-              <div key={`v-${i}`} className="absolute h-full w-px bg-gray-300" style={{ left: `${i * 10}%` }} />
-            ))}
-          </div>
-          
-          {/* Location markers */}
-          {mockMoments.map((moment, index) => (
-            <div
-              key={moment.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
-              style={{ 
-                left: `${30 + index * 20}%`, 
-                top: `${40 + index * 15}%` 
-              }}
-              onClick={() => setSelectedMoment(moment)}
-            >
-              <div className="relative">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform">
-                  <span className="text-lg">{getCategoryEmoji(moment.category)}</span>
-                </div>
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-primary rotate-45"></div>
-                
-                {/* Pulse animation */}
-                <div className="absolute inset-0 w-12 h-12 bg-primary rounded-full animate-ping opacity-30"></div>
+    <div className="relative w-full h-[600px]">
+      {/* Location Permission Banner */}
+      {permission.prompt && (
+        <div className="absolute top-4 left-4 right-4 z-10">
+          <Card className="bg-background/95 backdrop-blur-sm">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Navigation className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Attiva la geolocalizzazione</p>
+                <p className="text-xs text-muted-foreground">
+                  Per vedere gli eventi vicini a te
+                </p>
               </div>
-            </div>
-          ))}
-
-          {/* User location */}
-          {userLocation && (
-            <div className="absolute transform -translate-x-1/2 -translate-y-1/2" style={{ left: '50%', top: '50%' }}>
-              <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg">
-                <div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-pulse"></div>
-              </div>
-            </div>
-          )}
+              <Button 
+                size="sm" 
+                onClick={requestLocation}
+                disabled={permission.loading}
+              >
+                {permission.loading ? 'Caricamento...' : 'Attiva'}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+      )}
 
-        {/* Location Permission Prompt */}
-        {showLocationPrompt && (
-          <div className="absolute top-4 left-4 right-4">
-            <Card className="bg-background/95 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Navigation className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Attiva la posizione</p>
-                    <p className="text-xs text-muted-foreground">Per vedere i momenti più vicini a te</p>
+      {/* Map Container */}
+      <div ref={mapContainer} className="absolute inset-0 rounded-lg overflow-hidden" />
+
+      {/* Selected Moment Popup */}
+      {selectedMoment && (
+        <div className="absolute bottom-4 left-4 right-4 z-10">
+          <Card className="bg-background/95 backdrop-blur-sm">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">
+                  {getMoodEmoji(selectedMoment.mood_tag)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm mb-1">
+                    {selectedMoment.title}
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+                    {selectedMoment.when_at && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatTime(selectedMoment.when_at)}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>
+                        {selectedMoment.participants?.length || 0}
+                        {selectedMoment.max_participants && `/${selectedMoment.max_participants}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      <span>{selectedMoment.place?.name}</span>
+                    </div>
                   </div>
-                  <Button size="sm" onClick={requestLocation}>
-                    Attiva
+                  {selectedMoment.host && (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={selectedMoment.host.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {selectedMoment.host.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">
+                        Organizzato da {selectedMoment.host.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button size="sm" onClick={() => onMomentClick?.(selectedMoment.id)}>
+                    Dettagli
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedMoment(null)}
+                  >
+                    Chiudi
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Map Info Popup */}
-        {selectedMoment && (
-          <div className="absolute bottom-4 left-4 right-4">
-            <Card className="bg-background/95 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
-                      <span className="text-2xl">{getCategoryEmoji(selectedMoment.category)}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm truncate">{selectedMoment.title}</h4>
-                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{selectedMoment.time}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span>{selectedMoment.participants}/{selectedMoment.maxParticipants}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <MapPin className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground truncate">{selectedMoment.location.name}</span>
-                        </div>
-                      </div>
-                      
-                      <button 
-                        onClick={() => setSelectedMoment(null)}
-                        className="text-muted-foreground hover:text-foreground p-1"
-                      >
-                        ×
-                      </button>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={selectedMoment.organizer.avatar} />
-                          <AvatarFallback className="text-xs">{selectedMoment.organizer.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-muted-foreground">{selectedMoment.organizer.name}</span>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" className="h-8 px-2">
-                          <MessageCircle className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" className="h-8 px-3 text-xs">
-                          Partecipa
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Map Notice */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 max-w-xs">
-            <p className="text-sm text-muted-foreground">
-              Mappa interattiva in arrivo
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Clicca sui pin per vedere i dettagli
-            </p>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      )}
     </div>
   );
 }

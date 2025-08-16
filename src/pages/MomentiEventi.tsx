@@ -1,13 +1,16 @@
-import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MapPin, List } from "lucide-react";
-import { MomentCard } from "@/components/moments/MomentCard";
+import { List, MapPin } from "lucide-react";
 import { MomentFilters } from "@/components/moments/MomentFilters";
+import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
+import { LocationPermissionCard } from "@/components/location/LocationPermissionCard";
+
 export default function MomentiEventi() {
   const location = useLocation();
+  const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/momenti";
   const [view, setView] = useState<'list' | 'map'>('list');
 
@@ -122,7 +125,9 @@ export default function MomentiEventi() {
       
 
       {/* Filters */}
-      <MomentFilters 
+        <LocationPermissionCard />
+        
+        <MomentFilters
         selectedCategory={selectedCategory} 
         onCategoryChange={setSelectedCategory}
         selectedSubcategories={selectedSubcategories}
@@ -158,9 +163,33 @@ export default function MomentiEventi() {
       </div>
 
       {/* Content */}
-      {view === 'list' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {view === 'list' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMoments.map(moment => <MomentCard key={moment.id} {...moment} />)}
-        </div> : <MomentsMap />}
+        </div>
+      ) : (
+        <MomentsMap 
+          moments={filteredMoments.map(moment => ({
+            id: moment.id,
+            title: moment.title,
+            description: moment.description,
+            when_at: moment.time,
+            place: {
+              lat: 45.4642 + (Math.random() - 0.5) * 0.1,
+              lng: 9.1900 + (Math.random() - 0.5) * 0.1,
+              name: moment.location
+            },
+            host: {
+              name: moment.organizer.name,
+              avatar_url: moment.organizer.avatar
+            },
+            participants: [],
+            max_participants: 20,
+            mood_tag: moment.category
+          }))}
+          onMomentClick={(momentId) => navigate(`/moment/${momentId}`)}
+        />
+      )}
 
       {filteredMoments.length === 0 && <div className="text-center py-12">
           <p className="text-muted-foreground">
