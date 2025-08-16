@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface FriendSuggestionsModalProps {
   open: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
 }
 
 // Mock data per i contatti dalla rubrica
@@ -52,7 +52,7 @@ const mockContacts = [
   }
 ];
 
-export const FriendSuggestionsModal = ({ open, onClose }: FriendSuggestionsModalProps) => {
+export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestionsModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation] = useState<{ lat: number; lng: number } | null>({
     lat: 45.4642, lng: 9.1900 // Milano come default
@@ -71,7 +71,7 @@ export const FriendSuggestionsModal = ({ open, onClose }: FriendSuggestionsModal
   ) || [];
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

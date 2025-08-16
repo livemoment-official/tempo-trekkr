@@ -341,7 +341,7 @@ export default function Profilo() {
 
       <FriendSuggestionsModal
         open={showFriendSuggestions}
-        onClose={() => setShowFriendSuggestions(false)}
+        onOpenChange={setShowFriendSuggestions}
       />
 
     </div>

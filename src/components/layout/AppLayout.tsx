@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -9,10 +9,13 @@ import { GuestBanner } from "@/components/auth/GuestBanner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
+import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 const Header = ({
-  onOpenSearch
+  onOpenSearch,
+  onOpenFriends
 }: {
   onOpenSearch: () => void;
+  onOpenFriends: () => void;
 }) => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,6 +38,17 @@ const Header = ({
             </Button>
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0 text-foreground hover:text-primary"
+            onClick={onOpenFriends}
+            aria-label="Trova amici"
+          >
+            <UserPlus className="h-4 w-4" />
+          </Button>
+          
           <NavLink to="/profilo" className="relative">
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
               <User className="h-4 w-4" />
@@ -79,11 +93,12 @@ export default function AppLayout() {
     isAuthenticated
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
-      <Header onOpenSearch={() => setSearchOpen(true)} />
+      <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />
       {!isAuthenticated && <GuestBanner />}
       <UnconfirmedUserBanner />
       <main className="flex-1 px-4 pb-24 pt-3 animate-fade-in">
@@ -107,5 +122,8 @@ export default function AppLayout() {
 
       {/* Search Overlay */}
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
+      
+      {/* Friends Modal */}
+      <FriendSuggestionsModal open={friendsOpen} onOpenChange={setFriendsOpen} />
     </div>;
 }
