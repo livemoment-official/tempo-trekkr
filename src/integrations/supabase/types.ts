@@ -92,6 +92,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          participant_1: string
+          participant_2: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          participant_1: string
+          participant_2: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          participant_1?: string
+          participant_2?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           capacity: number | null
@@ -134,6 +158,27 @@ export type Database = {
           title?: string
           updated_at?: string
           when_at?: string | null
+        }
+        Relationships: []
+      }
+      follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
         }
         Relationships: []
       }
@@ -199,6 +244,41 @@ export type Database = {
           when_at?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moments: {
         Row: {
@@ -282,17 +362,30 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          chat_permission:
+            | Database["public"]["Enums"]["chat_permission_type"]
+            | null
+          cover_image_url: string | null
           created_at: string
+          followers_count: number | null
+          following_count: number | null
           gallery: string[] | null
           id: string
           instagram_username: string | null
           interests: string[] | null
+          is_verified: boolean | null
           job_title: string | null
           location: Json | null
           mood: string | null
           name: string | null
           onboarding_completed: boolean
+          personality_type:
+            | Database["public"]["Enums"]["personality_type"]
+            | null
           preferred_moments: string[] | null
+          privacy_level:
+            | Database["public"]["Enums"]["privacy_level_type"]
+            | null
           relationship_status: string | null
           updated_at: string
           username: string | null
@@ -300,17 +393,30 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          chat_permission?:
+            | Database["public"]["Enums"]["chat_permission_type"]
+            | null
+          cover_image_url?: string | null
           created_at?: string
+          followers_count?: number | null
+          following_count?: number | null
           gallery?: string[] | null
           id: string
           instagram_username?: string | null
           interests?: string[] | null
+          is_verified?: boolean | null
           job_title?: string | null
           location?: Json | null
           mood?: string | null
           name?: string | null
           onboarding_completed?: boolean
+          personality_type?:
+            | Database["public"]["Enums"]["personality_type"]
+            | null
           preferred_moments?: string[] | null
+          privacy_level?:
+            | Database["public"]["Enums"]["privacy_level_type"]
+            | null
           relationship_status?: string | null
           updated_at?: string
           username?: string | null
@@ -318,17 +424,30 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          chat_permission?:
+            | Database["public"]["Enums"]["chat_permission_type"]
+            | null
+          cover_image_url?: string | null
           created_at?: string
+          followers_count?: number | null
+          following_count?: number | null
           gallery?: string[] | null
           id?: string
           instagram_username?: string | null
           interests?: string[] | null
+          is_verified?: boolean | null
           job_title?: string | null
           location?: Json | null
           mood?: string | null
           name?: string | null
           onboarding_completed?: boolean
+          personality_type?:
+            | Database["public"]["Enums"]["personality_type"]
+            | null
           preferred_moments?: string[] | null
+          privacy_level?:
+            | Database["public"]["Enums"]["privacy_level_type"]
+            | null
           relationship_status?: string | null
           updated_at?: string
           username?: string | null
@@ -439,6 +558,29 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      chat_permission_type:
+        | "everyone"
+        | "friends_only"
+        | "followers_only"
+        | "none"
+      personality_type:
+        | "INTJ"
+        | "INTP"
+        | "ENTJ"
+        | "ENTP"
+        | "INFJ"
+        | "INFP"
+        | "ENFJ"
+        | "ENFP"
+        | "ISTJ"
+        | "ISFJ"
+        | "ESTJ"
+        | "ESFJ"
+        | "ISTP"
+        | "ISFP"
+        | "ESTP"
+        | "ESFP"
+      privacy_level_type: "public" | "friends_only" | "private"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -567,6 +709,31 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      chat_permission_type: [
+        "everyone",
+        "friends_only",
+        "followers_only",
+        "none",
+      ],
+      personality_type: [
+        "INTJ",
+        "INTP",
+        "ENTJ",
+        "ENTP",
+        "INFJ",
+        "INFP",
+        "ENFJ",
+        "ENFP",
+        "ISTJ",
+        "ISFJ",
+        "ESTJ",
+        "ESFJ",
+        "ISTP",
+        "ISFP",
+        "ESTP",
+        "ESFP",
+      ],
+      privacy_level_type: ["public", "friends_only", "private"],
     },
   },
 } as const
