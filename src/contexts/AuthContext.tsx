@@ -29,17 +29,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('🔄 Auth state changed:', {
+          event,
+          userId: session?.user?.id,
+          email: session?.user?.email,
+          emailConfirmed: session?.user?.email_confirmed_at,
+          hasSession: !!session
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
         
         // Trigger profile creation for new signups
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, redirecting to profile page');
+          console.log('User signed in, checking profile and redirecting...');
           setTimeout(() => {
             // Check if profile exists, create if not
-            checkAndCreateProfile(session.user.id);
+            ensureProfileExists(session.user.id, session.user.email || '');
             // Redirect to profile page after login
             window.location.href = '/profilo';
           }, 500);
@@ -58,41 +65,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAndCreateProfile = async (userId: string) => {
+  // Enhanced helper function to ensure profile exists with retry mechanism
+  const ensureProfileExists = async (userId: string, email: string, retryCount = 0) => {
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
+    
     try {
-      console.log('Checking profile for user:', userId);
-      const { data: profile, error: fetchError } = await supabase
+      console.log(`🔍 Checking profile for user ${userId} (attempt ${retryCount + 1})`);
+      
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
-        .select('id, onboarding_completed')
+        .select('*')
         .eq('id', userId)
         .maybeSingle();
 
-      if (fetchError) {
-        console.error('Error fetching profile:', fetchError);
+      if (checkError) {
+        console.error('❌ Error checking profile:', checkError);
+        if (retryCount < maxRetries) {
+          console.log(`🔄 Retrying profile check in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          return ensureProfileExists(userId, email, retryCount + 1);
+        }
         return;
       }
 
-      if (!profile) {
-        console.log('Creating new profile for user:', userId);
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            name: '',
-            username: `user_${userId.slice(0, 8)}`,
-            onboarding_completed: false
-          });
+      if (!existingProfile) {
+        console.log('📝 Creating new profile for user:', userId);
         
-        if (insertError) {
-          console.error('Error creating profile:', insertError);
+        // Generate a more user-friendly username
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || `user_${userId.slice(0, 8)}`;
+        
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: userId,
+              name: '',
+              username,
+              onboarding_completed: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]);
+
+        if (createError) {
+          console.error('❌ Error creating profile:', createError);
+          if (retryCount < maxRetries) {
+            console.log(`🔄 Retrying profile creation in ${retryDelay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            return ensureProfileExists(userId, email, retryCount + 1);
+          }
         } else {
-          console.log('Profile created successfully');
+          console.log('✅ Profile created successfully for user:', userId);
         }
       } else {
-        console.log('Profile exists:', profile);
+        console.log('✅ Profile already exists for user:', userId);
       }
     } catch (error) {
-      console.error('Error checking/creating profile:', error);
+      console.error('💥 Exception in ensureProfileExists:', error);
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retrying due to exception in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return ensureProfileExists(userId, email, retryCount + 1);
+      }
     }
   };
 
@@ -216,72 +251,105 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign up for:', email);
+      console.log('🔄 Starting signup process for:', email);
+      
+      // Clean up any existing auth state first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log('✅ Cleaned up existing auth state');
+      } catch (cleanupError) {
+        console.log('⚠️ Cleanup error (expected):', cleanupError);
+      }
+
+      const redirectUrl = `${window.location.origin}/profilo`;
+      console.log('🌐 Using redirect URL:', redirectUrl);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/profilo`
+          emailRedirectTo: redirectUrl
         }
       });
-      
-      console.log('Sign up response:', { data, error });
-      
-      // Gestisce errori specifici per migliorare UX
+
       if (error) {
-        console.error('Sign up error:', error);
-        if (error.message.includes('User already registered')) {
-          return { error: 'Questo email è già registrato. Prova ad accedere.' };
+        console.error('❌ Signup error:', error);
+        
+        // Provide more specific error messages
+        if (error.message.includes('already registered')) {
+          return { error: 'Questo email è già registrato. Prova ad accedere invece.' };
+        }
+        if (error.message.includes('invalid')) {
+          return { error: 'Email o password non validi. Controlla i dati inseriti.' };
         }
         if (error.message.includes('Error sending confirmation email')) {
-          // Se l'utente è stato creato ma l'email non è stata inviata, continua
-          console.log('User created but email confirmation failed - continuing');
+          console.log('User created but email confirmation failed - continuing with manual profile creation');
+          // Try to create profile manually if user was created
+          if (data?.user) {
+            await ensureProfileExists(data.user.id, email);
+          }
           return { error: null };
         }
         return { error: error.message };
       }
-      
-      // Se l'utente è stato creato con successo
+
+      console.log('✅ Signup successful! User data:', {
+        userId: data.user?.id,
+        email: data.user?.email,
+        emailConfirmed: data.user?.email_confirmed_at,
+        session: !!data.session
+      });
+
+      // Try to create profile with retry mechanism
       if (data.user) {
-        console.log('User created successfully:', data.user.email);
+        await ensureProfileExists(data.user.id, email);
       }
-      
+
       return { error: null };
     } catch (error: any) {
-      console.error('Sign up exception:', error);
-      return { error: error.message };
+      console.error('💥 Signup failed with exception:', error);
+      return { error: `Errore durante la registrazione: ${error.message}` };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign in for:', email);
+      console.log('🔄 Starting sign in process for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
-      console.log('Sign in response:', { data, error });
-      
+
       if (error) {
-        console.error('Sign in error:', error);
+        console.error('❌ Sign in error:', error);
+        
+        // Provide more specific error messages
         if (error.message.includes('Invalid login credentials')) {
-          return { error: 'Email o password non corretti. Verifica i dati inseriti.' };
+          return { error: 'Email o password non corretti. Verifica i tuoi dati o registrati se non hai ancora un account.' };
         }
         if (error.message.includes('Email not confirmed')) {
           return { error: 'Email non confermata. Controlla la tua casella di posta.' };
         }
-        return { error: error.message };
+        return { error: `Errore di accesso: ${error.message}` };
       }
-      
+
+      console.log('✅ Sign in successful! User data:', {
+        userId: data.user?.id,
+        email: data.user?.email,
+        emailConfirmed: data.user?.email_confirmed_at,
+        session: !!data.session
+      });
+
+      // Ensure profile exists for existing users too
       if (data.user) {
-        console.log('User signed in successfully:', data.user.email);
+        await ensureProfileExists(data.user.id, data.user.email || email);
       }
-      
+
       return { error: null };
     } catch (error: any) {
-      console.error('Sign in exception:', error);
-      return { error: error.message };
+      console.error('💥 Sign in failed with exception:', error);
+      return { error: `Errore durante l'accesso: ${error.message}` };
     }
   };
 
