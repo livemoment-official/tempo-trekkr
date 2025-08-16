@@ -58,6 +58,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
         toast.success('Accesso effettuato!');
         onOpenChange(false);
         resetForm();
+        // Auto-redirect handled in AuthContext
       }
     } catch (error) {
       toast.error('Errore durante l\'accesso');
@@ -96,6 +97,7 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
         toast.success('Account creato! Accesso in corso...');
         onOpenChange(false);
         resetForm();
+        // Auto-redirect handled in AuthContext
       }
     } catch (error) {
       toast.error('Errore durante la registrazione');

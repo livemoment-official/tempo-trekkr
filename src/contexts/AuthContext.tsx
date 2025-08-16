@@ -29,22 +29,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
         
         // Trigger profile creation for new signups
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, redirecting to profile page');
           setTimeout(() => {
             // Check if profile exists, create if not
             checkAndCreateProfile(session.user.id);
-          }, 1000);
+            // Redirect to profile page after login
+            window.location.href = '/profilo';
+          }, 500);
         }
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -55,15 +60,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAndCreateProfile = async (userId: string) => {
     try {
-      const { data: profile } = await supabase
+      console.log('Checking profile for user:', userId);
+      const { data: profile, error: fetchError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, onboarding_completed')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error fetching profile:', fetchError);
+        return;
+      }
 
       if (!profile) {
-        // Create profile if it doesn't exist
-        await supabase
+        console.log('Creating new profile for user:', userId);
+        const { error: insertError } = await supabase
           .from('profiles')
           .insert({
             id: userId,
@@ -71,6 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username: `user_${userId.slice(0, 8)}`,
             onboarding_completed: false
           });
+        
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+        } else {
+          console.log('Profile created successfully');
+        }
+      } else {
+        console.log('Profile exists:', profile);
       }
     } catch (error) {
       console.error('Error checking/creating profile:', error);
@@ -197,37 +216,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting sign up for:', email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/profilo`
+        }
       });
+      
+      console.log('Sign up response:', { data, error });
       
       // Gestisce errori specifici per migliorare UX
       if (error) {
+        console.error('Sign up error:', error);
         if (error.message.includes('User already registered')) {
           return { error: 'Questo email è già registrato. Prova ad accedere.' };
         }
         if (error.message.includes('Error sending confirmation email')) {
-          // Ignora errore di invio email ma permetti registrazione
+          // Se l'utente è stato creato ma l'email non è stata inviata, continua
+          console.log('User created but email confirmation failed - continuing');
           return { error: null };
         }
         return { error: error.message };
       }
       
+      // Se l'utente è stato creato con successo
+      if (data.user) {
+        console.log('User created successfully:', data.user.email);
+      }
+      
       return { error: null };
     } catch (error: any) {
+      console.error('Sign up exception:', error);
       return { error: error.message };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting sign in for:', email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      return { error: error?.message };
+      
+      console.log('Sign in response:', { data, error });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          return { error: 'Email o password non corretti. Verifica i dati inseriti.' };
+        }
+        if (error.message.includes('Email not confirmed')) {
+          return { error: 'Email non confermata. Controlla la tua casella di posta.' };
+        }
+        return { error: error.message };
+      }
+      
+      if (data.user) {
+        console.log('User signed in successfully:', data.user.email);
+      }
+      
+      return { error: null };
     } catch (error: any) {
+      console.error('Sign in exception:', error);
       return { error: error.message };
     }
   };
