@@ -126,9 +126,18 @@ export function useMoments() {
           : undefined;
 
         // Handle host data safely
-        const host = (moment.host && typeof moment.host === 'object' && moment.host !== null && 'id' in moment.host)
-          ? (moment.host as any)
-          : undefined;
+        let host: any = undefined;
+        try {
+          const hostObj = moment.host;
+          if (hostObj && typeof hostObj === 'object' && !Array.isArray(hostObj)) {
+            const hostRecord = hostObj as Record<string, any>;
+            if ('id' in hostRecord && !('error' in hostRecord)) {
+              host = hostRecord;
+            }
+          }
+        } catch (e) {
+          // Host data is invalid, keep undefined
+        }
 
         return {
           ...moment,

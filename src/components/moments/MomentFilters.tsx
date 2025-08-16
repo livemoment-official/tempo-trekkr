@@ -9,16 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Filter, MapPin, Search } from "lucide-react";
 
 interface MomentFiltersProps {
-  selectedCategory: string | null;
-  onCategoryChange: (category: string | null) => void;
-  selectedSubcategories: string[];
-  onSubcategoriesChange: (subcategories: string[]) => void;
-  ageRange: [number, number];
-  onAgeRangeChange: (range: [number, number]) => void;
-  maxDistance: number;
-  onMaxDistanceChange: (distance: number) => void;
-  selectedMood: string | null;
-  onMoodChange: (mood: string | null) => void;
+  selectedCategory?: string | null;
+  onCategoryChange?: (category: string | null) => void;
+  selectedSubcategories?: string[];
+  onSubcategoriesChange?: (subcategories: string[]) => void;
+  ageRange?: [number, number];
+  onAgeRangeChange?: (range: [number, number]) => void;
+  maxDistance?: number;
+  onMaxDistanceChange?: (distance: number) => void;
+  selectedMood?: string | null;
+  onMoodChange?: (mood: string | null) => void;
+  onFiltersChange?: (filters: any) => void;
+  currentFilters?: any;
 }
 
 const mainCategories = [

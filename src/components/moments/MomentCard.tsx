@@ -27,6 +27,10 @@ interface MomentCardProps {
     fire: number;
   };
   mood?: string;
+  distance?: number;
+  onJoin?: () => void;
+  onLeave?: () => void;
+  tags?: string[];
 }
 
 const reactionIcons = {

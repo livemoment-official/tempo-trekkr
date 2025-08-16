@@ -103,7 +103,11 @@ export default function MomentiEventi() {
                 }}
                 participants={moment.participant_count || 0}
                 maxParticipants={moment.max_participants || 0}
+                distance={moment.distance_km}
+                onJoin={() => joinMoment(moment.id)}
                 onLeave={() => leaveMoment(moment.id)}
+                tags={moment.tags || []}
+                reactions={{ hearts: 0, likes: 0, stars: 0, fire: 0 }}
               />
             ))}
           </div>
