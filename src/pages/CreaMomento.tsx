@@ -9,12 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, X, MapPin, Calendar, Users, Clock } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, Upload, X, MapPin, Calendar as CalendarIcon, Users, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCallback } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { MOMENT_CATEGORIES, MOOD_TAGS } from "@/constants/unifiedTags";
 import { TicketingSystem } from "@/components/TicketingSystem";
 import LocationSearchInput from "@/components/location/LocationSearchInput";
+import { supabase } from "@/integrations/supabase/client";
 interface MomentData {
   photos: string[];
   title: string;
@@ -28,6 +33,10 @@ interface MomentData {
   ageRangeMax: number;
   maxParticipants: number | null;
   moodTag: string;
+  startDate: Date | undefined;
+  startTime: string;
+  endDate: Date | undefined;
+  endTime: string;
   ticketing: {
     enabled: boolean;
     price: number;
@@ -53,6 +62,10 @@ export default function CreaMomento() {
     ageRangeMax: 65,
     maxParticipants: null,
     moodTag: "",
+    startDate: undefined,
+    startTime: "",
+    endDate: undefined,
+    endTime: "",
     ticketing: {
       enabled: false,
       price: 0,
@@ -103,14 +116,102 @@ export default function CreaMomento() {
       });
       return;
     }
+
+    if (!momentData.startDate || !momentData.startTime) {
+      toast({
+        title: "Errore",
+        description: "Inserisci data e ora di inizio",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      // TODO: Implement moment creation API call
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per creare un momento",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Upload photos to storage
+      const uploadedPhotos: string[] = [];
+      for (const photo of momentData.photos) {
+        if (photo.startsWith('blob:')) {
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('galleries')
+            .upload(`moments/${user.id}/${fileName}`, blob);
+
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            continue;
+          }
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('galleries')
+            .getPublicUrl(uploadData.path);
+          
+          uploadedPhotos.push(publicUrl);
+        }
+      }
+
+      // Create when_at timestamp from date and time
+      const [hours, minutes] = momentData.startTime.split(':').map(Number);
+      const when_at = new Date(momentData.startDate);
+      when_at.setHours(hours, minutes, 0, 0);
+
+      // Prepare moment data
+      const momentToCreate = {
+        title: momentData.title,
+        description: momentData.description || null,
+        photos: uploadedPhotos,
+        when_at: when_at.toISOString(),
+        place: momentData.location ? {
+          name: momentData.location,
+          coordinates: momentData.locationCoordinates
+        } : null,
+        age_range_min: momentData.ageRangeMin,
+        age_range_max: momentData.ageRangeMax,
+        max_participants: momentData.maxParticipants,
+        mood_tag: momentData.moodTag || null,
+        tags: selectedTags,
+        ticketing: momentData.ticketing.enabled ? momentData.ticketing : null,
+        host_id: user.id,
+        is_public: true
+      };
+
+      // Create moment in database
+      const { data, error } = await supabase
+        .from('moments')
+        .insert([momentToCreate])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        toast({
+          title: "Errore",
+          description: "Non è stato possibile creare il momento",
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
         title: "Momento creato!",
         description: "Il tuo momento è stato pubblicato con successo"
       });
-      navigate("/momenti");
+      navigate("/momenti-eventi");
     } catch (error) {
+      console.error('Error creating moment:', error);
       toast({
         title: "Errore",
         description: "Non è stato possibile creare il momento",
@@ -201,6 +302,95 @@ export default function CreaMomento() {
             </div>
           </div>
 
+          {/* Data e ora di inizio */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-base font-medium">Data di inizio *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-2",
+                      !momentData.startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {momentData.startDate ? format(momentData.startDate, "PPP") : "Seleziona data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={momentData.startDate}
+                    onSelect={(date) => setMomentData({ ...momentData, startDate: date })}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label htmlFor="startTime" className="text-base font-medium">Ora di inizio *</Label>
+              <div className="relative mt-2">
+                <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="startTime"
+                  type="time"
+                  value={momentData.startTime}
+                  onChange={(e) => setMomentData({ ...momentData, startTime: e.target.value })}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Data e ora di fine (opzionale) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-base font-medium">Data di fine (opzionale)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-2",
+                      !momentData.endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {momentData.endDate ? format(momentData.endDate, "PPP") : "Seleziona data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={momentData.endDate}
+                    onSelect={(date) => setMomentData({ ...momentData, endDate: date })}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label htmlFor="endTime" className="text-base font-medium">Ora di fine (opzionale)</Label>
+              <div className="relative mt-2">
+                <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="endTime"
+                  type="time"
+                  value={momentData.endTime}
+                  onChange={(e) => setMomentData({ ...momentData, endTime: e.target.value })}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Range di età */}
           <div>
             <Label className="text-base font-medium">Range di età preferibile</Label>
@@ -272,7 +462,7 @@ export default function CreaMomento() {
             <Button variant="outline" onClick={() => navigate("/crea")} className="flex-1">
               Annulla
             </Button>
-            <Button onClick={handlePublish} disabled={!momentData.title.trim()} className="flex-1">
+            <Button onClick={handlePublish} disabled={!momentData.title.trim() || !momentData.startDate || !momentData.startTime} className="flex-1">
               Pubblica
             </Button>
           </div>
