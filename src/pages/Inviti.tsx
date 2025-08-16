@@ -4,8 +4,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-const InviteCard = ({ title, from, when }: { title: string; from: string; when: string }) => (
-  <Card className="shadow-sm">
+const InviteCard = ({
+  title,
+  from,
+  when
+}: {
+  title: string;
+  from: string;
+  when: string;
+}) => <Card className="shadow-sm">
     <CardHeader className="pb-2">
       <CardTitle className="text-base">{title}</CardTitle>
     </CardHeader>
@@ -17,15 +24,11 @@ const InviteCard = ({ title, from, when }: { title: string; from: string; when: 
       <Button variant="secondary" size="sm">Proponi orario</Button>
       <Button variant="outline" size="sm">Rifiuta</Button>
     </CardFooter>
-  </Card>
-);
-
+  </Card>;
 export default function Inviti() {
   const location = useLocation();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
         <meta name="description" content="Gestisci gli inviti ricevuti e inviati. Apri chat, proponi orari e crea Momenti." />
@@ -38,7 +41,7 @@ export default function Inviti() {
         <TabsList className="grid grid-cols-4">
           <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
           <TabsTrigger value="inviati">Inviati</TabsTrigger>
-          <TabsTrigger value="attesa">In attesa</TabsTrigger>
+          
           <TabsTrigger value="amici">Amici</TabsTrigger>
         </TabsList>
         <TabsContent value="ricevuti" className="space-y-3">
@@ -69,6 +72,5 @@ export default function Inviti() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 }
