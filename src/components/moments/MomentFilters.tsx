@@ -74,27 +74,34 @@ const moods = [
 ];
 
 export function MomentFilters({
-  selectedCategory,
-  onCategoryChange,
-  selectedSubcategories,
-  onSubcategoriesChange,
-  ageRange,
-  onAgeRangeChange,
-  maxDistance,
-  onMaxDistanceChange,
-  selectedMood,
-  onMoodChange
+  selectedCategory = null,
+  onCategoryChange = () => {},
+  selectedSubcategories = [],
+  onSubcategoriesChange = () => {},
+  ageRange = [18, 65],
+  onAgeRangeChange = () => {},
+  maxDistance = 50,
+  onMaxDistanceChange = () => {},
+  selectedMood = null,
+  onMoodChange = () => {},
+  onFiltersChange,
+  currentFilters
 }: MomentFiltersProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [subcategorySearch, setSubcategorySearch] = useState("");
 
+  // Safe defaults to prevent undefined access
+  const safeAgeRange = ageRange || [18, 65];
+  const safeMaxDistance = maxDistance || 50;
+  const safeSelectedSubcategories = selectedSubcategories || [];
+
   const activeFiltersCount = [
     selectedCategory,
-    selectedSubcategories?.length > 0,
+    safeSelectedSubcategories.length > 0,
     selectedMood,
-    ageRange[0] > 18 || ageRange[1] < 65,
-    maxDistance < 50
+    safeAgeRange[0] > 18 || safeAgeRange[1] < 65,
+    safeMaxDistance < 50
   ].filter(Boolean).length;
 
   const selectedMainCategory = mainCategories.find(cat => cat.id === selectedCategory);
@@ -104,11 +111,9 @@ export function MomentFilters({
   );
 
   const handleSubcategoryToggle = (subcategory: string) => {
-    if (!selectedSubcategories) return;
-    
-    const updatedSubcategories = selectedSubcategories.includes(subcategory)
-      ? selectedSubcategories.filter(s => s !== subcategory)
-      : [...selectedSubcategories, subcategory];
+    const updatedSubcategories = safeSelectedSubcategories.includes(subcategory)
+      ? safeSelectedSubcategories.filter(s => s !== subcategory)
+      : [...safeSelectedSubcategories, subcategory];
     onSubcategoriesChange(updatedSubcategories);
   };
 
@@ -118,8 +123,8 @@ export function MomentFilters({
       <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
         <button
           onClick={() => {
-            onCategoryChange(null);
-            onSubcategoriesChange([]);
+            onCategoryChange?.(null);
+            onSubcategoriesChange?.([]);
           }}
           className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
             !selectedCategory 
@@ -135,11 +140,11 @@ export function MomentFilters({
             key={category.id}
             onClick={() => {
               if (selectedCategory === category.id) {
-                onCategoryChange(null);
-                onSubcategoriesChange([]);
+                onCategoryChange?.(null);
+                onSubcategoriesChange?.([]);
               } else {
-                onCategoryChange(category.id);
-                onSubcategoriesChange([]);
+                onCategoryChange?.(category.id);
+                onSubcategoriesChange?.([]);
                 setCategorySheetOpen(true);
               }
             }}
@@ -183,7 +188,7 @@ export function MomentFilters({
                   onClick={() => handleSubcategoryToggle(subcategory)}
                 >
                   <Checkbox
-                    checked={selectedSubcategories?.includes(subcategory) || false}
+                    checked={safeSelectedSubcategories.includes(subcategory)}
                     onChange={() => handleSubcategoryToggle(subcategory)}
                   />
                   <label className="flex-1 cursor-pointer text-sm font-medium">
@@ -197,7 +202,7 @@ export function MomentFilters({
               className="w-full"
               onClick={() => setCategorySheetOpen(false)}
             >
-              Conferma ({selectedSubcategories?.length || 0} selezionate)
+              Conferma ({safeSelectedSubcategories.length} selezionate)
             </Button>
           </div>
         </SheetContent>
@@ -231,16 +236,16 @@ export function MomentFilters({
                 <label className="text-sm font-medium">Fascia d'età</label>
                 <div className="px-2">
                   <Slider
-                    value={ageRange}
-                    onValueChange={(value) => onAgeRangeChange(value as [number, number])}
+                    value={safeAgeRange}
+                    onValueChange={(value) => onAgeRangeChange?.(value as [number, number])}
                     min={18}
                     max={65}
                     step={1}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>{ageRange[0]} anni</span>
-                    <span>{ageRange[1]} anni</span>
+                    <span>{safeAgeRange[0]} anni</span>
+                    <span>{safeAgeRange[1]} anni</span>
                   </div>
                 </div>
               </div>
@@ -253,15 +258,15 @@ export function MomentFilters({
                 </label>
                 <div className="px-2">
                   <Slider
-                    value={[maxDistance]}
-                    onValueChange={(value) => onMaxDistanceChange(value[0])}
+                    value={[safeMaxDistance]}
+                    onValueChange={(value) => onMaxDistanceChange?.(value[0])}
                     min={1}
                     max={50}
                     step={1}
                     className="w-full"
                   />
                   <div className="text-center text-xs text-muted-foreground mt-1">
-                    {maxDistance} km
+                    {safeMaxDistance} km
                   </div>
                 </div>
               </div>
@@ -269,7 +274,7 @@ export function MomentFilters({
               {/* Mood */}
               <div className="space-y-3">
                 <label className="text-sm font-medium">Mood</label>
-                <Select value={selectedMood || "tutti"} onValueChange={(value) => onMoodChange(value === "tutti" ? null : value)}>
+                <Select value={selectedMood || "tutti"} onValueChange={(value) => onMoodChange?.(value === "tutti" ? null : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona un mood" />
                   </SelectTrigger>
@@ -289,10 +294,10 @@ export function MomentFilters({
                 variant="outline" 
                 className="w-full"
                 onClick={() => {
-                  onCategoryChange(null);
-                  onAgeRangeChange([18, 65]);
-                  onMaxDistanceChange(50);
-                  onMoodChange(null);
+                  onCategoryChange?.(null);
+                  onAgeRangeChange?.([18, 65]);
+                  onMaxDistanceChange?.(50);
+                  onMoodChange?.(null);
                   setIsSheetOpen(false);
                 }}
               >
@@ -303,36 +308,36 @@ export function MomentFilters({
         </Sheet>
 
         {/* Active filters display */}
-        {(selectedMood || ageRange[0] > 18 || ageRange[1] < 65 || maxDistance < 50) && (
+        {(selectedMood || safeAgeRange[0] > 18 || safeAgeRange[1] < 65 || safeMaxDistance < 50) && (
           <div className="flex gap-2 flex-wrap">
             {selectedMood && (
               <Badge variant="minimal" className="text-xs">
                 {selectedMood}
                 <button 
-                  onClick={() => onMoodChange(null)}
+                  onClick={() => onMoodChange?.(null)}
                   className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
                 </button>
               </Badge>
             )}
-            {(ageRange[0] > 18 || ageRange[1] < 65) && (
+            {(safeAgeRange[0] > 18 || safeAgeRange[1] < 65) && (
               <Badge variant="minimal" className="text-xs">
-                {ageRange[0]}-{ageRange[1]} anni
+                {safeAgeRange[0]}-{safeAgeRange[1]} anni
                 <button 
-                  onClick={() => onAgeRangeChange([18, 65])}
+                  onClick={() => onAgeRangeChange?.([18, 65])}
                   className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
                 </button>
               </Badge>
             )}
-            {maxDistance < 50 && (
+            {safeMaxDistance < 50 && (
               <Badge variant="minimal" className="text-xs">
                 <MapPin className="h-3 w-3 mr-1" strokeWidth={1.5} />
-                {maxDistance}km
+                {safeMaxDistance}km
                 <button 
-                  onClick={() => onMaxDistanceChange(50)}
+                  onClick={() => onMaxDistanceChange?.(50)}
                   className="ml-2 hover:text-destructive font-medium"
                 >
                   ×
