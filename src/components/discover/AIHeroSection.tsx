@@ -39,10 +39,10 @@ export function AIHeroSection({
       <div className="relative z-10 w-full max-w-2xl text-center space-y-8">
         {/* Main Title */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent leading-tight md:text-2xl">
+          <h1 className="font-bold bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent leading-tight md:text-2xl text-2xl">
             Cosa vorresti vivere?
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed md:text-sm">Trova persone affini a te, esperienze e location uniche ogni volta che vuoi.</p>
+          <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed md:text-sm text-sm">Trova persone affini a te, esperienze e location uniche ogni volta che vuoi.</p>
         </div>
 
         {/* AI Chat Bar */}
