@@ -41,9 +41,26 @@ const Index = () => {
     loadMoments({}, true);
   }, []);
 
-  // Handle filter changes
+  // Handle filter changes with proper state
+  const [filterState, setFilterState] = useState({
+    category: null,
+    subcategories: [],
+    mood: null,
+    ageRange: [18, 65] as [number, number],
+    maxDistance: 50
+  });
+
   const handleFilterChange = (newFilters: any) => {
-    applyFilters(newFilters);
+    const filters = {
+      category: newFilters.category,
+      subcategories: newFilters.subcategories,
+      mood: newFilters.mood,
+      ageMin: newFilters.ageRange?.[0],
+      ageMax: newFilters.ageRange?.[1],
+      maxDistance: newFilters.maxDistance,
+      tags: newFilters.subcategories
+    };
+    applyFilters(filters);
   };
 
   return (
@@ -57,8 +74,36 @@ const Index = () => {
       <LocationPermissionCard />
       
       <MomentFilters
-        onFiltersChange={handleFilterChange}
-        currentFilters={filters}
+        selectedCategory={filterState.category}
+        onCategoryChange={(category) => {
+          const newState = { ...filterState, category, subcategories: [] };
+          setFilterState(newState);
+          handleFilterChange(newState);
+        }}
+        selectedSubcategories={filterState.subcategories}
+        onSubcategoriesChange={(subcategories) => {
+          const newState = { ...filterState, subcategories };
+          setFilterState(newState);
+          handleFilterChange(newState);
+        }}
+        ageRange={filterState.ageRange}
+        onAgeRangeChange={(ageRange) => {
+          const newState = { ...filterState, ageRange };
+          setFilterState(newState);
+          handleFilterChange(newState);
+        }}
+        maxDistance={filterState.maxDistance}
+        onMaxDistanceChange={(maxDistance) => {
+          const newState = { ...filterState, maxDistance };
+          setFilterState(newState);
+          handleFilterChange(newState);
+        }}
+        selectedMood={filterState.mood}
+        onMoodChange={(mood) => {
+          const newState = { ...filterState, mood };
+          setFilterState(newState);
+          handleFilterChange(newState);
+        }}
       />
 
       {/* View Toggle */}

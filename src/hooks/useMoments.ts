@@ -40,6 +40,7 @@ export interface Moment {
 
 export interface MomentsFilters {
   category?: string;
+  subcategories?: string[];
   mood?: string;
   ageMin?: number;
   ageMax?: number;
@@ -74,14 +75,7 @@ export function useMoments() {
     try {
       let query = supabase
         .from('moments')
-        .select(`
-          *,
-          host:profiles (
-            id,
-            name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
@@ -109,9 +103,31 @@ export function useMoments() {
         query = query.overlaps('tags', currentFilters.tags);
       }
 
+      if (currentFilters.subcategories && currentFilters.subcategories.length > 0) {
+        query = query.overlaps('tags', currentFilters.subcategories);
+      }
+
       const { data, error } = await query;
 
       if (error) throw error;
+
+      // Get host data for all moments
+      const momentIds = data?.map(m => m.host_id).filter(Boolean) || [];
+      let hostData: any = {};
+      
+      if (momentIds.length > 0) {
+        const { data: hosts } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url')
+          .in('id', momentIds);
+        
+        if (hosts) {
+          hostData = hosts.reduce((acc: any, host: any) => {
+            acc[host.id] = host;
+            return acc;
+          }, {});
+        }
+      }
 
       let processedMoments = (data || []).map(moment => {
         // Cast place to proper type and ensure it has required properties
@@ -125,19 +141,8 @@ export function useMoments() {
             }
           : undefined;
 
-        // Handle host data safely
-        let host: any = undefined;
-        try {
-          const hostObj = moment.host;
-          if (hostObj && typeof hostObj === 'object' && !Array.isArray(hostObj)) {
-            const hostRecord = hostObj as Record<string, any>;
-            if ('id' in hostRecord && !('error' in hostRecord)) {
-              host = hostRecord;
-            }
-          }
-        } catch (e) {
-          // Host data is invalid, keep undefined
-        }
+        // Get host data from separate query
+        const host = hostData[moment.host_id] || undefined;
 
         return {
           ...moment,
@@ -216,14 +221,7 @@ export function useMoments() {
     try {
       const { data, error } = await supabase
         .from('moments')
-        .select(`
-          *,
-          host:profiles (
-            id,
-            name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .or(`host_id.eq.${user.id},participants.cs.{${user.id}}`)
         .order('created_at', { ascending: false });
 
@@ -244,7 +242,7 @@ export function useMoments() {
         return {
           ...moment,
           place: validPlace,
-          host: moment.host || undefined,
+          host: undefined, // Will be populated separately if needed
           participant_count: moment.participants?.length || 0
         };
       }) as unknown as Moment[];
