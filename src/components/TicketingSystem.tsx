@@ -7,7 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Euro, Ticket, CreditCard, Users } from "lucide-react";
-
 interface TicketingData {
   enabled: boolean;
   price: number;
@@ -16,30 +15,39 @@ interface TicketingData {
   ticketType: "standard" | "vip" | "early_bird";
   description?: string;
 }
-
 interface TicketingSystemProps {
   data: TicketingData;
   onChange: (data: TicketingData) => void;
   maxParticipants?: number;
 }
-
-export const TicketingSystem = ({ data, onChange, maxParticipants }: TicketingSystemProps) => {
+export const TicketingSystem = ({
+  data,
+  onChange,
+  maxParticipants
+}: TicketingSystemProps) => {
   const [localData, setLocalData] = useState<TicketingData>(data);
-
   const updateData = (updates: Partial<TicketingData>) => {
-    const newData = { ...localData, ...updates };
+    const newData = {
+      ...localData,
+      ...updates
+    };
     setLocalData(newData);
     onChange(newData);
   };
-
-  const ticketTypes = [
-    { value: "standard", label: "Standard", icon: Ticket },
-    { value: "vip", label: "VIP", icon: CreditCard },
-    { value: "early_bird", label: "Early Bird", icon: Users }
-  ];
-
-  return (
-    <Card>
+  const ticketTypes = [{
+    value: "standard",
+    label: "Standard",
+    icon: Ticket
+  }, {
+    value: "vip",
+    label: "VIP",
+    icon: CreditCard
+  }, {
+    value: "early_bird",
+    label: "Early Bird",
+    icon: Users
+  }];
+  return <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Euro className="h-5 w-5" />
@@ -55,39 +63,29 @@ export const TicketingSystem = ({ data, onChange, maxParticipants }: TicketingSy
               Imposta un prezzo per la partecipazione
             </p>
           </div>
-          <Switch
-            checked={localData.enabled}
-            onCheckedChange={(enabled) => updateData({ enabled })}
-          />
+          <Switch checked={localData.enabled} onCheckedChange={enabled => updateData({
+          enabled
+        })} />
         </div>
 
-        {localData.enabled && (
-          <div className="space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
+        {localData.enabled && <div className="space-y-4 mt-4 p-4 bg-muted/50 rounded-lg">
             {/* Price input */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="price">Prezzo</Label>
                 <div className="relative">
                   <Euro className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={localData.price || ""}
-                    onChange={(e) => updateData({ price: parseFloat(e.target.value) || 0 })}
-                    className="pl-10"
-                    placeholder="0.00"
-                  />
+                  <Input id="price" type="number" min="0" step="0.01" value={localData.price || ""} onChange={e => updateData({
+                price: parseFloat(e.target.value) || 0
+              })} className="pl-10" placeholder="0.00" />
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="currency">Valuta</Label>
-                <Select 
-                  value={localData.currency} 
-                  onValueChange={(currency) => updateData({ currency })}
-                >
+                <Select value={localData.currency} onValueChange={currency => updateData({
+              currency
+            })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -101,50 +99,22 @@ export const TicketingSystem = ({ data, onChange, maxParticipants }: TicketingSy
             </div>
 
             {/* Ticket type */}
-            <div>
-              <Label className="text-sm font-medium">Tipo di biglietto</Label>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                {ticketTypes.map((type) => {
-                  const Icon = type.icon;
-                  return (
-                    <Button
-                      key={type.value}
-                      variant={localData.ticketType === type.value ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => updateData({ ticketType: type.value as any })}
-                      className="h-auto py-3 flex flex-col gap-1"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="text-xs">{type.label}</span>
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
+            
 
             {/* Max tickets */}
             <div>
               <Label htmlFor="maxTickets">Biglietti disponibili</Label>
-              <Input
-                id="maxTickets"
-                type="number"
-                min="1"
-                max={maxParticipants || undefined}
-                value={localData.maxTickets || ""}
-                onChange={(e) => updateData({ maxTickets: parseInt(e.target.value) || undefined })}
-                placeholder={`Max ${maxParticipants || "illimitati"}`}
-              />
+              <Input id="maxTickets" type="number" min="1" max={maxParticipants || undefined} value={localData.maxTickets || ""} onChange={e => updateData({
+            maxTickets: parseInt(e.target.value) || undefined
+          })} placeholder={`Max ${maxParticipants || "illimitati"}`} />
             </div>
 
             {/* Description */}
             <div>
               <Label htmlFor="ticketDescription">Descrizione biglietto</Label>
-              <Input
-                id="ticketDescription"
-                value={localData.description || ""}
-                onChange={(e) => updateData({ description: e.target.value })}
-                placeholder="Incluso nel prezzo..."
-              />
+              <Input id="ticketDescription" value={localData.description || ""} onChange={e => updateData({
+            description: e.target.value
+          })} placeholder="Incluso nel prezzo..." />
             </div>
 
             {/* Preview */}
@@ -157,18 +127,14 @@ export const TicketingSystem = ({ data, onChange, maxParticipants }: TicketingSy
                   <p className="font-semibold">
                     {localData.price} {localData.currency}
                   </p>
-                  {localData.description && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                  {localData.description && <p className="text-xs text-muted-foreground mt-1">
                       {localData.description}
-                    </p>
-                  )}
+                    </p>}
                 </div>
                 <Ticket className="h-6 w-6 text-primary" />
               </div>
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
