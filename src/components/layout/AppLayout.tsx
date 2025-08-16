@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GuestBanner } from "@/components/auth/GuestBanner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
+import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 const Header = ({
   onOpenSearch
 }: {
@@ -77,6 +78,7 @@ export default function AppLayout() {
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
       <Header onOpenSearch={() => setSearchOpen(true)} />
       {!isAuthenticated && <GuestBanner />}
+      <UnconfirmedUserBanner />
       <main className="flex-1 px-4 pb-24 pt-3 animate-fade-in">
         <Outlet />
       </main>

@@ -88,15 +88,14 @@ export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment
       const { error } = await signUp(email, password);
       if (error) {
         if (error.includes('User already registered')) {
-          toast.error('Utente già registrato. Prova ad accedere.');
+          toast.error('Questo email è già registrato. Prova ad accedere.');
         } else {
           toast.error(error);
         }
       } else {
-        toast.success('Account creato! Puoi ora accedere');
-        setStep('email-login');
-        setPassword('');
-        setConfirmPassword('');
+        toast.success('Account creato! Accesso in corso...');
+        onOpenChange(false);
+        resetForm();
       }
     } catch (error) {
       toast.error('Errore durante la registrazione');

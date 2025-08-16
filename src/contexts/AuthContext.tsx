@@ -165,15 +165,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl,
-        },
       });
-      return { error: error?.message };
+      
+      // Gestisce errori specifici per migliorare UX
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          return { error: 'Questo email è già registrato. Prova ad accedere.' };
+        }
+        if (error.message.includes('Error sending confirmation email')) {
+          // Ignora errore di invio email ma permetti registrazione
+          return { error: null };
+        }
+        return { error: error.message };
+      }
+      
+      return { error: null };
     } catch (error: any) {
       return { error: error.message };
     }
