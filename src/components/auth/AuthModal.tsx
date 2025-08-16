@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, Smartphone, Apple, Link, Hash } from 'lucide-react';
+import { Mail, Lock, Apple, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -14,15 +15,17 @@ interface AuthModalProps {
   description?: string;
 }
 
-type AuthStep = 'providers' | 'otp-input' | 'otp-verify' | 'email-options';
+type AuthStep = 'mode-selection' | 'login' | 'signup' | 'forgot-password';
 
-export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", description = "Scegli come vuoi accedere" }: AuthModalProps) {
-  const { signInWithGoogle, signInWithApple, signInWithOtp, signInWithEmailOtp, verifyOtp } = useAuth();
-  const [step, setStep] = useState<AuthStep>('providers');
-  const [identifier, setIdentifier] = useState('');
-  const [otpCode, setOtpCode] = useState('');
+export function AuthModal({ open, onOpenChange, title = "Benvenuto in LiveMoment", description = "Accedi al tuo account o creane uno nuovo" }: AuthModalProps) {
+  const { signInWithGoogle, signInWithApple, signUp, signIn, resetPassword } = useAuth();
+  const [step, setStep] = useState<AuthStep>('mode-selection');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [authType, setAuthType] = useState<'magic-link' | 'otp-code'>('magic-link');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -48,104 +51,104 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
     }
   };
 
-  const handleOtpRequest = async () => {
-    if (!identifier.trim()) {
-      toast.error('Inserisci email o numero di telefono');
-      return;
-    }
-
-    // Check if it's an email to show options
-    const isEmail = identifier.includes('@');
-    if (isEmail && step !== 'email-options') {
-      setStep('email-options');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      toast.error('Inserisci email e password');
       return;
     }
 
     setIsLoading(true);
     try {
-      let result;
-      if (isEmail && authType === 'otp-code') {
-        result = await signInWithEmailOtp(identifier);
-      } else {
-        result = await signInWithOtp(identifier);
-      }
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        setStep('otp-verify');
-        if (isEmail && authType === 'magic-link') {
-          toast.success('Link magico inviato! Controlla la tua email');
-        } else {
-          toast.success('Codice inviato! Controlla i tuoi messaggi');
-        }
-      }
-    } catch (error) {
-      toast.error('Errore durante l\'invio');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEmailOption = async (type: 'magic-link' | 'otp-code') => {
-    setAuthType(type);
-    setIsLoading(true);
-    try {
-      let result;
-      if (type === 'otp-code') {
-        result = await signInWithEmailOtp(identifier);
-      } else {
-        result = await signInWithOtp(identifier);
-      }
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        if (type === 'magic-link') {
-          toast.success('Link magico inviato! Controlla la tua email');
-          onOpenChange(false);
-          resetForm();
-        } else {
-          setStep('otp-verify');
-          toast.success('Codice a 6 cifre inviato! Controlla la tua email');
-        }
-      }
-    } catch (error) {
-      toast.error('Errore durante l\'invio');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOtpVerify = async () => {
-    if (!otpCode.trim()) {
-      toast.error('Inserisci il codice ricevuto');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { error } = await verifyOtp(identifier, otpCode);
+      const { error } = await signIn(email, password);
       if (error) {
-        toast.error(error);
+        if (error.includes('Invalid login credentials')) {
+          toast.error('Email o password non corretti');
+        } else {
+          toast.error(error);
+        }
       } else {
         toast.success('Accesso effettuato!');
         onOpenChange(false);
         resetForm();
       }
     } catch (error) {
-      toast.error('Codice non valido');
+      toast.error('Errore durante l\'accesso');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+      toast.error('Compila tutti i campi');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error('Le password non coincidono');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('La password deve essere di almeno 6 caratteri');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await signUp(email, password);
+      if (error) {
+        if (error.includes('User already registered')) {
+          toast.error('Utente già registrato. Prova ad accedere.');
+        } else {
+          toast.error(error);
+        }
+      } else {
+        toast.success('Account creato! Puoi ora accedere');
+        setStep('login');
+        setPassword('');
+        setConfirmPassword('');
+      }
+    } catch (error) {
+      toast.error('Errore durante la registrazione');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error('Inserisci la tua email');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await resetPassword(email);
+      if (error) {
+        toast.error(error);
+      } else {
+        toast.success('Link per il reset password inviato alla tua email');
+        setStep('login');
+      }
+    } catch (error) {
+      toast.error('Errore durante l\'invio dell\'email');
     } finally {
       setIsLoading(false);
     }
   };
 
   const resetForm = () => {
-    setStep('providers');
-    setIdentifier('');
-    setOtpCode('');
+    setStep('mode-selection');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
     setIsLoading(false);
-    setAuthType('magic-link');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const handleClose = (open: boolean) => {
@@ -166,7 +169,7 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {step === 'providers' && (
+          {step === 'mode-selection' && (
             <>
               {/* Social Auth Options */}
               <div className="space-y-3">
@@ -202,136 +205,238 @@ export function AuthModal({ open, onOpenChange, title = "Accedi a LiveMoment", d
                 </div>
               </div>
 
-              {/* Email/Phone Input */}
+              {/* Email/Password Options */}
               <div className="space-y-3">
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Email, telefono o @username"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    className="h-12 pr-12"
-                    onKeyDown={(e) => e.key === 'Enter' && handleOtpRequest()}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {identifier.includes('@') ? (
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                    ) : identifier.match(/^\+?\d/) ? (
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Smartphone className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-
                 <Button
-                  onClick={handleOtpRequest}
-                  disabled={isLoading || !identifier.trim()}
+                  onClick={() => setStep('login')}
+                  variant="outline"
                   className="w-full h-12"
                 >
-                  {isLoading ? 'Invio...' : identifier.includes('@') ? 'Continua' : 'Invia codice'}
+                  <Mail className="w-4 h-4 mr-2" />
+                  Accedi con Email
+                </Button>
+
+                <Button
+                  onClick={() => setStep('signup')}
+                  className="w-full h-12"
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  Crea Account
                 </Button>
               </div>
             </>
           )}
 
-          {step === 'email-options' && (
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center space-y-2">
-                    <div className="font-medium">Come vuoi ricevere l'accesso?</div>
-                    <div className="text-sm text-muted-foreground">
-                      Scegli il metodo che preferisci per {identifier}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {step === 'login' && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="la-tua-email@esempio.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="La tua password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12"
+              >
+                {isLoading ? 'Accesso in corso...' : 'Accedi'}
+              </Button>
+
+              <div className="flex flex-col space-y-2">
                 <Button
-                  onClick={() => handleEmailOption('magic-link')}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="w-full h-14 flex items-center justify-start px-4 space-x-3"
+                  type="button"
+                  variant="link"
+                  onClick={() => setStep('forgot-password')}
+                  className="text-sm"
                 >
-                  <Link className="h-5 w-5 text-primary" />
-                  <div className="text-left">
-                    <div className="font-medium">Link magico</div>
-                    <div className="text-sm text-muted-foreground">Accedi con un click dalla tua email</div>
-                  </div>
+                  Password dimenticata?
                 </Button>
-
+                
                 <Button
-                  onClick={() => handleEmailOption('otp-code')}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="w-full h-14 flex items-center justify-start px-4 space-x-3"
-                >
-                  <Hash className="h-5 w-5 text-primary" />
-                  <div className="text-left">
-                    <div className="font-medium">Codice a 6 cifre</div>
-                    <div className="text-sm text-muted-foreground">Inserisci il codice ricevuto via email</div>
-                  </div>
-                </Button>
-
-                <Button
+                  type="button"
                   variant="ghost"
-                  onClick={() => setStep('providers')}
+                  onClick={() => setStep('mode-selection')}
                   className="w-full"
                 >
                   ← Torna indietro
                 </Button>
               </div>
-            </div>
+            </form>
           )}
 
-          {step === 'otp-verify' && (
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center space-y-2">
-                    <div className="font-medium">
-                      {authType === 'otp-code' ? 'Codice a 6 cifre inviato' : 'Codice inviato'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Controlla {identifier.includes('@') ? 'la tua email' : 'i tuoi messaggi'}
-                    </div>
-                    <div className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                      {identifier}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="space-y-3">
+          {step === 'signup' && (
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signup-email">Email</Label>
                 <Input
-                  type="text"
-                  placeholder="Inserisci il codice a 6 cifre"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="h-12 text-center text-lg tracking-widest font-mono"
-                  maxLength={6}
-                  onKeyDown={(e) => e.key === 'Enter' && handleOtpVerify()}
+                  id="signup-email"
+                  type="email"
+                  placeholder="la-tua-email@esempio.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
+              </div>
 
-                <Button
-                  onClick={handleOtpVerify}
-                  disabled={isLoading || otpCode.length !== 6}
-                  className="w-full h-12"
-                >
-                  {isLoading ? 'Verifico...' : 'Verifica e accedi'}
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="signup-password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Minimo 6 caratteri"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Conferma Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Ripeti la password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12"
+              >
+                {isLoading ? 'Creazione account...' : 'Crea Account'}
+              </Button>
+
+              <div className="flex flex-col space-y-2">
+                <p className="text-sm text-center text-muted-foreground">
+                  Hai già un account?{' '}
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setStep('login')}
+                    className="p-0 h-auto font-medium"
+                  >
+                    Accedi qui
+                  </Button>
+                </p>
+                
                 <Button
+                  type="button"
                   variant="ghost"
-                  onClick={() => setStep('providers')}
+                  onClick={() => setStep('mode-selection')}
                   className="w-full"
                 >
                   ← Torna indietro
                 </Button>
               </div>
-            </div>
+            </form>
+          )}
+
+          {step === 'forgot-password' && (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="text-center space-y-2">
+                <h3 className="font-medium">Recupera la tua password</h3>
+                <p className="text-sm text-muted-foreground">
+                  Inserisci la tua email e ti invieremo un link per reimpostare la password
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="la-tua-email@esempio.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12"
+              >
+                {isLoading ? 'Invio...' : 'Invia Link di Reset'}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setStep('login')}
+                className="w-full"
+              >
+                ← Torna al login
+              </Button>
+            </form>
           )}
         </div>
 

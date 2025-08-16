@@ -11,6 +11,9 @@ interface AuthContextType {
   signInWithOtp: (identifier: string) => Promise<{ error?: string }>;
   signInWithEmailOtp: (email: string) => Promise<{ error?: string }>;
   verifyOtp: (identifier: string, token: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string) => Promise<{ error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  resetPassword: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -160,6 +163,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signUp = async (email: string, password: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+      return { error: error?.message };
+    } catch (error: any) {
+      return { error: error.message };
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error: error?.message };
+    } catch (error: any) {
+      return { error: error.message };
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      return { error: error?.message };
+    } catch (error: any) {
+      return { error: error.message };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -173,6 +215,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithOtp,
     signInWithEmailOtp,
     verifyOtp,
+    signUp,
+    signIn,
+    resetPassword,
     signOut,
     isAuthenticated: !!user,
   };
