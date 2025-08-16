@@ -209,7 +209,7 @@ export default function CreaMomento() {
         title: "Momento creato!",
         description: "Il tuo momento è stato pubblicato con successo"
       });
-      navigate("/momenti-eventi");
+      navigate("/");
     } catch (error) {
       console.error('Error creating moment:', error);
       toast({

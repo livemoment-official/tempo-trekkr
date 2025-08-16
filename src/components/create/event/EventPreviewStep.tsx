@@ -93,7 +93,7 @@ export default function EventPreviewStep({
         description: "Il tuo evento è stato pubblicato con successo"
       });
 
-      window.location.href = "/momenti-eventi";
+      window.location.href = "/momenti";
     } catch (error) {
       console.error('Publish error:', error);
       toast({
