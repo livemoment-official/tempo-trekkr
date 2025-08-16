@@ -208,36 +208,48 @@ export type Database = {
       }
       invites: {
         Row: {
+          can_be_public: boolean | null
           created_at: string
           description: string | null
           host_id: string
           id: string
+          invite_count: number | null
+          location_radius: number | null
           participants: string[] | null
           place: Json | null
+          response_message: string | null
           status: string
           title: string
           updated_at: string
           when_at: string | null
         }
         Insert: {
+          can_be_public?: boolean | null
           created_at?: string
           description?: string | null
           host_id: string
           id?: string
+          invite_count?: number | null
+          location_radius?: number | null
           participants?: string[] | null
           place?: Json | null
+          response_message?: string | null
           status?: string
           title: string
           updated_at?: string
           when_at?: string | null
         }
         Update: {
+          can_be_public?: boolean | null
           created_at?: string
           description?: string | null
           host_id?: string
           id?: string
+          invite_count?: number | null
+          location_radius?: number | null
           participants?: string[] | null
           place?: Json | null
+          response_message?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -544,9 +556,36 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      count_user_invites_today: {
+        Args: { inviter_id?: string; target_user_id: string }
+        Returns: number
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_nearby_available_users: {
+        Args: {
+          radius_km?: number
+          target_time?: string
+          user_lat: number
+          user_lng: number
+        }
+        Returns: {
+          availability_id: string
+          avatar_url: string
+          distance_km: number
+          interests: string[]
+          job_title: string
+          mood: string
+          name: string
+          user_id: string
+          username: string
+        }[]
       }
       has_role: {
         Args: {

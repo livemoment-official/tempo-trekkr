@@ -1,33 +1,52 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-const InviteCard = ({
-  title,
-  from,
-  when
-}: {
-  title: string;
-  from: string;
-  when: string;
-}) => <Card className="shadow-sm">
-    <CardHeader className="pb-2">
-      <CardTitle className="text-base">{title}</CardTitle>
-    </CardHeader>
-    <CardContent className="text-sm text-muted-foreground">
-      Da {from} · {when}
-    </CardContent>
-    <CardFooter className="gap-2">
-      <Button size="sm">Accetta</Button>
-      <Button variant="secondary" size="sm">Proponi orario</Button>
-      <Button variant="outline" size="sm">Rifiuta</Button>
-    </CardFooter>
-  </Card>;
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Search, Users } from "lucide-react";
+import { useMyInvites } from "@/hooks/useInvites";
+import { useNearbyUsers } from "@/hooks/useNearbyUsers";
+import InviteCard from "@/components/invites/InviteCard";
+import NearbyUserCard from "@/components/invites/NearbyUserCard";
 export default function Inviti() {
   const location = useLocation();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
+  
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [radiusKm, setRadiusKm] = useState(5);
+
+  const { data: inviteData, isLoading: invitesLoading } = useMyInvites();
+  const { data: nearbyUsers = [], isLoading: nearbyLoading } = useNearbyUsers(userLocation, radiusKm);
+
+  // Ottieni la posizione dell'utente
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    }
+  }, []);
+
+  // Filtra utenti vicini per ricerca
+  const filteredNearbyUsers = nearbyUsers.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.interests?.some(interest => 
+      interest.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -38,38 +57,110 @@ export default function Inviti() {
       <h1 className="text-lg font-semibold">Inviti</h1>
 
       <Tabs defaultValue="ricevuti">
-        <TabsList className="grid grid-cols-4">
+        <TabsList className="grid grid-cols-3">
           <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
           <TabsTrigger value="inviati">Inviati</TabsTrigger>
-          
           <TabsTrigger value="amici">Amici</TabsTrigger>
         </TabsList>
-        <TabsContent value="ricevuti" className="space-y-3">
-          <InviteCard title="Aperitivo live" from="Giorgia" when="Oggi 19:00" />
-          <InviteCard title="Open mic" from="Luca" when="Domani 20:00" />
+        
+        <TabsContent value="ricevuti" className="space-y-4">
+          {invitesLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Caricamento inviti...</p>
+            </div>
+          ) : inviteData?.received.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nessun invito ricevuto</p>
+            </div>
+          ) : (
+            inviteData?.received.map((invite) => (
+              <InviteCard key={invite.id} invite={invite} type="received" />
+            ))
+          )}
         </TabsContent>
-        <TabsContent value="inviati" className="space-y-3">
-          <InviteCard title="Chill al parco" from="Tu → Marta" when="Oggi 18:30" />
+
+        <TabsContent value="inviati" className="space-y-4">
+          {invitesLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Caricamento inviti...</p>
+            </div>
+          ) : inviteData?.sent.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nessun invito inviato</p>
+            </div>
+          ) : (
+            inviteData?.sent.map((invite) => (
+              <InviteCard key={invite.id} invite={invite} type="sent" />
+            ))
+          )}
         </TabsContent>
-        <TabsContent value="attesa" className="space-y-3">
-          <Card className="shadow-sm">
-            <CardContent className="p-6 text-sm text-muted-foreground">
-              Nessun invito in attesa. Chiedi all'AI di crearne uno!
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="amici" className="space-y-3">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Trova amici</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Input placeholder="Cerca per nome o @username" aria-label="Cerca amici" />
-              <div className="text-sm text-muted-foreground">
-                Suggerimenti nelle vicinanze appariranno qui.
+
+        <TabsContent value="amici" className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 relative">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                <Input 
+                  placeholder="Cerca persone disponibili..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{radiusKm}km</span>
+              </div>
+            </div>
+
+            {!userLocation ? (
+              <div className="text-center py-8">
+                <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">Abilita la geolocalizzazione per trovare persone vicine</p>
+              </div>
+            ) : nearbyLoading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Cercando persone vicine...</p>
+              </div>
+            ) : filteredNearbyUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">
+                  {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
+                </p>
+                {searchQuery && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSearchQuery("")}
+                    className="mt-2"
+                  >
+                    Mostra tutti
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {filteredNearbyUsers.length} person{filteredNearbyUsers.length > 1 ? 'e' : 'a'} 
+                    {searchQuery && ' trovate'} disponibile{filteredNearbyUsers.length > 1 ? 'i' : ''}
+                  </p>
+                  {searchQuery && (
+                    <Badge variant="secondary" className="text-xs">
+                      {searchQuery}
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="grid gap-3">
+                  {filteredNearbyUsers.map((user) => (
+                    <NearbyUserCard key={user.user_id} user={user} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>;
