@@ -6,14 +6,15 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-
 interface InvitePreviewStepProps {
   data: any;
 }
-
-export default function InvitePreviewStep({ data }: InvitePreviewStepProps) {
-  const { toast } = useToast();
-
+export default function InvitePreviewStep({
+  data
+}: InvitePreviewStepProps) {
+  const {
+    toast
+  } = useToast();
   const handleSendInvites = async () => {
     try {
       toast({
@@ -29,9 +30,7 @@ export default function InvitePreviewStep({ data }: InvitePreviewStepProps) {
       });
     }
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold">Anteprima invito</h3>
         <p className="text-sm text-muted-foreground">
@@ -49,25 +48,21 @@ export default function InvitePreviewStep({ data }: InvitePreviewStepProps) {
             <Badge variant="secondary">{data.activity.category}</Badge>
           </div>
 
-          {data.date && (
-            <div className="flex items-center gap-2 mb-3">
+          {data.date && <div className="flex items-center gap-2 mb-3">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{format(data.date, "PPP", { locale: it })}</span>
-            </div>
-          )}
+              <span className="text-sm">{format(data.date, "PPP", {
+              locale: it
+            })}</span>
+            </div>}
 
-          {data.location.name && (
-            <div className="flex items-center gap-2 mb-4">
+          {data.location.name && <div className="flex items-center gap-2 mb-4">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{data.location.name}</span>
-            </div>
-          )}
+            </div>}
 
-          {data.message && (
-            <div className="bg-muted/50 p-3 rounded-lg mb-4">
+          {data.message && <div className="bg-muted/50 p-3 rounded-lg mb-4">
               <p className="text-sm">{data.message}</p>
-            </div>
-          )}
+            </div>}
 
           <div className="border-t pt-4">
             <div className="flex items-center gap-2 mb-3">
@@ -75,21 +70,16 @@ export default function InvitePreviewStep({ data }: InvitePreviewStepProps) {
               <span className="text-sm font-medium">Invitati ({data.selectedPeople.length})</span>
             </div>
             <div className="flex gap-2">
-              {data.selectedPeople.map((personId: string) => (
-                <Avatar key={personId} className="w-8 h-8">
+              {data.selectedPeople.map((personId: string) => <Avatar key={personId} className="w-8 h-8">
                   <AvatarFallback className="text-xs">P{personId}</AvatarFallback>
-                </Avatar>
-              ))}
+                </Avatar>)}
             </div>
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSendInvites} className="bg-primary">
-          Invia Inviti
-        </Button>
+        
       </div>
-    </div>
-  );
+    </div>;
 }
