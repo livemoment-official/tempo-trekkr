@@ -48,7 +48,7 @@ export function AIHeroSection({
         {/* AI Chat Bar */}
         <form onSubmit={handleSubmit} className="relative group">
           <div className="relative">
-            <Input value={input} onChange={e => setInput(e.target.value)} placeholder="Chiedi all'AI cosa fare o chi incontrare..." disabled={loading} className="h-14 pl-12 pr-20 text-lg bg-card/80 backdrop-blur-sm border-2 border-border/50 focus:border-primary/50 shadow-elevated transition-all duration-300 group-hover:shadow-brand/20 rounded-md" />
+            <Input value={input} onChange={e => setInput(e.target.value)} placeholder="Cosa potrei fare questo weekend a Milano?" disabled={loading} className="h-14 pl-12 pr-20 text-lg bg-card/80 backdrop-blur-sm border-2 border-border/50 focus:border-primary/50 shadow-elevated transition-all duration-300 group-hover:shadow-brand/20 rounded-md" />
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Button type="submit" size="sm" disabled={!input.trim() || loading} className="absolute right-2 top-1/2 -translate-y-1/2 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-brand">
               <Sparkles className="h-4 w-4 mr-1" />
