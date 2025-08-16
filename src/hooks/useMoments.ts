@@ -76,7 +76,7 @@ export function useMoments() {
         .from('moments')
         .select(`
           *,
-          host:profiles!moments_host_id_fkey (
+          host:profiles (
             id,
             name,
             avatar_url
@@ -218,7 +218,7 @@ export function useMoments() {
         .from('moments')
         .select(`
           *,
-          host:profiles!moments_host_id_fkey (
+          host:profiles (
             id,
             name,
             avatar_url

@@ -10,7 +10,8 @@ import { MapPin, Search, Users } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
-import NearbyUserCard from "@/components/invites/NearbyUserCard";
+import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
+import FriendsSearchFilters from "@/components/invites/FriendsSearchFilters";
 export default function Inviti() {
   const location = useLocation();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
@@ -18,6 +19,8 @@ export default function Inviti() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
+  const [selectedMood, setSelectedMood] = useState("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState("all");
 
   const { data: inviteData, isLoading: invitesLoading } = useMyInvites();
   const { data: nearbyUsers = [], isLoading: nearbyLoading } = useNearbyUsers(userLocation, radiusKm);
@@ -39,14 +42,27 @@ export default function Inviti() {
     }
   }, []);
 
-  // Filtra utenti vicini per ricerca
-  const filteredNearbyUsers = nearbyUsers.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.interests?.some(interest => 
-      interest.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+  // Filtra utenti vicini per ricerca e filtri
+  const filteredNearbyUsers = nearbyUsers.filter(user => {
+    // Filtro per testo
+    const matchesSearch = searchQuery === "" || 
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.interests?.some(interest => 
+        interest.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+    // Filtro per mood
+    const matchesMood = selectedMood === "all" || user.mood === selectedMood;
+    
+    // Filtro per distanza
+    const matchesDistance = user.distance_km <= radiusKm;
+    
+    // Filtro per disponibilità (per ora tutti sono disponibili, futura implementazione)
+    const matchesAvailability = availabilityFilter === "all"; // TODO: implementare logica disponibilità
+    
+    return matchesSearch && matchesMood && matchesDistance && matchesAvailability;
+  });
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -56,11 +72,11 @@ export default function Inviti() {
 
       <h1 className="text-lg font-semibold">Inviti</h1>
 
-      <Tabs defaultValue="ricevuti">
+      <Tabs defaultValue="amici">
         <TabsList className="grid grid-cols-3">
+          <TabsTrigger value="amici">Trova Amici</TabsTrigger>
           <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
           <TabsTrigger value="inviati">Inviati</TabsTrigger>
-          <TabsTrigger value="amici">Amici</TabsTrigger>
         </TabsList>
         
         <TabsContent value="ricevuti" className="space-y-4">
@@ -97,21 +113,16 @@ export default function Inviti() {
 
         <TabsContent value="amici" className="space-y-4">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 relative">
-                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
-                <Input 
-                  placeholder="Cerca persone disponibili..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{radiusKm}km</span>
-              </div>
-            </div>
+            <FriendsSearchFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedMood={selectedMood}
+              onMoodChange={setSelectedMood}
+              radiusKm={radiusKm}
+              onRadiusChange={setRadiusKm}
+              availabilityFilter={availabilityFilter}
+              onAvailabilityChange={setAvailabilityFilter}
+            />
 
             {!userLocation ? (
               <div className="text-center py-8">
@@ -153,9 +164,9 @@ export default function Inviti() {
                   )}
                 </div>
                 
-                <div className="grid gap-3">
+                <div className="grid gap-4">
                   {filteredNearbyUsers.map((user) => (
-                    <NearbyUserCard key={user.user_id} user={user} />
+                    <EnhancedNearbyUserCard key={user.user_id} user={user} />
                   ))}
                 </div>
               </>
