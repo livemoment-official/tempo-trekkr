@@ -10,59 +10,41 @@ import { MapPin, Search, Users } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
-import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
-import FriendsSearchFilters from "@/components/invites/FriendsSearchFilters";
+import NearbyUserCard from "@/components/invites/NearbyUserCard";
 export default function Inviti() {
   const location = useLocation();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
-  
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
-  const [selectedMood, setSelectedMood] = useState("all");
-  const [availabilityFilter, setAvailabilityFilter] = useState("all");
-
-  const { data: inviteData, isLoading: invitesLoading } = useMyInvites();
-  const { data: nearbyUsers = [], isLoading: nearbyLoading } = useNearbyUsers(userLocation, radiusKm);
+  const {
+    data: inviteData,
+    isLoading: invitesLoading
+  } = useMyInvites();
+  const {
+    data: nearbyUsers = [],
+    isLoading: nearbyLoading
+  } = useNearbyUsers(userLocation, radiusKm);
 
   // Ottieni la posizione dell'utente
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
+      navigator.geolocation.getCurrentPosition(position => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      }, error => {
+        console.error('Error getting location:', error);
+      });
     }
   }, []);
 
-  // Filtra utenti vicini per ricerca e filtri
-  const filteredNearbyUsers = nearbyUsers.filter(user => {
-    // Filtro per testo
-    const matchesSearch = searchQuery === "" || 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.interests?.some(interest => 
-        interest.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    
-    // Filtro per mood
-    const matchesMood = selectedMood === "all" || user.mood === selectedMood;
-    
-    // Filtro per distanza
-    const matchesDistance = user.distance_km <= radiusKm;
-    
-    // Filtro per disponibilità (per ora tutti sono disponibili, futura implementazione)
-    const matchesAvailability = availabilityFilter === "all"; // TODO: implementare logica disponibilità
-    
-    return matchesSearch && matchesMood && matchesDistance && matchesAvailability;
-  });
+  // Filtra utenti vicini per ricerca
+  const filteredNearbyUsers = nearbyUsers.filter(user => user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.username.toLowerCase().includes(searchQuery.toLowerCase()) || user.interests?.some(interest => interest.toLowerCase().includes(searchQuery.toLowerCase())));
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -72,105 +54,68 @@ export default function Inviti() {
 
       <h1 className="text-lg font-semibold">Inviti</h1>
 
-      <Tabs defaultValue="amici">
+      <Tabs defaultValue="ricevuti">
         <TabsList className="grid grid-cols-3">
-          <TabsTrigger value="amici">Trova Amici</TabsTrigger>
           <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
           <TabsTrigger value="inviati">Inviati</TabsTrigger>
+          <TabsTrigger value="amici">Amici</TabsTrigger>
         </TabsList>
         
         <TabsContent value="ricevuti" className="space-y-4">
-          {invitesLoading ? (
-            <div className="text-center py-8">
+          {invitesLoading ? <div className="text-center py-8">
               <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div>
-          ) : inviteData?.received.length === 0 ? (
-            <div className="text-center py-8">
+            </div> : inviteData?.received.length === 0 ? <div className="text-center py-8">
               <p className="text-muted-foreground">Nessun invito ricevuto</p>
-            </div>
-          ) : (
-            inviteData?.received.map((invite) => (
-              <InviteCard key={invite.id} invite={invite} type="received" />
-            ))
-          )}
+            </div> : inviteData?.received.map(invite => <InviteCard key={invite.id} invite={invite} type="received" />)}
         </TabsContent>
 
         <TabsContent value="inviati" className="space-y-4">
-          {invitesLoading ? (
-            <div className="text-center py-8">
+          {invitesLoading ? <div className="text-center py-8">
               <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div>
-          ) : inviteData?.sent.length === 0 ? (
-            <div className="text-center py-8">
+            </div> : inviteData?.sent.length === 0 ? <div className="text-center py-8">
               <p className="text-muted-foreground">Nessun invito inviato</p>
-            </div>
-          ) : (
-            inviteData?.sent.map((invite) => (
-              <InviteCard key={invite.id} invite={invite} type="sent" />
-            ))
-          )}
+            </div> : inviteData?.sent.map(invite => <InviteCard key={invite.id} invite={invite} type="sent" />)}
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-4">
           <div className="space-y-4">
-            <FriendsSearchFilters
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedMood={selectedMood}
-              onMoodChange={setSelectedMood}
-              radiusKm={radiusKm}
-              onRadiusChange={setRadiusKm}
-              availabilityFilter={availabilityFilter}
-              onAvailabilityChange={setAvailabilityFilter}
-            />
+            <div className="flex items-center gap-3">
+              <div className="flex-1 relative">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                <Input placeholder="Cerca persone disponibili..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" />
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{radiusKm}km</span>
+              </div>
+            </div>
 
-            {!userLocation ? (
-              <div className="text-center py-8">
+            {!userLocation ? <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">Abilita la geolocalizzazione per trovare persone vicine</p>
-              </div>
-            ) : nearbyLoading ? (
-              <div className="text-center py-8">
+              </div> : nearbyLoading ? <div className="text-center py-8">
                 <p className="text-muted-foreground">Cercando persone vicine...</p>
-              </div>
-            ) : filteredNearbyUsers.length === 0 ? (
-              <div className="text-center py-8">
+              </div> : filteredNearbyUsers.length === 0 ? <div className="text-center py-8">
                 <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">
-                  {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
-                </p>
-                {searchQuery && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setSearchQuery("")}
-                    className="mt-2"
-                  >
+                
+                {searchQuery && <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
                     Mostra tutti
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
+                  </Button>}
+              </div> : <>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     {filteredNearbyUsers.length} person{filteredNearbyUsers.length > 1 ? 'e' : 'a'} 
                     {searchQuery && ' trovate'} disponibile{filteredNearbyUsers.length > 1 ? 'i' : ''}
                   </p>
-                  {searchQuery && (
-                    <Badge variant="secondary" className="text-xs">
+                  {searchQuery && <Badge variant="secondary" className="text-xs">
                       {searchQuery}
-                    </Badge>
-                  )}
+                    </Badge>}
                 </div>
                 
-                <div className="grid gap-4">
-                  {filteredNearbyUsers.map((user) => (
-                    <EnhancedNearbyUserCard key={user.user_id} user={user} />
-                  ))}
+                <div className="grid gap-3">
+                  {filteredNearbyUsers.map(user => <NearbyUserCard key={user.user_id} user={user} />)}
                 </div>
-              </>
-            )}
+              </>}
           </div>
         </TabsContent>
       </Tabs>
