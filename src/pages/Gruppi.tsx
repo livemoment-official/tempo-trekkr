@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Plus, X, Users, MapPin } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
+import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
 
 // Province italiane
 const provincieItaliane = [
@@ -129,10 +130,12 @@ const GroupInfoModal = ({ trigger }: { trigger: React.ReactNode }) => {
                   </Button>
                 }
               >
-                <Button className="w-full mt-6 rounded-xl" size="lg">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Crea il Gruppo
-                </Button>
+                <CreateGroupModal>
+                  <Button className="w-full mt-6 rounded-xl" size="lg">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crea il Gruppo
+                  </Button>
+                </CreateGroupModal>
               </AuthGuard>
             </div>
           </DialogDescription>
@@ -270,6 +273,14 @@ export default function Gruppi() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showBanner, setShowBanner] = useState(() => {
+    return localStorage.getItem('gruppi-banner-dismissed') !== 'true';
+  });
+
+  const dismissBanner = () => {
+    setShowBanner(false);
+    localStorage.setItem('gruppi-banner-dismissed', 'true');
+  };
 
   const filteredProvince = provincieItaliane.filter(provincia =>
     provincia.toLowerCase().includes(searchQuery.toLowerCase())
@@ -289,13 +300,11 @@ export default function Gruppi() {
 
       <header className="flex items-center justify-between p-4 border-b">
         <h1 className="text-2xl font-bold">Chat</h1>
-        <GroupInfoModal 
-          trigger={
-            <Button size="icon" variant="outline" className="rounded-full">
-              <Plus className="h-5 w-5" />
-            </Button>
-          }
-        />
+        <CreateGroupModal>
+          <Button size="icon" variant="outline" className="rounded-full">
+            <Plus className="h-5 w-5" />
+          </Button>
+        </CreateGroupModal>
       </header>
 
       <div className="p-4">
@@ -323,26 +332,34 @@ export default function Gruppi() {
           </div>
 
           <TabsContent value="gruppi" className="space-y-4">
-            <GroupInfoModal 
-              trigger={
-                <Card className="bg-muted/50 border-2 border-dashed border-primary/30 cursor-pointer hover:bg-muted/70 transition-colors">
-                  <CardContent className="p-6 text-center">
-                    <h3 className="text-xl font-bold mb-2">Come Funzionano i Gruppi di Live Moment</h3>
-                    <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                      <li>• Puoi creare massimo 2 Gruppi.</li>
-                      <li>• Puoi partecipare in soli 5 gruppi contemporaneamente.</li>
-                      <li>• Ogni gruppo è Geo-localizzato.</li>
-                      <li>• Ogni gruppo ha un'Interesse specifico.</li>
-                      <li>• Nei gruppi inviti a Momenti persone con passioni specifiche.</li>
-                    </ul>
+            {showBanner && (
+              <Card className="bg-muted/50 border-2 border-dashed border-primary/30 relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 h-8 w-8 p-0"
+                  onClick={dismissBanner}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <CardContent className="p-6 text-center">
+                  <h3 className="text-xl font-bold mb-2">Come Funzionano i Gruppi di Live Moment</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                    <li>• Puoi creare massimo 2 Gruppi.</li>
+                    <li>• Puoi partecipare in soli 5 gruppi contemporaneamente.</li>
+                    <li>• Ogni gruppo è Geo-localizzato.</li>
+                    <li>• Ogni gruppo ha un'Interesse specifico.</li>
+                    <li>• Nei gruppi inviti a Momenti persone con passioni specifiche.</li>
+                  </ul>
+                  <CreateGroupModal>
                     <Button className="rounded-xl">
                       <Plus className="mr-2 h-4 w-4" />
                       Crea un Gruppo
                     </Button>
-                  </CardContent>
-                </Card>
-              }
-            />
+                  </CreateGroupModal>
+                </CardContent>
+              </Card>
+            )}
 
             {filteredGruppi.map((gruppo) => (
               <GroupCard key={gruppo.id} group={gruppo} type="user" />

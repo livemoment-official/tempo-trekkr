@@ -3,8 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle } from "lucide-react";
+import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ShareModal } from "@/components/shared/ShareModal";
+import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MomentCardProps {
   id: string;
@@ -31,6 +34,8 @@ interface MomentCardProps {
   onJoin?: () => void;
   onLeave?: () => void;
   tags?: string[];
+  isOwner?: boolean;
+  hostId?: string;
 }
 
 const reactionIcons = {
@@ -52,10 +57,15 @@ export function MomentCard({
   participants, 
   maxParticipants,
   reactions = { hearts: 0, likes: 0, stars: 0, fire: 0 },
-  mood
+  mood,
+  isOwner = false,
+  hostId
 }: MomentCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [userReaction, setUserReaction] = useState<string | null>(null);
+  
+  const isCurrentUserOwner = user?.id === hostId;
 
   const handleReaction = (reactionType: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -107,6 +117,17 @@ export function MomentCard({
         >
           {getCategoryEmoji(category)} {category}
         </Badge>
+
+        {/* Edit/Delete Menu for Owner */}
+        {isCurrentUserOwner && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+            <EditDeleteMenu
+              contentType="moments"
+              contentId={id}
+              isOwner={isCurrentUserOwner}
+            />
+          </div>
+        )}
 
         {/* Mood Badge */}
         {mood && (
@@ -180,16 +201,24 @@ export function MomentCard({
             </span>
           </div>
           
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Open chat with organizer
-            }}
-          >
-            <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ShareModal contentType="moment" contentId={id} title={title}>
+              <Button size="xs" variant="ghost">
+                <Share2 className="h-4 w-4" strokeWidth={1.5} />
+              </Button>
+            </ShareModal>
+            
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Open chat with organizer
+              }}
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+            </Button>
+          </div>
         </div>
 
         {/* Action Button */}

@@ -6,14 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Users } from "lucide-react";
+import { MapPin, Search, Users, Plus } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
 import FriendsSearchFilters from "@/components/invites/FriendsSearchFilters";
+import { useNavigate } from "react-router-dom";
 export default function Inviti() {
   const location = useLocation();
+  const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
   
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -70,7 +72,13 @@ export default function Inviti() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <h1 className="text-lg font-semibold">Inviti</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Inviti</h1>
+        <Button onClick={() => navigate("/crea-invito")} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
+          Nuovo Invito
+        </Button>
+      </div>
 
       <Tabs defaultValue="amici">
         <TabsList className="grid grid-cols-3">

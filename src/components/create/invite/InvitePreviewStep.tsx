@@ -18,6 +18,8 @@ export default function InvitePreviewStep({
   
   const handleSendInvites = async () => {
     try {
+      console.log('Creating invite with data:', data);
+      
       if (!data.activity.title || data.selectedPeople.length === 0) {
         toast({
           title: "Errore",
@@ -27,11 +29,21 @@ export default function InvitePreviewStep({
         return;
       }
 
+      // Convert selectedPeople array of strings to array of UUIDs
+      const participantUUIDs = data.selectedPeople.map(id => {
+        // If it's already a UUID format, return as is, otherwise generate a mock UUID for demo
+        if (id.length === 36 && id.includes('-')) {
+          return id;
+        }
+        // For demo purposes, create a mock UUID based on the ID
+        return `${id.padStart(8, '0')}-0000-0000-0000-000000000000`;
+      });
+
       await createInvite.mutateAsync({
         title: data.activity.title,
         description: data.message || `Attività: ${data.activity.title}`,
-        participants: data.selectedPeople,
-        when_at: data.date?.toISOString(),
+        participants: participantUUIDs,
+        when_at: data.date?.toISOString() || null,
         place: data.location.name ? {
           name: data.location.name,
           coordinates: data.location.coordinates

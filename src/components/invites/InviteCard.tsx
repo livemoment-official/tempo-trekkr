@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Invite, useUpdateInviteStatus, useTransformToMoment } from "@/hooks/useInvites";
 import InviteResponseModal from "./InviteResponseModal";
+import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface InviteCardProps {
   invite: Invite;
@@ -15,11 +17,14 @@ interface InviteCardProps {
 }
 
 export default function InviteCard({ invite, type }: InviteCardProps) {
+  const { user } = useAuth();
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [responseType, setResponseType] = useState<'accepted' | 'rejected' | 'postponed'>('accepted');
   
   const updateStatus = useUpdateInviteStatus();
   const transformToMoment = useTransformToMoment();
+  
+  const isOwner = user?.id === invite.host_id;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -65,7 +70,14 @@ export default function InviteCard({ invite, type }: InviteCardProps) {
             {/* Header con titolo e status */}
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="font-medium text-base">{invite.title}</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-base">{invite.title}</h3>
+                  <EditDeleteMenu
+                    contentType="invites"
+                    contentId={invite.id}
+                    isOwner={isOwner}
+                  />
+                </div>
                 {invite.description && (
                   <p className="text-sm text-muted-foreground mt-1">
                     {invite.description}
