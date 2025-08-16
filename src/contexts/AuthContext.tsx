@@ -43,13 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Trigger profile creation for new signups
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in, checking profile and redirecting...');
+          console.log('User signed in, ensuring profile exists...');
           setTimeout(() => {
             // Check if profile exists, create if not
             ensureProfileExists(session.user.id, session.user.email || '');
-            // Redirect to profile page after login
-            window.location.href = '/profilo';
-          }, 500);
+          }, 100);
         }
       }
     );

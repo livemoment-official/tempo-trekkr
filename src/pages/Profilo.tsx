@@ -16,26 +16,35 @@ import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
 export default function Profilo() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
+  
+  const { 
+    isOnboardingRequired, 
+    isLoading: onboardingLoading, 
+    markOnboardingComplete,
+    incrementRedirectCounter 
+  } = useOnboardingState();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && isOnboardingRequired === false) {
       fetchProfile();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isOnboardingRequired]);
 
   const fetchProfile = async () => {
     if (!user) return;
 
     try {
-      setIsLoading(true);
+      setIsProfileLoading(true);
+      console.log('📋 Fetching profile data for user:', user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -44,27 +53,25 @@ export default function Profilo() {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // Profile doesn't exist, trigger onboarding
-          setShowOnboarding(true);
+          console.log('📝 Profile not found, will show onboarding');
+          // Profile doesn't exist - onboarding will handle this
         } else {
           console.error('Error fetching profile:', error);
         }
       } else {
+        console.log('✅ Profile loaded successfully');
         setProfile(data);
-        // Check if onboarding is needed
-        if (!data.onboarding_completed) {
-          setShowOnboarding(true);
-        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
-      setIsLoading(false);
+      setIsProfileLoading(false);
     }
   };
 
   const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
+    console.log('🎉 Onboarding completed, refreshing profile');
+    markOnboardingComplete();
     fetchProfile(); // Reload profile data
   };
 
@@ -78,7 +85,25 @@ export default function Profilo() {
     );
   }
 
-  if (isLoading) {
+  // Show onboarding if required
+  if (isOnboardingRequired === true) {
+    return (
+      <>
+        <Helmet>
+          <title>LiveMoment · Configurazione Profilo</title>
+          <meta name="description" content="Completa la configurazione del tuo profilo LiveMoment" />
+          <link rel="canonical" href={canonical} />
+        </Helmet>
+        <OnboardingModal 
+          open={true} 
+          onComplete={handleOnboardingComplete}
+        />
+      </>
+    );
+  }
+
+  // Show loading while checking onboarding status or loading profile
+  if (onboardingLoading || isProfileLoading) {
     return (
       <div className="space-y-4">
         <div className="h-8 bg-muted animate-pulse rounded" />
@@ -243,10 +268,6 @@ export default function Profilo() {
         </DialogContent>
       </Dialog>
 
-      <OnboardingModal 
-        open={showOnboarding} 
-        onComplete={handleOnboardingComplete}
-      />
     </div>
   );
 }
