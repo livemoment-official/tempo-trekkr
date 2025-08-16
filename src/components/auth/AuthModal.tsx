@@ -16,7 +16,7 @@ interface AuthModalProps {
 
 type AuthStep = 'email-login' | 'signup' | 'forgot-password';
 
-export function AuthModal({ open, onOpenChange, title = "Benvenuto su LiveMoment", description = "Per favore accedi o registrati qui sotto." }: AuthModalProps) {
+export function AuthModal({ open, onOpenChange, title = "Bentornato su Live Moment", description = "Per favore accedi o registrati qui sotto." }: AuthModalProps) {
   const { signInWithGoogle, signUp, signIn, resetPassword } = useAuth();
   const [step, setStep] = useState<AuthStep>('email-login');
   const [email, setEmail] = useState('');
