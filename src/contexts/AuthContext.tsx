@@ -43,23 +43,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    const redirectUrl = `${window.location.origin}/`;
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+      
+      if (error) {
+        console.error('Google sign-in error:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      throw error;
+    }
   };
 
   const signInWithApple = async () => {
-    const redirectUrl = `${window.location.origin}/`;
-    await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+      
+      if (error) {
+        console.error('Apple sign-in error:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      throw error;
+    }
   };
 
   const signInWithOtp = async (identifier: string) => {
@@ -75,11 +95,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           shouldCreateUser: true,
         },
       });
+      
+      // Handle captcha-related errors specifically
+      if (error?.message?.includes('captcha')) {
+        return { error: 'Verifica captcha richiesta. Contatta il supporto se il problema persiste.' };
+      }
+      
       return { error: error?.message };
     } else if (isPhone) {
       const { error } = await supabase.auth.signInWithOtp({
         phone: identifier,
       });
+      
+      // Handle captcha-related errors specifically
+      if (error?.message?.includes('captcha')) {
+        return { error: 'Verifica captcha richiesta. Contatta il supporto se il problema persiste.' };
+      }
+      
       return { error: error?.message };
     } else {
       // Treat as username - we'll need to find the email/phone associated with it
@@ -99,6 +131,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     });
+    
+    // Handle captcha-related errors specifically
+    if (error?.message?.includes('captcha')) {
+      return { error: 'Verifica captcha richiesta. Contatta il supporto se il problema persiste.' };
+    }
+    
     return { error: error?.message };
   };
 
