@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -47,19 +47,26 @@ const Header = ({
 const BottomTabBar = () => {
   const location = useLocation();
   const isActive = (to: string) => location.pathname === to;
-  const base = "flex flex-1 items-center justify-center gap-1 py-2 text-xs";
+  const base = "flex flex-1 flex-col items-center justify-center py-3 text-xs";
   const active = "text-primary font-medium";
   const idle = "text-muted-foreground";
   return <nav className="sticky bottom-0 z-40 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto grid max-w-screen-sm grid-cols-3 px-2">
+      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-2">
         <NavLink to="/inviti" className={cn(base, isActive("/inviti") ? active : idle)}>
-          <MessageSquareText className="h-5 w-5" /> <span>Inviti</span>
+          <MessageSquareText className="h-6 w-6 mb-1" />
+          <span>Inviti</span>
         </NavLink>
         <NavLink to="/esplora" className={cn(base, isActive("/esplora") ? active : idle)}>
-          <SearchIcon className="h-5 w-5" /> <span>Esplora</span>
+          <SearchIcon className="h-6 w-6 mb-1" />
+          <span>Esplora</span>
+        </NavLink>
+        <NavLink to="/gruppi" className={cn(base, isActive("/gruppi") ? active : idle)}>
+          <Users className="h-6 w-6 mb-1" />
+          <span>Gruppi</span>
         </NavLink>
         <NavLink to="/momenti" className={cn(base, isActive("/momenti") ? active : idle)}>
-          <MapPin className="h-5 w-5" /> <span>Momenti</span>
+          <MapPin className="h-6 w-6 mb-1" />
+          <span>Momenti</span>
         </NavLink>
       </div>
     </nav>;
