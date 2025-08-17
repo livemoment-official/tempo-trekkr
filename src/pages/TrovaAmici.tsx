@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Users, ArrowLeft, Trophy, Star, Gift } from "lucide-react";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
-import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
+import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 import { getRandomUserProfiles } from "@/utils/enhancedMockData";
@@ -47,10 +47,10 @@ export default function TrovaAmici() {
     return matchesSearch && matchesAvailability && matchesDistance;
   });
 
-  const handleInvite = (userId: string) => {
+  const handleFollow = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
-      toast.success(`Invito inviato a ${user.name}!`);
+      toast.success(`Ora segui ${user.name}!`);
     }
   };
 
@@ -163,12 +163,12 @@ export default function TrovaAmici() {
                   )}
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 pb-20">
+                <div className="space-y-3 pb-20">
                   {filteredUsers.map(user => (
-                    <UserDiscoveryCard 
+                    <UserListItem 
                       key={user.id} 
                       user={user} 
-                      onInvite={handleInvite}
+                      onFollow={handleFollow}
                     />
                   ))}
                 </div>
