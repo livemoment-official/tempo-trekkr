@@ -43,24 +43,26 @@ export default function EventPreviewStep({
         if (typeof photo === 'string' && photo.startsWith('blob:')) {
           const response = await fetch(photo);
           const blob = await response.blob();
-          const file = new File([blob], `event-${Date.now()}.jpg`, { type: 'image/jpeg' });
-          
-          const { data: { user } } = await supabase.auth.getUser();
+          const file = new File([blob], `event-${Date.now()}.jpg`, {
+            type: 'image/jpeg'
+          });
+          const {
+            data: {
+              user
+            }
+          } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
-
           const fileExt = file.name.split('.').pop();
           const fileName = `events/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('galleries')
-            .upload(fileName, file);
-
+          const {
+            error: uploadError
+          } = await supabase.storage.from('galleries').upload(fileName, file);
           if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('galleries')
-            .getPublicUrl(fileName);
-          
+          const {
+            data: {
+              publicUrl
+            }
+          } = supabase.storage.from('galleries').getPublicUrl(fileName);
           photoUrls.push(publicUrl);
         } else if (typeof photo === 'string') {
           photoUrls.push(photo);
@@ -68,31 +70,28 @@ export default function EventPreviewStep({
       }
 
       // Create event
-      const { error } = await supabase
-        .from('events')
-        .insert({
-          title: data.title,
-          description: data.description,
-          when_at,
-          place: data.location.name ? {
-            name: data.location.name,
-            coordinates: data.location.coordinates
-          } : null,
-          max_participants: data.capacity,
-          photos: photoUrls,
-          tags: data.tags,
-          mood_tag: data.tags[0],
-          ticketing: data.ticketing,
-          registration_status: data.callToAction.type === 'invite_only' ? 'invite_only' : 'open'
-        });
-
+      const {
+        error
+      } = await supabase.from('events').insert({
+        title: data.title,
+        description: data.description,
+        when_at,
+        place: data.location.name ? {
+          name: data.location.name,
+          coordinates: data.location.coordinates
+        } : null,
+        max_participants: data.capacity,
+        photos: photoUrls,
+        tags: data.tags,
+        mood_tag: data.tags[0],
+        ticketing: data.ticketing,
+        registration_status: data.callToAction.type === 'invite_only' ? 'invite_only' : 'open'
+      });
       if (error) throw error;
-
       toast({
         title: "Evento creato!",
         description: "Il tuo evento è stato pubblicato con successo"
       });
-
       window.location.href = "/momenti";
     } catch (error) {
       console.error('Publish error:', error);
@@ -128,20 +127,18 @@ export default function EventPreviewStep({
 
           {/* Date and location */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {data.date && (
-              <div className="flex items-center gap-2 text-sm">
+            {data.date && <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{format(data.date, "PPP", { locale: it })}</span>
+                <span>{format(data.date, "PPP", {
+                locale: it
+              })}</span>
                 {data.startTime && <span>alle {data.startTime}</span>}
-              </div>
-            )}
+              </div>}
             
-            {data.location.name && (
-              <div className="flex items-center gap-2 text-sm">
+            {data.location.name && <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{data.location.name}</span>
-              </div>
-            )}
+              </div>}
           </div>
 
           {/* Event details */}
@@ -224,13 +221,7 @@ export default function EventPreviewStep({
       </div>
 
       <div className="flex justify-end">
-        <Button 
-          onClick={handlePublish}
-          disabled={!data.title || !data.date}
-          className="min-w-32"
-        >
-          Pubblica Evento
-        </Button>
+        
       </div>
     </div>;
 }
