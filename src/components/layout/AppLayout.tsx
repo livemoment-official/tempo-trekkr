@@ -107,31 +107,38 @@ export default function AppLayout() {
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  
+  // Check if we're on the Crea page to hide main UI
+  const isCreatePage = pathname === '/crea';
+  
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
+  
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
-      <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />
-      {!isAuthenticated && <GuestBanner />}
-      <UnconfirmedUserBanner />
-      <main className="flex-1 px-5 pb-28 pt-4 animate-fade-in">
+      {!isCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
+      {!isAuthenticated && !isCreatePage && <GuestBanner />}
+      {!isCreatePage && <UnconfirmedUserBanner />}
+      <main className={isCreatePage ? "flex-1" : "flex-1 px-5 pb-28 pt-4 animate-fade-in"}>
         <Outlet />
       </main>
 
-      {/* Apple-style Floating Create Button */}
-      <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
-        <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-ios-floating opacity-80 rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20">
-              <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Accedi per creare
-            </Button>}>
-          <NavLink to="/crea" aria-label="Crea un momento o invito">
-            <Button size="lg" className="shadow-ios-floating rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
-              <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Crea
-            </Button>
-          </NavLink>
-        </AuthGuard>
-      </div>
+      {/* Apple-style Floating Create Button - hidden on create page */}
+      {!isCreatePage && (
+        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
+          <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-ios-floating opacity-80 rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20">
+                <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Accedi per creare
+              </Button>}>
+            <NavLink to="/crea" aria-label="Crea un momento o invito">
+              <Button size="lg" className="shadow-ios-floating rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
+                <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Crea
+              </Button>
+            </NavLink>
+          </AuthGuard>
+        </div>
+      )}
 
-      <BottomTabBar />
+      {!isCreatePage && <BottomTabBar />}
 
       {/* Search Overlay */}
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
