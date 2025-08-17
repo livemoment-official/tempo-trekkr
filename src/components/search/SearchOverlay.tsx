@@ -1,8 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Filter } from "lucide-react";
 import { useState } from "react";
+import { AdvancedSearchModal } from "./AdvancedSearchModal";
 
 interface SearchOverlayProps {
   open: boolean;
@@ -11,6 +13,7 @@ interface SearchOverlayProps {
 
 export const SearchOverlay = ({ open, onOpenChange }: SearchOverlayProps) => {
   const [q, setQ] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,7 +30,15 @@ export const SearchOverlay = ({ open, onOpenChange }: SearchOverlayProps) => {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cerca persone, momenti, eventi, luoghi…"
               aria-label="Campo di ricerca"
+              className="flex-1"
             />
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setShowAdvanced(true)}
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
           </div>
           <Tabs defaultValue="tutti">
             <TabsList className="grid grid-cols-4">
@@ -50,6 +61,15 @@ export const SearchOverlay = ({ open, onOpenChange }: SearchOverlayProps) => {
             </TabsContent>
           </Tabs>
         </div>
+        
+        <AdvancedSearchModal
+          open={showAdvanced}
+          onOpenChange={setShowAdvanced}
+          onSearch={(filters) => {
+            console.log("Advanced search filters:", filters);
+            // TODO: Implement search logic
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

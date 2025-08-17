@@ -39,6 +39,7 @@ export interface Moment {
 }
 
 export interface MomentsFilters {
+  query?: string;
   category?: string;
   subcategories?: string[];
   mood?: string;
@@ -48,6 +49,10 @@ export interface MomentsFilters {
   dateFrom?: Date;
   dateTo?: Date;
   tags?: string[];
+  province?: string;
+  isPaid?: boolean | null;
+  priceMin?: number;
+  priceMax?: number;
   showOnlyJoined?: boolean;
 }
 
@@ -81,6 +86,10 @@ export function useMoments() {
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
 
       // Apply filters
+      if (currentFilters.query) {
+        query = query.or(`title.ilike.%${currentFilters.query}%,description.ilike.%${currentFilters.query}%`);
+      }
+
       if (currentFilters.mood) {
         query = query.eq('mood_tag', currentFilters.mood);
       }
@@ -105,6 +114,24 @@ export function useMoments() {
 
       if (currentFilters.subcategories && currentFilters.subcategories.length > 0) {
         query = query.overlaps('tags', currentFilters.subcategories);
+      }
+
+      if (currentFilters.province) {
+        query = query.ilike('place->address', `%${currentFilters.province}%`);
+      }
+
+      if (currentFilters.isPaid !== null && currentFilters.isPaid !== undefined) {
+        if (currentFilters.isPaid === false) {
+          query = query.or('price.is.null,price.eq.0');
+        } else {
+          query = query.gt('price', 0);
+          if (currentFilters.priceMin) {
+            query = query.gte('price', currentFilters.priceMin);
+          }
+          if (currentFilters.priceMax) {
+            query = query.lte('price', currentFilters.priceMax);
+          }
+        }
       }
 
       const { data, error } = await query;
