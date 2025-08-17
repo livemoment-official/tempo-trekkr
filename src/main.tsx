@@ -53,9 +53,9 @@ createRoot(document.getElementById("root")!).render(
 
             {/* Routes with Minimal Layout (only back button) */}
             <Route path="/" element={<MinimalLayout />}>
-              <Route path="crea-invito" element={<CreaInvito />} />
-              <Route path="crea-momento" element={<CreaMomento />} />
-              <Route path="crea-evento" element={<CreaEvento />} />
+              <Route path="crea/invito" element={<CreaInvito />} />
+              <Route path="crea/momento" element={<CreaMomento />} />
+              <Route path="crea/evento" element={<CreaEvento />} />
               <Route path="momenti/:id" element={<MomentDetail />} />
               <Route path="chat/:type/:id" element={<ChatFullscreen />} />
             </Route>

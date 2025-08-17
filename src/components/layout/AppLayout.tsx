@@ -26,7 +26,7 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
         <button className="flex items-center gap-2 hover-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <img src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-8 w-auto" />
+          <img src="/lovable-uploads/44ec0955-8ef4-4771-839d-3f90a7b70de2.png" alt="Logo LiveMoment" className="h-8 w-auto" />
           <span className="sr-only">LiveMoment</span>
         </button>
         
