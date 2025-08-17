@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProfileEditForm } from './ProfileEditForm';
+import { LocationPermissionCard } from '@/components/location/LocationPermissionCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -50,20 +51,24 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
           </p>
         </DialogHeader>
 
-        <ProfileEditForm
-          onClose={handleComplete}
-          profile={{
-            name: '',
-            username: '',
-            bio: '',
-            mood: '',
-            job_title: '',
-            relationship_status: '',
-            instagram_username: '',
-            interests: [],
-            avatar_url: ''
-          }}
-        />
+        <div className="space-y-6">
+          <LocationPermissionCard />
+          
+          <ProfileEditForm
+            onClose={handleComplete}
+            profile={{
+              name: '',
+              username: '',
+              bio: '',
+              mood: '',
+              job_title: '',
+              relationship_status: '',
+              instagram_username: '',
+              interests: [],
+              avatar_url: ''
+            }}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

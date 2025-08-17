@@ -1,21 +1,37 @@
 import { useEffect, useState } from 'react';
 import { useUserLocation } from './useUserLocation';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from './use-toast';
 
 export function useAutoGeolocation() {
   const [isLoading, setIsLoading] = useState(true);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const { updateLocation } = useUserLocation();
+  const { updateLocation, getUserLocation } = useUserLocation();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     const getLocation = async () => {
-      if (!navigator.geolocation) {
+      if (!user) {
         setIsLoading(false);
         return;
       }
 
       try {
+        // First, check if user already has a saved location
+        const savedLocation = await getUserLocation();
+        if (savedLocation) {
+          setLocation({ lat: savedLocation.lat, lng: savedLocation.lng });
+          setIsLoading(false);
+          return;
+        }
+
+        // If no saved location and geolocation is available, request it
+        if (!navigator.geolocation) {
+          setIsLoading(false);
+          return;
+        }
+
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: true,
@@ -54,7 +70,7 @@ export function useAutoGeolocation() {
     };
 
     getLocation();
-  }, [updateLocation, toast]);
+  }, [user, updateLocation, getUserLocation, toast]);
 
   return { location, isLoading };
 }
