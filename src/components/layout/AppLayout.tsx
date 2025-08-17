@@ -29,7 +29,7 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
         <button className="flex items-center gap-2 hover-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/04aa6251-ccf1-4f59-8562-c3edb68824dc.png" alt="Logo LiveMoment" className="h-8 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+          <EnhancedImage src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-10 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
           <span className="sr-only">LiveMoment</span>
         </button>
         
@@ -45,10 +45,6 @@ const Header = ({
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary" onClick={onOpenFriends} aria-label="Trova amici">
             <UserPlus className="h-4 w-4" />
           </Button>
-          
-          <NavLink to="/chat" className="relative">
-            
-          </NavLink>
           
           <NavLink to="/profilo" className="relative">
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">

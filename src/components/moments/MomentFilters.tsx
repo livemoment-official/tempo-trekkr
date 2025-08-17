@@ -145,7 +145,6 @@ export function MomentFilters({
               } else {
                 onCategoryChange?.(category.id);
                 onSubcategoriesChange?.([]);
-                setCategorySheetOpen(true);
               }
             }}
             className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
@@ -159,6 +158,23 @@ export function MomentFilters({
           </button>
         ))}
       </div>
+
+      {/* Subcategories Pills - Always visible when category selected */}
+      {selectedMainCategory && (
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+          {selectedMainCategory.subcategories.map((subcategory) => (
+            <Button
+              key={subcategory}
+              variant={safeSelectedSubcategories.includes(subcategory) ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleSubcategoryToggle(subcategory)}
+              className="whitespace-nowrap text-xs"
+            >
+              {subcategory}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Subcategory Sheet */}
       <Sheet open={categorySheetOpen} onOpenChange={setCategorySheetOpen}>
@@ -208,8 +224,8 @@ export function MomentFilters({
         </SheetContent>
       </Sheet>
 
-      {/* Advanced Filters */}
-      <div className="flex items-center gap-3">
+      {/* Advanced Filters - Moved to align with view controls */}
+      <div className="flex items-center justify-between">
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="relative rounded-xl shadow-card">
@@ -306,8 +322,9 @@ export function MomentFilters({
             </div>
           </SheetContent>
         </Sheet>
+      </div>
 
-        {/* Active filters display */}
+      {/* Active filters display */}
         {(selectedMood || safeAgeRange[0] > 18 || safeAgeRange[1] < 65 || safeMaxDistance < 50) && (
           <div className="flex gap-2 flex-wrap">
             {selectedMood && (
@@ -346,7 +363,6 @@ export function MomentFilters({
             )}
           </div>
         )}
-      </div>
     </div>
   );
 }

@@ -149,8 +149,22 @@ export default function MomentDetail() {
       {/* Header is handled by MinimalLayout */}
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Hero Image */}
+        {/* Hero Image with organizer and mood */}
         <div className="relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden rounded-lg">
+          {/* Organizer avatar - top left */}
+          <div className="absolute top-4 left-4 z-10">
+            <Avatar className="h-10 w-10 border-2 border-white shadow-lg">
+              <AvatarImage src={moment.organizer.avatar} />
+              <AvatarFallback className="bg-white text-foreground">{moment.organizer.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </div>
+          
+          {/* Mood badge - top right */}
+          <div className="absolute top-4 right-4 z-10">
+            <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-lg">
+              {moment.mood}
+            </Badge>
+          </div>
           {moment.image ? (
             <img 
               src={moment.image} 
@@ -352,24 +366,29 @@ export default function MomentDetail() {
         )}
 
         {/* Action Buttons - Fixed at bottom */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 space-y-2">
-          <Button 
-            size="lg" 
-            className="w-full"
-            onClick={handleParticipate}
-            variant={isParticipating ? "outline" : "default"}
-          >
-            {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
-          </Button>
-          <Button 
-            variant="outline"
-            size="lg" 
-            className="w-full"
-            onClick={() => navigate(`/chat/moment/${moment.id}`)}
-          >
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Chatta con il gruppo
-          </Button>
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
+          <div className="flex items-center gap-3">
+            <Button 
+              size="lg" 
+              className="flex-1"
+              onClick={handleParticipate}
+              variant={isParticipating ? "outline" : "default"}
+            >
+              {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
+            </Button>
+            
+            {/* Small chat icon - only visible after participation */}
+            {isParticipating && (
+              <Button 
+                variant="outline"
+                size="lg"
+                className="bg-white p-3"
+                onClick={() => navigate(`/chat/organizer/${moment.organizer.id}`)}
+              >
+                <MessageCircle className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Add bottom padding to prevent content being hidden behind fixed buttons */}
