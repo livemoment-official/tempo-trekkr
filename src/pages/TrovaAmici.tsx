@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, ArrowLeft } from "lucide-react";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
-import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
+import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
+import { getRandomUserProfiles } from "@/utils/enhancedMockData";
+import { toast } from "sonner";
 
 export default function TrovaAmici() {
   const location = useLocation();
@@ -23,24 +25,31 @@ export default function TrovaAmici() {
     isLoading: locationLoading
   } = useAutoGeolocation();
   
-  const {
-    data: nearbyUsers = [],
-    isLoading: nearbyLoading
-  } = useNearbyUsers(userLocation, radiusKm);
-
-  // Filtra utenti vicini per ricerca e filtri
-  const filteredNearbyUsers = nearbyUsers.filter(user => {
+  // Get mock user profiles for a more populated experience
+  const mockUsers = getRandomUserProfiles(15);
+  
+  // Filtra utenti per ricerca e filtri
+  const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = searchQuery === "" || 
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      user.interests?.some(interest => interest.toLowerCase().includes(searchQuery.toLowerCase()));
+      user.city.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      user.preferred_moments?.some(moment => moment.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesMood = selectedMood === "all" || user.mood === selectedMood;
-    const matchesDistance = user.distance_km <= radiusKm;
-    const matchesAvailability = availabilityFilter === "all";
+    const matchesAvailability = availabilityFilter === "all" || 
+      (availabilityFilter === "available" && user.is_available) ||
+      (availabilityFilter === "unavailable" && !user.is_available);
 
-    return matchesSearch && matchesMood && matchesDistance && matchesAvailability;
+    const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
+
+    return matchesSearch && matchesAvailability && matchesDistance;
   });
+
+  const handleInvite = (userId: string) => {
+    const user = mockUsers.find(u => u.id === userId);
+    if (user) {
+      toast.success(`Invito inviato a ${user.name}!`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFCEF]">
@@ -84,16 +93,7 @@ export default function TrovaAmici() {
             <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
           </div>
-        ) : !userLocation ? (
-          <div className="text-center py-8">
-            <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">Posizione non disponibile</p>
-          </div>
-        ) : nearbyLoading ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Cercando persone vicine...</p>
-          </div>
-        ) : filteredNearbyUsers.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <div className="text-center py-8">
             <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-muted-foreground">
@@ -114,8 +114,8 @@ export default function TrovaAmici() {
           <>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {filteredNearbyUsers.length} person{filteredNearbyUsers.length > 1 ? 'e' : 'a'} 
-                {searchQuery && ' trovate'} disponibile{filteredNearbyUsers.length > 1 ? 'i' : ''}
+                {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
+                {searchQuery && ' trovate'} nelle vicinanze
               </p>
               {searchQuery && (
                 <Badge variant="secondary" className="text-xs">
@@ -124,9 +124,13 @@ export default function TrovaAmici() {
               )}
             </div>
             
-            <div className="grid gap-4 pb-20">
-              {filteredNearbyUsers.map(user => (
-                <EnhancedNearbyUserCard key={user.user_id} user={user} />
+            <div className="grid gap-3 pb-20">
+              {filteredUsers.map(user => (
+                <UserDiscoveryCard 
+                  key={user.id} 
+                  user={user} 
+                  onInvite={handleInvite}
+                />
               ))}
             </div>
           </>
