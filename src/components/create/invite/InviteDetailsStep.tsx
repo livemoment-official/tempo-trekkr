@@ -26,7 +26,10 @@ export default function InviteDetailsStep({
       });
     }
   };
-  const handleLocationChange = (name: string, coordinates?: { lat: number; lng: number }) => {
+  const handleLocationChange = (name: string, coordinates?: {
+    lat: number;
+    lng: number;
+  }) => {
     onChange({
       ...data,
       location: {
@@ -70,11 +73,7 @@ export default function InviteDetailsStep({
       <div>
         <Label htmlFor="location">Dove</Label>
         <div className="mt-2">
-          <LocationSearchInput
-            value={data.location.name}
-            onChange={handleLocationChange}
-            placeholder="Suggerisci un posto..."
-          />
+          <LocationSearchInput value={data.location.name} onChange={handleLocationChange} placeholder="Suggerisci un posto..." />
         </div>
       </div>
 
@@ -86,10 +85,6 @@ export default function InviteDetailsStep({
       })} placeholder={`Ciao! Che ne dici di un ${data.activity.title.toLowerCase()} insieme?`} className="mt-2" rows={3} />
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={onNext}>
-          Continua
-        </Button>
-      </div>
+      
     </div>;
 }
