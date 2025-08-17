@@ -74,59 +74,11 @@ const Index = () => {
       <LocationPermissionCard />
       
       <MomentFilters
-        selectedCategory={filterState.category}
-        onCategoryChange={(category) => {
-          const newState = { ...filterState, category, subcategories: [] };
-          setFilterState(newState);
-          handleFilterChange(newState);
-        }}
-        selectedSubcategories={filterState.subcategories}
-        onSubcategoriesChange={(subcategories) => {
-          const newState = { ...filterState, subcategories };
-          setFilterState(newState);
-          handleFilterChange(newState);
-        }}
-        ageRange={filterState.ageRange}
-        onAgeRangeChange={(ageRange) => {
-          const newState = { ...filterState, ageRange };
-          setFilterState(newState);
-          handleFilterChange(newState);
-        }}
-        maxDistance={filterState.maxDistance}
-        onMaxDistanceChange={(maxDistance) => {
-          const newState = { ...filterState, maxDistance };
-          setFilterState(newState);
-          handleFilterChange(newState);
-        }}
-        selectedMood={filterState.mood}
-        onMoodChange={(mood) => {
-          const newState = { ...filterState, mood };
-          setFilterState(newState);
-          handleFilterChange(newState);
-        }}
+        onFiltersChange={handleFilterChange}
+        currentFilters={filterState}
+        view={view}
+        onViewChange={setView}
       />
-
-      {/* View Toggle */}
-      <div className="flex items-center gap-2 bg-muted p-1 rounded-lg w-fit">
-        <Button
-          variant={view === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setView('list')}
-          className="gap-2"
-        >
-          <List className="h-4 w-4" />
-          Lista
-        </Button>
-        <Button
-          variant={view === 'map' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setView('map')}
-          className="gap-2"
-        >
-          <MapPin className="h-4 w-4" />
-          Mappa
-        </Button>
-      </div>
 
       {/* Content */}
       {view === 'list' ? (

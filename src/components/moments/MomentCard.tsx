@@ -132,15 +132,27 @@ export function MomentCard({
           </div>
         )}
 
-        {/* Mood Badge */}
-        {mood && (
-          <Badge 
-            variant="outline" 
-            className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border-white/40"
-          >
-            {mood}
-          </Badge>
-        )}
+        {/* Top Right Info */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+          {/* Organizer */}
+          <div className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/40">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={organizer.avatar} />
+              <AvatarFallback className="text-xs">{organizer.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="text-xs font-medium">{organizer.name}</span>
+          </div>
+          
+          {/* Mood Badge */}
+          {mood && (
+            <Badge 
+              variant="outline" 
+              className="bg-white/95 backdrop-blur-md border-white/40 text-xs"
+            >
+              {mood}
+            </Badge>
+          )}
+        </div>
 
         {/* Reactions Overlay */}
         <div className="absolute bottom-4 right-4 flex gap-2">
@@ -183,20 +195,9 @@ export function MomentCard({
           </div>
         </div>
 
-        {/* Organizer */}
-        <div className="flex items-center gap-3 pt-2">
-          <Avatar className="h-9 w-9 ring-2 ring-border/20">
-            <AvatarImage src={organizer.avatar} />
-            <AvatarFallback className="text-xs font-medium">{organizer.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{organizer.name}</p>
-            <p className="text-xs text-muted-foreground">Organizzatore</p>
-          </div>
-        </div>
 
         {/* Participants & Actions */}
-        <div className="flex items-center justify-between pt-3">
+        <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" strokeWidth={1.5} />
             <span>

@@ -60,31 +60,10 @@ export default function MomentiEventi() {
         <MomentFilters
           onFiltersChange={handleFilterChange}
           currentFilters={filters}
+          view={view}
+          onViewChange={setView}
         />
 
-        {/* View Toggle - Moved inside MomentFilters layout */}
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
-            <Button
-              variant={view === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('list')}
-              className={`gap-2 ${view === 'list' ? 'bg-background text-foreground shadow-sm' : ''}`}
-            >
-              <List className="h-4 w-4" />
-              Lista
-            </Button>
-            <Button
-              variant={view === 'map' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setView('map')}
-              className={`gap-2 ${view === 'map' ? 'bg-background text-foreground shadow-sm' : ''}`}
-            >
-              <MapPin className="h-4 w-4" />
-              Mappa
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Content */}

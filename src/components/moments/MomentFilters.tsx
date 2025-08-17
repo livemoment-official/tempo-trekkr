@@ -1,28 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Filter, MapPin, Search } from "lucide-react";
+import { SlidersHorizontal, X, List, MapPin } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MomentFiltersProps {
-  selectedCategory?: string | null;
-  onCategoryChange?: (category: string | null) => void;
-  selectedSubcategories?: string[];
-  onSubcategoriesChange?: (subcategories: string[]) => void;
-  ageRange?: [number, number];
-  onAgeRangeChange?: (range: [number, number]) => void;
-  maxDistance?: number;
-  onMaxDistanceChange?: (distance: number) => void;
-  selectedMood?: string | null;
-  onMoodChange?: (mood: string | null) => void;
-  onFiltersChange?: (filters: any) => void;
+  onFiltersChange: (filters: any) => void;
   currentFilters?: any;
+  view?: 'list' | 'map';
+  onViewChange?: (view: 'list' | 'map') => void;
 }
 
+// Category data
 const mainCategories = [
   { 
     id: 'sport', 
@@ -73,296 +65,330 @@ const moods = [
   'Avventuroso', 'Romantico', 'Divertente', 'Tranquillo'
 ];
 
-export function MomentFilters({
-  selectedCategory = null,
-  onCategoryChange = () => {},
-  selectedSubcategories = [],
-  onSubcategoriesChange = () => {},
-  ageRange = [18, 65],
-  onAgeRangeChange = () => {},
-  maxDistance = 50,
-  onMaxDistanceChange = () => {},
-  selectedMood = null,
-  onMoodChange = () => {},
-  onFiltersChange,
-  currentFilters
-}: MomentFiltersProps) {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
-  const [subcategorySearch, setSubcategorySearch] = useState("");
+export const MomentFilters = ({ 
+  onFiltersChange, 
+  currentFilters = {}, 
+  view = 'list', 
+  onViewChange 
+}: MomentFiltersProps) => {
+  
+  const setView = (newView: 'list' | 'map') => {
+    onViewChange?.(newView);
+  };
 
-  // Safe defaults to prevent undefined access
-  const safeAgeRange = ageRange || [18, 65];
-  const safeMaxDistance = maxDistance || 50;
-  const safeSelectedSubcategories = selectedSubcategories || [];
+  const [selectedCategory, setSelectedCategory] = useState<string>(currentFilters.category || "all");
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(currentFilters.subcategories || []);
+  const [ageRange, setAgeRange] = useState<[number, number]>(currentFilters.ageRange || [18, 65]);
+  const [maxDistance, setMaxDistance] = useState<number>(currentFilters.maxDistance || 50);
+  const [selectedMood, setSelectedMood] = useState<string>(currentFilters.mood || "");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Sync with external filters
+  useEffect(() => {
+    setSelectedCategory(currentFilters.category || "all");
+    setSelectedSubcategories(currentFilters.subcategories || []);
+    setAgeRange(currentFilters.ageRange || [18, 65]);
+    setMaxDistance(currentFilters.maxDistance || 50);
+    setSelectedMood(currentFilters.mood || "");
+  }, [currentFilters]);
 
   const activeFiltersCount = [
-    selectedCategory,
-    safeSelectedSubcategories.length > 0,
+    selectedCategory !== "all",
+    selectedSubcategories.length > 0,
     selectedMood,
-    safeAgeRange[0] > 18 || safeAgeRange[1] < 65,
-    safeMaxDistance < 50
+    ageRange[0] > 18 || ageRange[1] < 65,
+    maxDistance < 50
   ].filter(Boolean).length;
 
-  const selectedMainCategory = mainCategories.find(cat => cat.id === selectedCategory);
-  const availableSubcategories = selectedMainCategory ? selectedMainCategory.subcategories : [];
-  const filteredSubcategories = availableSubcategories.filter(sub => 
-    sub.toLowerCase().includes(subcategorySearch.toLowerCase())
-  );
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedSubcategories([]); // Reset subcategories when changing main category
+    
+    const filters = {
+      category: categoryId === "all" ? null : categoryId,
+      subcategories: [],
+      ageRange,
+      maxDistance,
+      mood: selectedMood || null
+    };
+    onFiltersChange(filters);
+  };
 
   const handleSubcategoryToggle = (subcategory: string) => {
-    const updatedSubcategories = safeSelectedSubcategories.includes(subcategory)
-      ? safeSelectedSubcategories.filter(s => s !== subcategory)
-      : [...safeSelectedSubcategories, subcategory];
-    onSubcategoriesChange(updatedSubcategories);
+    const updated = selectedSubcategories.includes(subcategory)
+      ? selectedSubcategories.filter(s => s !== subcategory)
+      : [...selectedSubcategories, subcategory];
+    
+    setSelectedSubcategories(updated);
+    
+    const filters = {
+      category: selectedCategory === "all" ? null : selectedCategory,
+      subcategories: updated,
+      ageRange,
+      maxDistance,
+      mood: selectedMood || null
+    };
+    onFiltersChange(filters);
   };
 
-  const handleCategoryChange = (categoryId: string | null) => {
-    onCategoryChange?.(categoryId);
-    onSubcategoriesChange?.([]);
-  };
+  const currentCategory = mainCategories.find(cat => cat.id === selectedCategory);
 
   return (
     <div className="space-y-4">
-      {/* Main Category Pills */}
-      <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
-        <button
-          onClick={() => handleCategoryChange(null)}
-          className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
-            !selectedCategory 
-              ? 'gradient-brand text-brand-black shadow-brand scale-105' 
-              : 'bg-white text-foreground hover:bg-muted/30 shadow-card border border-border/40'
-          }`}
-        >
-          <span className="text-2xl">🌟</span>
-          <span className="text-xs font-medium">Tutti</span>
-        </button>
-        {mainCategories.map((category) => (
-          <button
-            key={category.id}
-            onClick={() => {
-              if (selectedCategory === category.id) {
-                handleCategoryChange(null);
-              } else {
-                handleCategoryChange(category.id);
-              }
-            }}
-            className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
-              selectedCategory === category.id 
-                ? 'gradient-brand text-brand-black shadow-brand scale-105' 
-                : 'bg-white text-foreground hover:bg-muted/30 shadow-card border border-border/40'
-            }`}
-          >
-            <span className="text-2xl">{category.emoji}</span>
-            <span className="text-xs font-medium text-center leading-tight">{category.name}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Subcategories Pills - Always visible when category selected */}
-      {selectedMainCategory && (
-        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
-          {selectedMainCategory.subcategories.map((subcategory) => (
-            <Button
-              key={subcategory}
-              variant={safeSelectedSubcategories.includes(subcategory) ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleSubcategoryToggle(subcategory)}
-              className="whitespace-nowrap text-xs"
-            >
-              {subcategory}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {/* Subcategory Sheet */}
-      <Sheet open={categorySheetOpen} onOpenChange={setCategorySheetOpen}>
-        <SheetContent side="bottom" className="h-[70vh]">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              {selectedMainCategory?.emoji} {selectedMainCategory?.name}
-            </SheetTitle>
-          </SheetHeader>
-          
-          <div className="space-y-4 mt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Cerca sottocategoria..."
-                value={subcategorySearch}
-                onChange={(e) => setSubcategorySearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <div className="space-y-2 max-h-[40vh] overflow-y-auto">
-              {filteredSubcategories.map((subcategory) => (
-                <div
-                  key={subcategory}
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer"
-                  onClick={() => handleSubcategoryToggle(subcategory)}
+      <div className="space-y-4">
+        {/* Main Categories - Horizontal Scrollable */}
+        <div className="relative">
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-2 px-1 pb-2">
+              <Button
+                key="all"
+                variant={selectedCategory === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleCategoryChange("all")}
+                className="flex items-center gap-2 whitespace-nowrap shrink-0"
+              >
+                ✨ Tutti
+              </Button>
+              {mainCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleCategoryChange(category.id)}
+                  className="flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
-                  <Checkbox
-                    checked={safeSelectedSubcategories.includes(subcategory)}
-                    onChange={() => handleSubcategoryToggle(subcategory)}
-                  />
-                  <label className="flex-1 cursor-pointer text-sm font-medium">
-                    {subcategory}
-                  </label>
-                </div>
+                  {category.emoji} {category.name}
+                </Button>
               ))}
             </div>
+          </ScrollArea>
+        </div>
 
-            <Button 
-              className="w-full"
-              onClick={() => setCategorySheetOpen(false)}
+        {/* Advanced Filters and View Toggle */}
+        <div className="flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+            <Button
+              variant={view === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setView('list')}
+              className={`p-2 ${view === 'list' ? 'bg-background text-foreground shadow-sm' : ''}`}
             >
-              Conferma ({safeSelectedSubcategories.length} selezionate)
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={view === 'map' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setView('map')}
+              className={`p-2 ${view === 'map' ? 'bg-background text-foreground shadow-sm' : ''}`}
+            >
+              <MapPin className="h-4 w-4" />
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
 
-      {/* Advanced Filters - Moved to align with view controls */}
-      <div className="flex items-center justify-between">
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="relative rounded-xl shadow-card">
-              <Filter className="h-4 w-4 mr-2.5" strokeWidth={1.5} />
-              Filtri Avanzati
-              {activeFiltersCount > 0 && (
-                <Badge 
-                  variant="default" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[80vh]">
-            <SheetHeader>
-              <SheetTitle>Filtri Avanzati</SheetTitle>
-            </SheetHeader>
+          {/* Advanced Filters Button */}
+          <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filtri Avanzati
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 text-xs">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
             
-            <div className="space-y-6 mt-6">
-              {/* Age Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Fascia d'età</label>
-                <div className="px-2">
+            <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+              <SheetHeader>
+                <SheetTitle>Filtri Avanzati</SheetTitle>
+                <SheetDescription>
+                  Personalizza la tua ricerca con filtri dettagliati
+                </SheetDescription>
+              </SheetHeader>
+              
+              <div className="space-y-6 mt-6">
+                {/* Subcategories */}
+                {currentCategory && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Sottocategorie</label>
+                    <div className="flex flex-wrap gap-2">
+                      {currentCategory.subcategories.map((subcategory) => (
+                        <Button
+                          key={subcategory}
+                          variant={selectedSubcategories.includes(subcategory) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleSubcategoryToggle(subcategory)}
+                          className="text-xs"
+                        >
+                          {subcategory}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Age Range */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Fascia d'età</label>
                   <Slider
-                    value={safeAgeRange}
-                    onValueChange={(value) => onAgeRangeChange?.(value as [number, number])}
+                    value={ageRange}
+                    onValueChange={(value) => {
+                      setAgeRange(value as [number, number]);
+                      const filters = {
+                        category: selectedCategory === "all" ? null : selectedCategory,
+                        subcategories: selectedSubcategories,
+                        ageRange: value as [number, number],
+                        maxDistance,
+                        mood: selectedMood || null
+                      };
+                      onFiltersChange(filters);
+                    }}
                     min={18}
                     max={65}
                     step={1}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>{safeAgeRange[0]} anni</span>
-                    <span>{safeAgeRange[1]} anni</span>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{ageRange[0]} anni</span>
+                    <span>{ageRange[1]} anni</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Distance */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Distanza massima
-                </label>
-                <div className="px-2">
+                {/* Distance */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Distanza massima</label>
                   <Slider
-                    value={[safeMaxDistance]}
-                    onValueChange={(value) => onMaxDistanceChange?.(value[0])}
+                    value={[maxDistance]}
+                    onValueChange={(value) => {
+                      setMaxDistance(value[0]);
+                      const filters = {
+                        category: selectedCategory === "all" ? null : selectedCategory,
+                        subcategories: selectedSubcategories,
+                        ageRange,
+                        maxDistance: value[0],
+                        mood: selectedMood || null
+                      };
+                      onFiltersChange(filters);
+                    }}
                     min={1}
-                    max={50}
+                    max={100}
                     step={1}
                     className="w-full"
                   />
-                  <div className="text-center text-xs text-muted-foreground mt-1">
-                    {safeMaxDistance} km
+                  <div className="text-center text-xs text-muted-foreground">
+                    {maxDistance} km
                   </div>
                 </div>
-              </div>
 
-              {/* Mood */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Mood</label>
-                <Select value={selectedMood || "tutti"} onValueChange={(value) => onMoodChange?.(value === "tutti" ? null : value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona un mood" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tutti">Tutti i mood</SelectItem>
-                    {moods.map((mood) => (
-                      <SelectItem key={mood} value={mood}>
-                        {mood}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Mood */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Mood</label>
+                  <Select value={selectedMood} onValueChange={(value) => {
+                    setSelectedMood(value);
+                    const filters = {
+                      category: selectedCategory === "all" ? null : selectedCategory,
+                      subcategories: selectedSubcategories,
+                      ageRange,
+                      maxDistance,
+                      mood: value || null
+                    };
+                    onFiltersChange(filters);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona un mood" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Tutti i mood</SelectItem>
+                      {moods.map((mood) => (
+                        <SelectItem key={mood} value={mood}>
+                          {mood}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Reset Filters */}
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => {
-                  onCategoryChange?.(null);
-                  onAgeRangeChange?.([18, 65]);
-                  onMaxDistanceChange?.(50);
-                  onMoodChange?.(null);
-                  setIsSheetOpen(false);
-                }}
-              >
-                Reset Filtri
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+                {/* Reset Button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setSelectedSubcategories([]);
+                    setAgeRange([18, 65]);
+                    setMaxDistance(50);
+                    setSelectedMood("");
+                    onFiltersChange({
+                      category: null,
+                      subcategories: [],
+                      ageRange: [18, 65],
+                      maxDistance: 50,
+                      mood: null
+                    });
+                  }}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Reset Filtri
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
-      {/* Active filters display */}
-        {(selectedMood || safeAgeRange[0] > 18 || safeAgeRange[1] < 65 || safeMaxDistance < 50) && (
-          <div className="flex gap-2 flex-wrap">
-            {selectedMood && (
-              <Badge variant="minimal" className="text-xs">
-                {selectedMood}
-                <button 
-                  onClick={() => onMoodChange?.(null)}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-            {(safeAgeRange[0] > 18 || safeAgeRange[1] < 65) && (
-              <Badge variant="minimal" className="text-xs">
-                {safeAgeRange[0]}-{safeAgeRange[1]} anni
-                <button 
-                  onClick={() => onAgeRangeChange?.([18, 65])}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-            {safeMaxDistance < 50 && (
-              <Badge variant="minimal" className="text-xs">
-                <MapPin className="h-3 w-3 mr-1" strokeWidth={1.5} />
-                {safeMaxDistance}km
-                <button 
-                  onClick={() => onMaxDistanceChange?.(50)}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-          </div>
-        )}
+      {/* Active Filters */}
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selectedCategory !== "all" && (
+            <Badge variant="secondary" className="text-xs">
+              {mainCategories.find(cat => cat.id === selectedCategory)?.name}
+              <button 
+                onClick={() => handleCategoryChange("all")}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {selectedSubcategories.map((sub) => (
+            <Badge key={sub} variant="secondary" className="text-xs">
+              {sub}
+              <button 
+                onClick={() => handleSubcategoryToggle(sub)}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          ))}
+          {selectedMood && (
+            <Badge variant="secondary" className="text-xs">
+              {selectedMood}
+              <button 
+                onClick={() => {
+                  setSelectedMood("");
+                  const filters = {
+                    category: selectedCategory === "all" ? null : selectedCategory,
+                    subcategories: selectedSubcategories,
+                    ageRange,
+                    maxDistance,
+                    mood: null
+                  };
+                  onFiltersChange(filters);
+                }}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   );
-}
+};
