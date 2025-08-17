@@ -12,7 +12,6 @@ import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters"
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 import { getRandomUserProfiles } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
-
 export default function TrovaAmici() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -22,40 +21,28 @@ export default function TrovaAmici() {
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  
   const {
     location: userLocation,
     isLoading: locationLoading
   } = useAutoGeolocation();
-  
+
   // Get mock user profiles for a more populated experience
   const mockUsers = getRandomUserProfiles(15);
-  
+
   // Filtra utenti per ricerca e filtri
   const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = searchQuery === "" || 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      user.city.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      user.preferred_moments?.some(moment => moment.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesAvailability = availabilityFilter === "all" || 
-      (availabilityFilter === "available" && user.is_available) ||
-      (availabilityFilter === "unavailable" && !user.is_available);
-
+    const matchesSearch = searchQuery === "" || user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.city.toLowerCase().includes(searchQuery.toLowerCase()) || user.preferred_moments?.some(moment => moment.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesAvailability = availabilityFilter === "all" || availabilityFilter === "available" && user.is_available || availabilityFilter === "unavailable" && !user.is_available;
     const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
-
     return matchesSearch && matchesAvailability && matchesDistance;
   });
-
   const handleFollow = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
       toast.success(`Ora segui ${user.name}!`);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[#FFFCEF]">
+  return <div className="min-h-screen bg-[#FFFCEF]">
       <Helmet>
         <title>LiveMoment · Trova Amici</title>
         <meta name="description" content="Trova persone interessanti vicino a te per nuove amicizie e momenti da condividere." />
@@ -64,18 +51,7 @@ export default function TrovaAmici() {
 
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-[#FFFCEF]/85 backdrop-blur-xl">
-        <div className="flex h-16 items-center justify-between px-5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="h-10 w-10 p-0 rounded-xl"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-lg font-medium">Trova Amici</h1>
-          <div className="w-10" /> {/* Spacer */}
-        </div>
+        
       </header>
 
       {/* Content */}
@@ -92,10 +68,7 @@ export default function TrovaAmici() {
           </TabsList>
 
           {/* Gamification Banner */}
-          <Card 
-            className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-orange-200/50 cursor-pointer hover:shadow-md transition-all duration-200"
-            onClick={() => navigate('/premi')}
-          >
+          <Card className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-orange-200/50 cursor-pointer hover:shadow-md transition-all duration-200" onClick={() => navigate('/premi')}>
             <div className="p-4 flex items-center gap-3">
               <div className="flex-shrink-0">
                 <Trophy className="h-8 w-8 text-orange-500" />
@@ -104,9 +77,10 @@ export default function TrovaAmici() {
                 <h3 className="font-semibold text-foreground mb-1">
                   Guadagna Premi Invitando Amici!
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Invita 3 amici = +30 punti • Crea momenti = +10 punti
-                </p>
+                <p className="text-sm text-muted-foreground">Invita 3 amici = +30 punti
+Segui 10 Persone = +50 punti
+Crea 1 Momento = +100 punti
+Crea 1 Gruppo con almeno 15 Persone = +150 punti</p>
               </div>
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 text-yellow-500 fill-current" />
@@ -116,64 +90,34 @@ export default function TrovaAmici() {
           </Card>
 
           <TabsContent value="vicinanze" className="space-y-4 mt-4">
-            <FriendsSearchFilters
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedMood={selectedMood}
-              onMoodChange={setSelectedMood}
-              radiusKm={radiusKm}
-              onRadiusChange={setRadiusKm}
-              availabilityFilter={availabilityFilter}
-              onAvailabilityChange={setAvailabilityFilter}
-            />
+            <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
 
-            {locationLoading ? (
-              <div className="text-center py-8">
+            {locationLoading ? <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
+              </div> : filteredUsers.length === 0 ? <div className="text-center py-8">
                 <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">
                   {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
                 </p>
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSearchQuery("")}
-                    className="mt-2"
-                  >
+                {searchQuery && <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
                     Mostra tutti
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
+                  </Button>}
+              </div> : <>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
                     {searchQuery && ' trovate'} nelle vicinanze
                   </p>
-                  {searchQuery && (
-                    <Badge variant="secondary" className="text-xs">
+                  {searchQuery && <Badge variant="secondary" className="text-xs">
                       {searchQuery}
-                    </Badge>
-                  )}
+                    </Badge>}
                 </div>
                 
                 <div className="space-y-3 pb-20">
-                  {filteredUsers.map(user => (
-                    <UserListItem 
-                      key={user.id} 
-                      user={user} 
-                      onFollow={handleFollow}
-                    />
-                  ))}
+                  {filteredUsers.map(user => <UserListItem key={user.id} user={user} onFollow={handleFollow} />)}
                 </div>
-              </>
-            )}
+              </>}
           </TabsContent>
 
           <TabsContent value="contatti" className="space-y-4 mt-4">
@@ -185,17 +129,12 @@ export default function TrovaAmici() {
               <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
                 Connetti la tua rubrica per trovare amici che usano già LiveMoment
               </p>
-              <Button 
-                variant="outline" 
-                onClick={() => toast.info("Funzionalità in arrivo!")}
-                className="mx-auto"
-              >
+              <Button variant="outline" onClick={() => toast.info("Funzionalità in arrivo!")} className="mx-auto">
                 Connetti Rubrica
               </Button>
             </div>
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 }
