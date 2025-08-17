@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot, Trophy } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { NotificationBadge } from "@/components/notifications/NotificationBadge"
 import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const Header = ({
   onOpenSearch,
   onOpenFriends
@@ -21,7 +22,8 @@ const Header = ({
   const navigate = useNavigate();
   const {
     isAuthenticated,
-    isLoading
+    isLoading,
+    user
   } = useAuth();
 
   // Debug log per verificare lo stato di autenticazione
@@ -29,11 +31,12 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-11 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
-          <span className="sr-only">LiveMoment</span>
+          <EnhancedImage src="/lovable-uploads/22272541-8248-46b1-a48a-eacd5e4d6de1.png" alt="Live Moment Logo" className="h-8 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+          <span className="sr-only">Live Moment</span>
         </button>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Agenda with notification */}
           <NavLink to="/agenda" className="relative">
             <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
               <Calendar className="h-5 w-5" />
@@ -41,14 +44,20 @@ const Header = ({
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
-          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl" onClick={() => navigate("/premi")} aria-label="Premi">
-            <Trophy className="h-5 w-5" />
-          </Button>
+          {/* Aggiungi Amici Banner */}
+          <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-full text-sm font-medium text-primary transition-colors hover-scale press-scale">
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Aggiungi Amici</span>
+          </NavLink>
           
-          <NavLink to="/profilo" className="relative">
-            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
-              <User className="h-5 w-5" />
-            </Button>
+          {/* Profile Avatar */}
+          <NavLink to="/profilo" className="relative hover-scale press-scale">
+            <Avatar className="h-9 w-9 border-2 border-primary/20">
+              <AvatarImage src={user?.user_metadata?.avatar_url} alt="Profile" />
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                {user?.email?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
           </NavLink>
         </div>
       </div>
