@@ -288,14 +288,15 @@ export const MomentFilters = ({
                 {/* Mood */}
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Mood</label>
-                  <Select value={selectedMood} onValueChange={(value) => {
-                    setSelectedMood(value);
+                  <Select value={selectedMood || "none"} onValueChange={(value) => {
+                    const newMood = value === "none" ? "" : value;
+                    setSelectedMood(newMood);
                     const filters = {
                       category: selectedCategory === "all" ? null : selectedCategory,
                       subcategories: selectedSubcategories,
                       ageRange,
                       maxDistance,
-                      mood: value || null
+                      mood: newMood || null
                     };
                     onFiltersChange(filters);
                   }}>
@@ -303,7 +304,7 @@ export const MomentFilters = ({
                       <SelectValue placeholder="Seleziona un mood" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tutti i mood</SelectItem>
+                      <SelectItem value="none">Tutti i mood</SelectItem>
                       {moods.map((mood) => (
                         <SelectItem key={mood} value={mood}>
                           {mood}

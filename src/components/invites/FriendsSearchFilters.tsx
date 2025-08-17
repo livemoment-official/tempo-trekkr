@@ -1,192 +1,239 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Search, MapPin, Clock, Heart, X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 
 interface FriendsSearchFiltersProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  selectedMood: string;
-  onMoodChange: (mood: string) => void;
-  radiusKm: number;
-  onRadiusChange: (radius: number) => void;
-  availabilityFilter: string;
-  onAvailabilityChange: (availability: string) => void;
+  onFiltersChange: (filters: any) => void;
+  currentFilters?: any;
 }
 
 const moods = [
-  "🎉 Festaiolo",
-  "🍕 Chill", 
-  "🎭 Artistico",
-  "🏃‍♂️ Sportivo",
-  "📚 Culturale",
-  "🌙 Romantico",
-  "🎵 Musicale",
-  "🍽️ Gourmet"
+  'Rilassato', 'Energico', 'Creativo', 'Sociale', 
+  'Avventuroso', 'Romantico', 'Divertente', 'Tranquillo'
 ];
 
 const availabilityOptions = [
-  { value: "all", label: "Tutti" },
-  { value: "now", label: "Ora" },
-  { value: "today", label: "Oggi" },
-  { value: "weekend", label: "Questo weekend" },
-  { value: "week", label: "Questa settimana" }
+  { value: 'disponibile', label: 'Disponibile ora' },
+  { value: 'occupato', label: 'Occupato' },
+  { value: 'libero_stasera', label: 'Libero stasera' },
+  { value: 'weekend', label: 'Disponibile weekend' }
 ];
 
-export default function FriendsSearchFilters({
-  searchQuery,
-  onSearchChange,
-  selectedMood,
-  onMoodChange,
-  radiusKm,
-  onRadiusChange,
-  availabilityFilter,
-  onAvailabilityChange
-}: FriendsSearchFiltersProps) {
+export const FriendsSearchFilters = ({ 
+  onFiltersChange, 
+  currentFilters = {} 
+}: FriendsSearchFiltersProps) => {
+  const [ageRange, setAgeRange] = useState<[number, number]>(currentFilters.ageRange || [18, 65]);
+  const [maxDistance, setMaxDistance] = useState<number>(currentFilters.maxDistance || 50);
+  const [selectedMood, setSelectedMood] = useState<string>(currentFilters.mood || "");
+  const [selectedAvailability, setSelectedAvailability] = useState<string>(currentFilters.availability || "");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Sync with external filters
+  useEffect(() => {
+    setAgeRange(currentFilters.ageRange || [18, 65]);
+    setMaxDistance(currentFilters.maxDistance || 50);
+    setSelectedMood(currentFilters.mood || "");
+    setSelectedAvailability(currentFilters.availability || "");
+  }, [currentFilters]);
+
+  const activeFiltersCount = [
+    selectedMood,
+    selectedAvailability,
+    ageRange[0] > 18 || ageRange[1] < 65,
+    maxDistance < 50
+  ].filter(Boolean).length;
+
+  const updateFilters = (updates: any) => {
+    const filters = {
+      ageRange,
+      maxDistance,
+      mood: selectedMood || null,
+      availability: selectedAvailability || null,
+      ...updates
+    };
+    onFiltersChange(filters);
+  };
+
   return (
-    <Card className="border-muted/50">
-      <CardContent className="p-4 space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
-          <Input 
-            placeholder="Cerca per nome, username o interessi..." 
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onSearchChange("")}
-              className="absolute right-2 top-1.5 h-7 w-7 p-0"
+    <div className="flex items-center gap-3">
+      {/* Advanced Filters Button */}
+      <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
+        <SheetTrigger asChild>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtri
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 min-w-5 text-xs">
+                {activeFiltersCount}
+              </Badge>
+            )}
+          </Button>
+        </SheetTrigger>
+        
+        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Filtri Ricerca Amici</SheetTitle>
+            <SheetDescription>
+              Trova persone compatibili con le tue preferenze
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-6 mt-6">
+            {/* Age Range */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Fascia d'età</label>
+              <Slider
+                value={ageRange}
+                onValueChange={(value) => {
+                  setAgeRange(value as [number, number]);
+                  updateFilters({ ageRange: value as [number, number] });
+                }}
+                min={18}
+                max={65}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{ageRange[0]} anni</span>
+                <span>{ageRange[1]} anni</span>
+              </div>
+            </div>
+
+            {/* Distance */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Distanza massima</label>
+              <Slider
+                value={[maxDistance]}
+                onValueChange={(value) => {
+                  setMaxDistance(value[0]);
+                  updateFilters({ maxDistance: value[0] });
+                }}
+                min={1}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+              <div className="text-center text-xs text-muted-foreground">
+                {maxDistance} km
+              </div>
+            </div>
+
+            {/* Mood */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Mood</label>
+              <Select 
+                value={selectedMood || "none"} 
+                onValueChange={(value) => {
+                  const newMood = value === "none" ? "" : value;
+                  setSelectedMood(newMood);
+                  updateFilters({ mood: newMood || null });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona un mood" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tutti i mood</SelectItem>
+                  {moods.map((mood) => (
+                    <SelectItem key={mood} value={mood}>
+                      {mood}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Availability */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Disponibilità</label>
+              <Select 
+                value={selectedAvailability || "none"} 
+                onValueChange={(value) => {
+                  const newAvailability = value === "none" ? "" : value;
+                  setSelectedAvailability(newAvailability);
+                  updateFilters({ availability: newAvailability || null });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleziona disponibilità" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Tutte le disponibilità</SelectItem>
+                  {availabilityOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reset Button */}
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => {
+                setAgeRange([18, 65]);
+                setMaxDistance(50);
+                setSelectedMood("");
+                setSelectedAvailability("");
+                updateFilters({
+                  ageRange: [18, 65],
+                  maxDistance: 50,
+                  mood: null,
+                  availability: null
+                });
+              }}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4 mr-2" />
+              Reset Filtri
             </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Active Filters */}
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {selectedMood && (
+            <Badge variant="secondary" className="text-xs">
+              {selectedMood}
+              <button 
+                onClick={() => {
+                  setSelectedMood("");
+                  updateFilters({ mood: null });
+                }}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {selectedAvailability && (
+            <Badge variant="secondary" className="text-xs">
+              {availabilityOptions.find(opt => opt.value === selectedAvailability)?.label}
+              <button 
+                onClick={() => {
+                  setSelectedAvailability("");
+                  updateFilters({ availability: null });
+                }}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
           )}
         </div>
-
-        {/* Filters Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Availability Filter */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Disponibilità</span>
-            </div>
-            <Select value={availabilityFilter} onValueChange={onAvailabilityChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availabilityOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Distance Slider */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Distanza</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {radiusKm} km
-              </Badge>
-            </div>
-            <Slider
-              value={[radiusKm]}
-              onValueChange={(value) => onRadiusChange(value[0])}
-              max={50}
-              min={1}
-              step={1}
-              className="w-full"
-            />
-          </div>
-
-          {/* Mood Filter */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Mood</span>
-            </div>
-            <Select value={selectedMood} onValueChange={onMoodChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tutti i mood" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tutti i mood</SelectItem>
-                {moods.map(mood => (
-                  <SelectItem key={mood} value={mood}>
-                    {mood}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Active Filters Display */}
-        {(searchQuery || selectedMood !== "all" || availabilityFilter !== "all" || radiusKm !== 5) && (
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-muted/50">
-            <span className="text-xs text-muted-foreground">Filtri attivi:</span>
-            {searchQuery && (
-              <Badge variant="minimal" className="text-xs">
-                Ricerca: {searchQuery}
-                <button 
-                  onClick={() => onSearchChange("")}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-            {selectedMood !== "all" && (
-              <Badge variant="minimal" className="text-xs">
-                Mood: {selectedMood}
-                <button 
-                  onClick={() => onMoodChange("all")}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-            {availabilityFilter !== "all" && (
-              <Badge variant="minimal" className="text-xs">
-                Disponibilità: {availabilityOptions.find(o => o.value === availabilityFilter)?.label}
-                <button 
-                  onClick={() => onAvailabilityChange("all")}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-            {radiusKm !== 5 && (
-              <Badge variant="minimal" className="text-xs">
-                Distanza: {radiusKm}km
-                <button 
-                  onClick={() => onRadiusChange(5)}
-                  className="ml-2 hover:text-destructive font-medium"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
-}
+};
