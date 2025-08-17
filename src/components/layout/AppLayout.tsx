@@ -31,23 +31,23 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/22272541-8248-46b1-a48a-eacd5e4d6de1.png" alt="Live Moment Logo" className="h-8 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+          <EnhancedImage src="/logo.png" alt="Live Moment Logo" className="h-8 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
           <span className="sr-only">Live Moment</span>
         </button>
         
         <div className="flex items-center gap-3">
+          {/* Aggiungi Amici Banner - moved to left */}
+          <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 rounded-full text-sm font-medium text-black border border-gray-200 transition-colors hover-scale press-scale">
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Aggiungi Amici</span>
+          </NavLink>
+          
           {/* Agenda with notification */}
           <NavLink to="/agenda" className="relative">
             <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
               <Calendar className="h-5 w-5" />
             </Button>
             <NotificationBadge className="absolute -top-1 -right-1" />
-          </NavLink>
-          
-          {/* Aggiungi Amici Banner */}
-          <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 rounded-full text-sm font-medium text-primary transition-colors hover-scale press-scale">
-            <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Aggiungi Amici</span>
           </NavLink>
           
           {/* Profile Avatar */}

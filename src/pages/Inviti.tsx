@@ -91,17 +91,44 @@ export default function Inviti() {
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-4">
-          <div className="text-center py-8">
-            <Users className="h-12 w-12 mx-auto text-primary mb-4" />
-            <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
-            <p className="text-muted-foreground mb-4">
-              Scopri persone interessanti vicino a te per nuove amicizie
-            </p>
-            <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
-              <Users className="h-4 w-4 mr-2" />
-              Esplora Amici Nelle Vicinanze
-            </Button>
-          </div>
+          {nearbyLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Caricamento amici nelle vicinanze...</p>
+            </div>
+          ) : filteredNearbyUsers.length > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">Persone nelle vicinanze</h3>
+                <Button onClick={() => navigate("/trova-amici")} variant="outline" size="sm">
+                  Vedi tutti
+                </Button>
+              </div>
+              <div className="grid gap-3">
+                {filteredNearbyUsers.slice(0, 3).map((user) => (
+                  <EnhancedNearbyUserCard key={user.user_id} user={user} />
+                ))}
+              </div>
+              {filteredNearbyUsers.length > 3 && (
+                <div className="text-center">
+                  <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
+                    Vedi altri {filteredNearbyUsers.length - 3} amici
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 mx-auto text-primary mb-4" />
+              <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
+              <p className="text-muted-foreground mb-4">
+                Scopri persone interessanti vicino a te per nuove amicizie
+              </p>
+              <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
+                <Users className="h-4 w-4 mr-2" />
+                Esplora Amici Nelle Vicinanze
+              </Button>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>;
