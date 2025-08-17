@@ -40,19 +40,23 @@ export default function EventDetailsStep({
     });
   };
   const handleDateSelect = (date: Date | undefined) => {
-    onChange({ ...data, date });
+    onChange({
+      ...data,
+      date
+    });
   };
-
-  const handleLocationChange = (name: string, coordinates?: { lat: number; lng: number }) => {
-    onChange({ 
-      ...data, 
-      location: { 
-        name, 
-        coordinates: coordinates ? [coordinates.lat, coordinates.lng] : null 
+  const handleLocationChange = (name: string, coordinates?: {
+    lat: number;
+    lng: number;
+  }) => {
+    onChange({
+      ...data,
+      location: {
+        name,
+        coordinates: coordinates ? [coordinates.lat, coordinates.lng] : null
       }
     });
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (data.title.trim() && data.date && data.startTime) {
@@ -152,47 +156,33 @@ export default function EventDetailsStep({
           <Label className="text-base font-medium">Data evento *</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal mt-2"
-              >
+              <Button variant="outline" className="w-full justify-start text-left font-normal mt-2">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {data.date ? format(data.date, "PPP", { locale: it }) : "Seleziona data"}
+                {data.date ? format(data.date, "PPP", {
+                locale: it
+              }) : "Seleziona data"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={data.date}
-                onSelect={handleDateSelect}
-                disabled={(date) => date < new Date()}
-                initialFocus
-              />
+              <Calendar mode="single" selected={data.date} onSelect={handleDateSelect} disabled={date => date < new Date()} initialFocus />
             </PopoverContent>
           </Popover>
         </div>
 
         <div>
           <Label htmlFor="startTime" className="text-base font-medium">Ora inizio *</Label>
-          <Input
-            id="startTime"
-            type="time"
-            value={data.startTime}
-            onChange={(e) => onChange({ ...data, startTime: e.target.value })}
-            className="mt-2"
-            required
-          />
+          <Input id="startTime" type="time" value={data.startTime} onChange={e => onChange({
+          ...data,
+          startTime: e.target.value
+        })} className="mt-2" required />
         </div>
 
         <div>
           <Label htmlFor="endTime" className="text-base font-medium">Ora fine</Label>
-          <Input
-            id="endTime"
-            type="time"
-            value={data.endTime}
-            onChange={(e) => onChange({ ...data, endTime: e.target.value })}
-            className="mt-2"
-          />
+          <Input id="endTime" type="time" value={data.endTime} onChange={e => onChange({
+          ...data,
+          endTime: e.target.value
+        })} className="mt-2" />
         </div>
       </div>
 
@@ -200,21 +190,12 @@ export default function EventDetailsStep({
       <div>
         <Label className="text-base font-medium">Location</Label>
         <div className="mt-2">
-          <LocationSearchInput
-            value={data.location.name}
-            onChange={handleLocationChange}
-            placeholder="Dove si svolgerà l'evento..."
-          />
+          <LocationSearchInput value={data.location.name} onChange={handleLocationChange} placeholder="Dove si svolgerà l'evento..." />
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button 
-          type="submit" 
-          disabled={!data.title.trim() || !data.date || !data.startTime}
-        >
-          Continua
-        </Button>
+        
       </div>
     </form>;
 }
