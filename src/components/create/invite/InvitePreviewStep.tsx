@@ -13,13 +13,13 @@ interface InvitePreviewStepProps {
 export default function InvitePreviewStep({
   data
 }: InvitePreviewStepProps) {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const createInvite = useCreateInvite();
-  
   const handleSendInvites = async () => {
     try {
       console.log('Creating invite with data:', data);
-      
       if (!data.activity.title || data.selectedPeople.length === 0) {
         toast({
           title: "Errore",
@@ -34,25 +34,24 @@ export default function InvitePreviewStep({
         // Map test IDs to actual UUIDs if available
         const testUserMap = {
           '1': '11111111-1111-1111-1111-111111111111',
-          '2': '22222222-2222-2222-2222-222222222222', 
+          '2': '22222222-2222-2222-2222-222222222222',
           '3': '33333333-3333-3333-3333-333333333333',
           '4': '44444444-4444-4444-4444-444444444444'
         };
-        
+
         // If it's already a UUID format, return as is
         if (id.length === 36 && id.includes('-')) {
           return id;
         }
-        
+
         // Check if it's a test user ID
         if (testUserMap[id]) {
           return testUserMap[id];
         }
-        
+
         // For other cases, create a mock UUID
         return `${id.padStart(8, '0')}-0000-0000-0000-000000000000`;
       });
-
       await createInvite.mutateAsync({
         title: data.activity.title,
         description: data.message || `Attività: ${data.activity.title}`,
@@ -63,12 +62,10 @@ export default function InvitePreviewStep({
           coordinates: data.location.coordinates
         } : null
       });
-
       toast({
         title: "Inviti inviati!",
         description: `${data.selectedPeople.length} persone hanno ricevuto il tuo invito`
       });
-      
       window.location.href = "/inviti";
     } catch (error) {
       console.error('Send invites error:', error);
@@ -128,13 +125,7 @@ export default function InvitePreviewStep({
       </Card>
 
       <div className="flex justify-end">
-        <Button 
-          onClick={handleSendInvites}
-          disabled={!data.activity.title || data.selectedPeople.length === 0 || createInvite.isPending}
-          className="min-w-32"
-        >
-          {createInvite.isPending ? "Invio..." : "Invia Inviti"}
-        </Button>
+        
       </div>
     </div>;
 }
