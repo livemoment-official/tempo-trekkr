@@ -31,7 +31,7 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/8ad0427b-94ee-4098-882e-34e8c9ef92b9.png" alt="Live Moment Logo" className="h-8 w-auto object-contain max-w-[120px]" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+          <EnhancedImage src="/lovable-uploads/8ad0427b-94ee-4098-882e-34e8c9ef92b9.png" alt="Live Moment Logo" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-auto object-contain overflow-auto " />
           <span className="sr-only">Live Moment</span>
         </button>
         
@@ -107,14 +107,12 @@ export default function AppLayout() {
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
-  
+
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
-  
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
-  
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
       {!isCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
       {!isAuthenticated && !isCreatePage && <GuestBanner />}
@@ -124,8 +122,7 @@ export default function AppLayout() {
       </main>
 
       {/* Apple-style Floating Create Button - hidden on create page */}
-      {!isCreatePage && (
-        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
+      {!isCreatePage && <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
           <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-ios-floating opacity-80 rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20">
                 <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Accedi per creare
               </Button>}>
@@ -135,8 +132,7 @@ export default function AppLayout() {
               </Button>
             </NavLink>
           </AuthGuard>
-        </div>
-      )}
+        </div>}
 
       {!isCreatePage && <BottomTabBar />}
 
