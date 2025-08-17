@@ -86,8 +86,8 @@ export default function Inviti() {
       <Tabs defaultValue="amici">
         <TabsList className="grid grid-cols-3">
           <TabsTrigger value="amici">Trova Amici</TabsTrigger>
-          <TabsTrigger value="ricevuti">Ricevuti</TabsTrigger>
-          <TabsTrigger value="inviati">Inviati</TabsTrigger>
+          <TabsTrigger value="ricevuti">Tutti gli Inviti</TabsTrigger>
+          
         </TabsList>
         
         <TabsContent value="ricevuti" className="space-y-4">
