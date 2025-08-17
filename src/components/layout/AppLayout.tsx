@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -48,6 +48,12 @@ const Header = ({
           >
             <UserPlus className="h-4 w-4" />
           </Button>
+          
+          <NavLink to="/chat" className="relative">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
+              <Bot className="h-4 w-4" />
+            </Button>
+          </NavLink>
           
           <NavLink to="/profilo" className="relative">
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">

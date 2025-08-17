@@ -72,7 +72,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+      <DialogContent className="max-w-full max-h-full h-screen w-screen fixed inset-0 m-0 border-0 rounded-none overflow-hidden"  >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />

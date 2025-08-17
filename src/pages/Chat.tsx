@@ -1,163 +1,258 @@
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Send, MapPin, UserPlus, MessageSquare } from "lucide-react";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useAuth } from "@/contexts/AuthContext";
-import { ConversationList } from "@/components/chat/ConversationList";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, Send, Bot, User, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const chips = [
-  "Aperitivo live",
-  "Open mic",
-  "Chill al parco",
-  "Concerto vicino",
-  "Cerca un’artista",
-  "Trova location",
-];
-
-function PersonaCard({ name, tag }: { name: string; tag: string }) {
-  return (
-    <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-4">
-        <Avatar>
-          <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="text-sm font-medium">{name}</div>
-          <div className="text-xs text-muted-foreground">{tag}</div>
-        </div>
-        <div className="flex gap-2">
-          <AuthGuard 
-            title="Accedi per scrivere"
-            description={`Accedi per iniziare una conversazione con ${name}`}
-          >
-            <Button variant="secondary" size="sm" aria-label={`Scrivi a ${name}`}>
-              <MessageSquare />
-              <span className="sr-only">Scrivi</span>
-            </Button>
-          </AuthGuard>
-          <AuthGuard 
-            title="Accedi per invitare"
-            description={`Accedi per invitare ${name} ad un momento`}
-          >
-            <Button size="sm" aria-label={`Invita ${name}`}>
-              <UserPlus />
-              <span className="sr-only">Invita</span>
-            </Button>
-          </AuthGuard>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SimpleCard({ title, meta }: { title: string; meta: string }) {
-  return (
-    <Card className="shadow-sm">
-      <CardContent className="flex items-center justify-between p-4">
-        <div>
-          <div className="text-sm font-medium">{title}</div>
-          <div className="text-xs text-muted-foreground">{meta}</div>
-        </div>
-        <AuthGuard 
-          title="Accedi per partecipare"
-          description="Accedi per vedere i dettagli e partecipare"
-        >
-          <Button variant="outline" size="sm">
-            <MapPin /> Partecipa
-          </Button>
-        </AuthGuard>
-      </CardContent>
-    </Card>
-  );
+interface Message {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: Date;
 }
 
 export default function Chat() {
-  const location = useLocation();
-  const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/";
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage,
+      role: 'user',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+
+    // Simulate AI response for now - in real app, connect to OpenAI API
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Ciao! Sono l'assistente AI di LiveMoment. Come posso aiutarti a trovare il momento perfetto per te?",
+        role: 'assistant',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
       <Helmet>
-        <title>LiveMoment · CioCiPT – Cosa facciamo oggi?</title>
-        <meta name="description" content="Canta o scrivi il tuo mood: CioCiPT ti propone persone, artisti, location e Momenti vicini a te." />
-        <link rel="canonical" href={canonical} />
+        <title>LiveMoment · Chat AI</title>
+        <meta name="description" content="Chatta con l'assistente AI di LiveMoment per trovare momenti e eventi perfetti per te" />
       </Helmet>
 
-      <h1 className="sr-only">CioCiPT – Assistente LiveMoment</h1>
-
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <img src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-8 w-auto" />
-          <p className="text-sm text-muted-foreground">Cosa facciamo oggi? Puoi anche canticchiare 🎤</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {chips.map((c) => (
-            <Button key={c} variant="chip" className="hover-scale">
-              {c}
+      {/* Header - Only visible when collapsed */}
+      {!isExpanded && (
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
+          <div className="container mx-auto px-4 h-14 flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border bg-card p-2 shadow-sm">
-          <Button variant="secondary" size="icon" aria-label="Input vocale">
-            <Mic />
-          </Button>
-          <Input placeholder="Descrivi un’idea o canta il mood…" className="border-0 focus-visible:ring-0" />
-          <Button size="icon" aria-label="Invia">
-            <Send />
-          </Button>
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <CardHeader className="p-0">
-          <CardTitle className="text-base">Persone compatibili vicino a te</CardTitle>
-        </CardHeader>
-        <div className="space-y-2">
-          <PersonaCard name="Giorgia" tag="Chill · 1 km" />
-          <PersonaCard name="Luca" tag="Open mic · 0.6 km" />
-          <PersonaCard name="Marta" tag="Aperitivo live · 1.2 km" />
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <CardHeader className="p-0">
-          <CardTitle className="text-base">Artisti e Location suggerite</CardTitle>
-        </CardHeader>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <SimpleCard title="Duo acustico – Luna" meta="Disponibile stasera · 2 km" />
-          <SimpleCard title="Bar con palco – Aurora" meta="Posti 60 · 1.5 km" />
-        </div>
-      </section>
-
-      <Tabs defaultValue="discover" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="discover">Scopri</TabsTrigger>
-          <TabsTrigger value="messages">Messaggi</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="discover" className="space-y-4">
-          <section className="rounded-xl border p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <Badge variant="secondary">Oggi</Badge>
-              <span className="text-sm font-medium">Momenti & Eventi vicini</span>
+            <div className="flex items-center gap-3 flex-1">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h1 className="font-semibold">Assistente AI</h1>
+                <p className="text-xs text-muted-foreground">Online</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <SimpleCard title="Open mic al Parco" meta="19:30 · 0.8 km · live/acustico" />
-              <SimpleCard title="Concerto afterwork" meta="20:00 · 2.1 km · live" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(true)}
+              className="text-primary"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+          </div>
+        </header>
+      )}
+
+      {/* Chat Container */}
+      <div className={`${isExpanded ? 'fixed inset-0 z-50 bg-background' : 'container mx-auto px-4 pb-24'}`}>
+        {/* Expanded Header */}
+        {isExpanded && (
+          <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
+            <div className="px-4 h-14 flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsExpanded(false)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-3 flex-1">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    <Bot className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h1 className="font-semibold">Assistente AI LiveMoment</h1>
+                  <p className="text-xs text-muted-foreground">Powered by OpenAI</p>
+                </div>
+              </div>
             </div>
-          </section>
-        </TabsContent>
-        
-        <TabsContent value="messages">
-          <ConversationList />
-        </TabsContent>
-      </Tabs>
+          </header>
+        )}
+
+        {/* Messages */}
+        <div className={`${isExpanded ? 'h-[calc(100vh-120px)] overflow-y-auto' : 'min-h-[60vh]'} py-4 space-y-4`}>
+          {messages.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bot className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Assistente AI LiveMoment</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Ciao! Sono qui per aiutarti a trovare i momenti perfetti. 
+                Dimmi cosa ti piacerebbe fare e ti consiglierò eventi e attività nella tua zona.
+              </p>
+              
+              <div className="mt-6 grid gap-2 max-w-sm mx-auto">
+                <Button
+                  variant="outline"
+                  className="text-left justify-start"
+                  onClick={() => setInputMessage("Cosa potrei fare questo weekend a Milano?")}
+                >
+                  "Cosa potrei fare questo weekend a Milano?"
+                </Button>
+                <Button
+                  variant="outline"
+                  className="text-left justify-start"
+                  onClick={() => setInputMessage("Trova aperitivi stasera")}
+                >
+                  "Trova aperitivi stasera"
+                </Button>
+                <Button
+                  variant="outline"
+                  className="text-left justify-start"
+                  onClick={() => setInputMessage("Eventi di sport questo fine settimana")}
+                >
+                  "Eventi di sport questo fine settimana"
+                </Button>
+              </div>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {message.role === 'assistant' && (
+                  <Avatar className="h-8 w-8 mt-2">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      <Bot className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                
+                <div className={`max-w-[80%] rounded-lg p-3 ${
+                  message.role === 'user' 
+                    ? 'bg-primary text-primary-foreground ml-12' 
+                    : 'bg-muted'
+                }`}>
+                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString('it-IT', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
+
+                {message.role === 'user' && (
+                  <Avatar className="h-8 w-8 mt-2">
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            ))
+          )}
+
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <Avatar className="h-8 w-8 mt-2">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-muted rounded-lg p-3">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce delay-100" />
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce delay-200" />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className={`${isExpanded ? 'absolute bottom-0 left-0 right-0' : 'fixed bottom-20'} bg-background border-t p-4`}>
+          <div className={`${isExpanded ? '' : 'container mx-auto'} flex gap-2`}>
+            <Input
+              placeholder="Scrivi un messaggio..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="flex-1"
+              disabled={isLoading}
+            />
+            <Button 
+              onClick={sendMessage} 
+              disabled={!inputMessage.trim() || isLoading}
+              className="px-3"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -54,7 +54,8 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city', groupId: st
               when_at,
               place,
               participants,
-              host:profiles!moments_host_id_fkey (name)
+              host_id,
+              profiles!moments_host_id_fkey (name)
             `)
             .eq('id', groupId)
             .single());
@@ -69,7 +70,8 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city', groupId: st
               description,
               when_at,
               place,
-              host:profiles!events_host_id_fkey (name)
+              host_id,
+              profiles!events_host_id_fkey (name)
             `)
             .eq('id', groupId)
             .single());
@@ -92,7 +94,7 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city', groupId: st
           id: data.id,
           title: data.title || `Gruppo ${groupId}`,
           type: groupType,
-          subtitle: data.host?.name ? `Organizzato da ${data.host.name}` : undefined,
+          subtitle: data.profiles?.name ? `Organizzato da ${data.profiles.name}` : undefined,
           location: data.place?.name || data.place?.address,
           date: data.when_at ? new Date(data.when_at).toLocaleDateString('it-IT') : undefined,
           time: data.when_at ? new Date(data.when_at).toLocaleTimeString('it-IT', { 
