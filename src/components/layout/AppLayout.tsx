@@ -26,29 +26,28 @@ const Header = ({
 
   // Debug log per verificare lo stato di autenticazione
   console.log('Header - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
-  return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
-        <button className="flex items-center gap-2 hover-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-10 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+  return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
+      <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
+        <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
+          <EnhancedImage src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-11 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
           <span className="sr-only">LiveMoment</span>
         </button>
         
-        {/* Mostra sempre le icone per debug, poi rimuoveremo questa riga */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <NavLink to="/agenda" className="relative">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
-              <Calendar className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
+              <Calendar className="h-5 w-5" />
             </Button>
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary" onClick={onOpenFriends} aria-label="Trova amici">
-            <UserPlus className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl" onClick={onOpenFriends} aria-label="Trova amici">
+            <UserPlus className="h-5 w-5" />
           </Button>
           
           <NavLink to="/profilo" className="relative">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-foreground hover:text-primary">
-              <User className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
+              <User className="h-5 w-5" />
             </Button>
           </NavLink>
         </div>
@@ -58,26 +57,34 @@ const Header = ({
 const BottomTabBar = () => {
   const location = useLocation();
   const isActive = (to: string) => location.pathname === to;
-  const base = "flex flex-1 flex-col items-center justify-center py-3 text-xs";
+  const base = "flex flex-1 flex-col items-center justify-center py-2.5 text-xs transition-smooth hover-scale";
   const active = "text-primary font-medium";
   const idle = "text-muted-foreground";
-  return <nav className="sticky bottom-0 z-40 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-2">
+  return <nav className="sticky bottom-0 z-40 border-t border-border/50 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 shadow-ios-elevated">
+      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-3 py-1">
         <NavLink to="/inviti" className={cn(base, isActive("/inviti") ? active : idle)}>
-          <MessageSquareText className="h-6 w-6 mb-1" />
-          <span>Inviti</span>
+          <div className={cn("flex flex-col items-center", isActive("/inviti") && "pill-active")}>
+            <MessageSquareText className="h-6 w-6 mb-1.5" strokeWidth={1.5} />
+            <span className="text-xs">Inviti</span>
+          </div>
         </NavLink>
         <NavLink to="/esplora" className={cn(base, isActive("/esplora") ? active : idle)}>
-          <SearchIcon className="h-6 w-6 mb-1" />
-          <span>Esplora</span>
+          <div className={cn("flex flex-col items-center", isActive("/esplora") && "pill-active")}>
+            <SearchIcon className="h-6 w-6 mb-1.5" strokeWidth={1.5} />
+            <span className="text-xs">Esplora</span>
+          </div>
         </NavLink>
         <NavLink to="/gruppi" className={cn(base, isActive("/gruppi") ? active : idle)}>
-          <Users className="h-6 w-6 mb-1" />
-          <span>Gruppi</span>
+          <div className={cn("flex flex-col items-center", isActive("/gruppi") && "pill-active")}>
+            <Users className="h-6 w-6 mb-1.5" strokeWidth={1.5} />
+            <span className="text-xs">Gruppi</span>
+          </div>
         </NavLink>
         <NavLink to="/momenti" className={cn(base, isActive("/momenti") ? active : idle)}>
-          <MapPin className="h-6 w-6 mb-1" />
-          <span>Momenti</span>
+          <div className={cn("flex flex-col items-center", isActive("/momenti") && "pill-active")}>
+            <MapPin className="h-6 w-6 mb-1.5" strokeWidth={1.5} />
+            <span className="text-xs">Momenti</span>
+          </div>
         </NavLink>
       </div>
     </nav>;
@@ -98,18 +105,18 @@ export default function AppLayout() {
       <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />
       {!isAuthenticated && <GuestBanner />}
       <UnconfirmedUserBanner />
-      <main className="flex-1 px-4 pb-24 pt-3 animate-fade-in">
+      <main className="flex-1 px-5 pb-28 pt-4 animate-fade-in">
         <Outlet />
       </main>
 
-      {/* Floating Create Button */}
-      <div className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2">
-        <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-lg opacity-80">
-              <Plus className="mr-2 h-5 w-5" /> Accedi per creare
+      {/* Apple-style Floating Create Button */}
+      <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
+        <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-ios-floating opacity-80 rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20">
+              <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Accedi per creare
             </Button>}>
           <NavLink to="/crea" aria-label="Crea un momento o invito">
-            <Button size="lg" className="shadow-lg">
-              <Plus className="mr-2 h-5 w-5" /> Crea
+            <Button size="lg" className="shadow-ios-floating rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
+              <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Crea
             </Button>
           </NavLink>
         </AuthGuard>

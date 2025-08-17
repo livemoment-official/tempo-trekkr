@@ -49,7 +49,8 @@ All colors MUST be HSL.
     --input: 0 0% 92%;
     --ring: 45 100% 50%;
 
-    --radius: 0.75rem;
+    /* Apple-style border radius */
+    --radius: 1rem;
 
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
@@ -61,11 +62,16 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Custom gradients and shadows for Live Moment */
+    /* Custom gradients and shadows for Live Moment - Apple Style */
     --gradient-brand: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-variant)));
-    --shadow-brand: 0 2px 8px hsl(var(--brand-primary) / 0.12);
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.05);
-    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08);
+    
+    /* iOS-style shadows - stratified and soft */
+    --shadow-ios-light: 0 1px 3px hsl(0 0% 0% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.06);
+    --shadow-ios-elevated: 0 4px 6px hsl(0 0% 0% / 0.05), 0 2px 4px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.05);
+    --shadow-ios-floating: 0 10px 15px hsl(0 0% 0% / 0.1), 0 4px 6px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--brand-primary) / 0.1);
+    --shadow-brand: 0 4px 12px hsl(var(--brand-primary) / 0.15), 0 2px 6px hsl(var(--brand-primary) / 0.1);
+    --shadow-card: var(--shadow-ios-light);
+    --shadow-elevated: var(--shadow-ios-elevated);
   }
 
   .dark {
@@ -118,19 +124,24 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-normal;
-    line-height: 1.6;
-    letter-spacing: -0.01em;
+    line-height: 1.65;
+    letter-spacing: -0.005em;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   }
 }
 
 @layer utilities {
-  /* Modern micro-interactions */
+  /* Apple-style micro-interactions */
   .hover-scale {
-    @apply transition-all duration-200 ease-out hover:scale-[1.02];
+    @apply transition-all duration-300 ease-out hover:scale-[1.03];
   }
   
   .press-scale {
-    @apply transition-all duration-100 ease-out active:scale-[0.98];
+    @apply transition-all duration-150 ease-out active:scale-[0.96];
+  }
+  
+  .spring-bounce {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
   
   .story-link {
@@ -159,8 +170,31 @@ All colors MUST be HSL.
     @apply fill-current;
   }
   
-  /* Smooth transitions */
+  /* Apple-style smooth transitions */
   .transition-smooth {
-    @apply transition-all duration-200 ease-out;
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  /* iOS shadow utilities */
+  .shadow-ios-light {
+    box-shadow: var(--shadow-ios-light);
+  }
+  
+  .shadow-ios-elevated {
+    box-shadow: var(--shadow-ios-elevated);
+  }
+  
+  .shadow-ios-floating {
+    box-shadow: var(--shadow-ios-floating);
+  }
+  
+  /* Avatar system */
+  .avatar-ring {
+    @apply ring-2 ring-border/20 ring-offset-2 ring-offset-background;
+  }
+  
+  /* Pill backgrounds for active states */
+  .pill-active {
+    @apply bg-primary/10 text-primary rounded-full px-3 py-1.5;
   }
 }
