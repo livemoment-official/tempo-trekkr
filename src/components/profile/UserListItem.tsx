@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
 interface UserProfile {
   id: string;
   name: string;
@@ -15,19 +14,20 @@ interface UserProfile {
   is_available: boolean;
   preferred_moments?: string[];
 }
-
 interface UserListItemProps {
   user: UserProfile;
   onFollow?: (userId: string) => void;
   className?: string;
 }
-
-export function UserListItem({ user, onFollow, className }: UserListItemProps) {
+export function UserListItem({
+  user,
+  onFollow,
+  className
+}: UserListItemProps) {
   const handleFollow = () => {
     onFollow?.(user.id);
     toast.success(`Ora segui ${user.name}!`);
   };
-
   const handleMessage = () => {
     toast.info("Funzionalità messaggi in arrivo!");
   };
@@ -36,23 +36,11 @@ export function UserListItem({ user, onFollow, className }: UserListItemProps) {
   const sharedFriends = Math.floor(Math.random() * 15) + 1;
   const totalFriends = Math.floor(Math.random() * 500) + 100;
   const totalMoments = Math.floor(Math.random() * 50) + 5;
-
-  return (
-    <div className={cn(
-      "flex items-center gap-4 p-4 bg-background rounded-xl border border-border/50 hover:shadow-sm transition-all duration-200",
-      className
-    )}>
+  return <div className={cn("flex items-center gap-4 p-4 bg-background rounded-xl border border-border/50 hover:shadow-sm transition-all duration-200", className)}>
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <EnhancedImage
-          src={user.avatar_url}
-          alt={`${user.name} avatar`}
-          className="w-14 h-14 rounded-full object-cover"
-          fallbackSrc="/placeholder.svg"
-        />
-        {user.is_available && (
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-background rounded-full" />
-        )}
+        <EnhancedImage src={user.avatar_url} alt={`${user.name} avatar`} className="w-14 h-14 rounded-full object-cover" fallbackSrc="/placeholder.svg" />
+        {user.is_available && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-background rounded-full" />}
       </div>
 
       {/* User Info */}
@@ -69,9 +57,7 @@ export function UserListItem({ user, onFollow, className }: UserListItemProps) {
         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
           <MapPin className="h-3 w-3" />
           <span className="truncate">{user.city}</span>
-          {user.distance_km && (
-            <span className="text-xs">• {user.distance_km}km</span>
-          )}
+          {user.distance_km && <span className="text-xs">• {user.distance_km}km</span>}
         </div>
 
         <div className="space-y-1">
@@ -86,24 +72,11 @@ export function UserListItem({ user, onFollow, className }: UserListItemProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleMessage}
-          className="h-9 w-9 p-0 rounded-lg hover:bg-muted"
-        >
-          <MessageCircle className="h-4 w-4" />
-        </Button>
         
-        <Button
-          onClick={handleFollow}
-          size="sm"
-          variant="outline"
-          className="bg-background border-border/50 text-foreground hover:bg-muted px-4 py-2 h-9"
-        >
+        
+        <Button onClick={handleFollow} size="sm" variant="outline" className="bg-background border-border/50 text-foreground hover:bg-muted px-4 py-2 h-9">
           Segui
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 }

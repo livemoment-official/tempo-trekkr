@@ -50,9 +50,7 @@ export default function TrovaAmici() {
       </Helmet>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-[#FFFCEF]/85 backdrop-blur-xl">
-        
-      </header>
+      
 
       {/* Content */}
       <div className="px-5 py-4 space-y-4">
