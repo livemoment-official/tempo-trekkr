@@ -141,23 +141,47 @@ export default function FriendsSearchFilters({
           <div className="flex flex-wrap gap-2 pt-2 border-t border-muted/50">
             <span className="text-xs text-muted-foreground">Filtri attivi:</span>
             {searchQuery && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 Ricerca: {searchQuery}
+                <button 
+                  onClick={() => onSearchChange("")}
+                  className="ml-2 hover:text-destructive font-medium"
+                >
+                  ×
+                </button>
               </Badge>
             )}
             {selectedMood !== "all" && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 Mood: {selectedMood}
+                <button 
+                  onClick={() => onMoodChange("all")}
+                  className="ml-2 hover:text-destructive font-medium"
+                >
+                  ×
+                </button>
               </Badge>
             )}
             {availabilityFilter !== "all" && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 Disponibilità: {availabilityOptions.find(o => o.value === availabilityFilter)?.label}
+                <button 
+                  onClick={() => onAvailabilityChange("all")}
+                  className="ml-2 hover:text-destructive font-medium"
+                >
+                  ×
+                </button>
               </Badge>
             )}
             {radiusKm !== 5 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="minimal" className="text-xs">
                 Distanza: {radiusKm}km
+                <button 
+                  onClick={() => onRadiusChange(5)}
+                  className="ml-2 hover:text-destructive font-medium"
+                >
+                  ×
+                </button>
               </Badge>
             )}
           </div>

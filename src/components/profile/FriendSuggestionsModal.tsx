@@ -72,7 +72,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-full max-h-full h-screen w-screen fixed inset-0 m-0 border-0 rounded-none overflow-hidden"  >
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden"  >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -80,7 +80,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 h-full flex flex-col">
           {/* Search bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -88,27 +88,27 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
               placeholder="Cerca per nome o username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-xl shadow-card"
             />
           </div>
 
-          <Tabs defaultValue="nearby" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="nearby" className="flex items-center gap-2">
+          <Tabs defaultValue="nearby" className="w-full flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 rounded-xl shadow-card">
+              <TabsTrigger value="nearby" className="flex items-center gap-2 rounded-lg">
                 <MapPin className="h-4 w-4" />
-                Nelle vicinanze
+                Vicinanze
               </TabsTrigger>
-              <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <TabsTrigger value="contacts" className="flex items-center gap-2 rounded-lg">
                 <Phone className="h-4 w-4" />
                 Rubrica
               </TabsTrigger>
-              <TabsTrigger value="search" className="flex items-center gap-2">
+              <TabsTrigger value="search" className="flex items-center gap-2 rounded-lg">
                 <Search className="h-4 w-4" />
                 Cerca
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="nearby" className="space-y-4 max-h-96 overflow-y-auto">
+            <TabsContent value="nearby" className="space-y-4 flex-1 overflow-y-auto">
               <div className="flex items-center gap-2 mb-4">
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
@@ -160,7 +160,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
               )}
             </TabsContent>
 
-            <TabsContent value="contacts" className="space-y-4 max-h-96 overflow-y-auto">
+            <TabsContent value="contacts" className="space-y-4 flex-1 overflow-y-auto">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   Contatti che usano LiveMoment
@@ -189,7 +189,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
               )}
             </TabsContent>
 
-            <TabsContent value="search" className="space-y-4 max-h-96 overflow-y-auto">
+            <TabsContent value="search" className="space-y-4 flex-1 overflow-y-auto">
               <p className="text-sm text-muted-foreground">
                 Cerca utenti per nome, username o interessi
               </p>

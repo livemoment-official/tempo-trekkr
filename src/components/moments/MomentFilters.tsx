@@ -117,15 +117,17 @@ export function MomentFilters({
     onSubcategoriesChange(updatedSubcategories);
   };
 
+  const handleCategoryChange = (categoryId: string | null) => {
+    onCategoryChange?.(categoryId);
+    onSubcategoriesChange?.([]);
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Category Pills */}
       <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
         <button
-          onClick={() => {
-            onCategoryChange?.(null);
-            onSubcategoriesChange?.([]);
-          }}
+          onClick={() => handleCategoryChange(null)}
           className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
             !selectedCategory 
               ? 'gradient-brand text-brand-black shadow-brand scale-105' 
@@ -140,11 +142,9 @@ export function MomentFilters({
             key={category.id}
             onClick={() => {
               if (selectedCategory === category.id) {
-                onCategoryChange?.(null);
-                onSubcategoriesChange?.([]);
+                handleCategoryChange(null);
               } else {
-                onCategoryChange?.(category.id);
-                onSubcategoriesChange?.([]);
+                handleCategoryChange(category.id);
               }
             }}
             className={`flex flex-col items-center gap-2 p-4 rounded-2xl min-w-[85px] transition-smooth ${
