@@ -77,13 +77,6 @@ export default function CreaInvito() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/crea")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-lg font-semibold">Crea Invito</h1>
-      </div>
-
       {/* Progress indicator */}
       <div className="flex items-center gap-2 mb-6">
         {steps.map((step, index) => <div key={step.id} className="flex items-center">

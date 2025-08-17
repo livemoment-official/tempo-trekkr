@@ -7,7 +7,7 @@ import { Toaster } from './components/ui/toaster'
 
 // Layout Components
 import AppLayout from './components/layout/AppLayout'
-import MinimalLayout from './components/layout/MinimalLayout'
+import MinimalLayoutWrapper from './components/layout/MinimalLayoutWrapper'
 
 // Pages
 import Index from './pages/Index'
@@ -52,13 +52,11 @@ createRoot(document.getElementById("root")!).render(
             </Route>
 
             {/* Routes with Minimal Layout (only back button) */}
-            <Route path="/" element={<MinimalLayout />}>
-              <Route path="crea/invito" element={<CreaInvito />} />
-              <Route path="crea/momento" element={<CreaMomento />} />
-              <Route path="crea/evento" element={<CreaEvento />} />
-              <Route path="momenti/:id" element={<MomentDetail />} />
-              <Route path="chat/:type/:id" element={<ChatFullscreen />} />
-            </Route>
+            <Route path="crea/invito" element={<MinimalLayoutWrapper title="Crea Invito"><CreaInvito /></MinimalLayoutWrapper>} />
+            <Route path="crea/momento" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomento /></MinimalLayoutWrapper>} />
+            <Route path="crea/evento" element={<MinimalLayoutWrapper title="Crea Evento"><CreaEvento /></MinimalLayoutWrapper>} />
+            <Route path="momenti/:id" element={<MinimalLayoutWrapper title="Momento"><MomentDetail /></MinimalLayoutWrapper>} />
+            <Route path="chat/:type/:id" element={<MinimalLayoutWrapper title="Chat"><ChatFullscreen /></MinimalLayoutWrapper>} />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />

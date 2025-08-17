@@ -226,13 +226,6 @@ export default function CreaMomento() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/crea")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-lg font-semibold">Crea Momento</h1>
-      </div>
-
       <Card>
         
         <CardContent className="space-y-6">

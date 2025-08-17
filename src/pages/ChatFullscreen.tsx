@@ -144,20 +144,10 @@ export default function ChatFullscreen() {
         <meta name="description" content={`Chat di gruppo per ${chatInfo?.title || "LiveMoment"}`} />
       </Helmet>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
-        <div className="flex items-center gap-4 p-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate(-1)}
-            aria-label="Torna indietro"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          
+      {/* Header Extension for Chat */}
+      <div className="border-b bg-background">
+        <div className="flex items-center justify-between p-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-semibold">{chatInfo?.title}</h1>
             <p className="text-sm text-muted-foreground">{chatInfo?.subtitle}</p>
           </div>
 
@@ -177,7 +167,7 @@ export default function ChatFullscreen() {
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Info Banner per momenti */}
       {(groupInfo?.type === 'moment' || groupInfo?.type === 'event') && (
