@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
-import { MapPin, Heart } from "lucide-react";
+import { MapPin, Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import QuickInviteModal from "@/components/invites/QuickInviteModal";
 
 interface UserProfile {
   id: string;
@@ -23,8 +25,23 @@ interface UserProfileCardProps {
 }
 
 export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCardProps) {
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
   const handleInvite = () => {
-    onInvite?.(user.id);
+    setShowInviteModal(true);
+  };
+
+  // Transform user to NearbyUser format for the modal
+  const nearbyUser = {
+    user_id: user.id,
+    name: user.name,
+    username: user.name.toLowerCase().replace(/\s+/g, ''),
+    avatar_url: user.avatar_url || '/placeholder.svg',
+    mood: 'friendly',
+    distance_km: user.distance_km || 0,
+    availability_id: user.is_available ? 'available' : 'busy',
+    job_title: '',
+    interests: user.preferred_moments || []
   };
 
   const getAvailabilityText = () => {
@@ -57,10 +74,10 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
         {/* Availability Badge */}
         <Badge 
           className={cn(
-            "text-xs px-2 py-1.5 bg-white border-0 shadow-sm",
+            "text-xs px-2 py-1.5 bg-white text-foreground border border-border/30 shadow-sm",
             user.is_available 
-              ? "text-green-700" 
-              : "text-gray-600"
+              ? "text-foreground" 
+              : "text-muted-foreground"
           )}
         >
           <div className={cn(
@@ -72,11 +89,12 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
 
         {/* Invite Button */}
         <Button 
-          size="sm" 
+          size="icon" 
+          variant="outline"
           onClick={handleInvite}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-3 h-7 text-xs font-medium rounded-full border-0 shadow-sm"
+          className="h-8 w-8 bg-white border-2 border-foreground hover:bg-muted/50 rounded-full shadow-sm"
         >
-          Invita
+          <MessageCircle className="h-4 w-4 text-foreground" />
         </Button>
       </div>
 
@@ -93,7 +111,7 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
       {/* User Info */}
       <div className="p-3 space-y-1">
         {/* Name */}
-        <h3 className="font-medium text-foreground text-center text-sm">
+        <h3 className="font-medium text-foreground text-left text-sm">
           {user.name}
           {user.age && (
             <span className="text-muted-foreground font-normal">, {user.age}</span>
@@ -101,8 +119,8 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
         </h3>
         
         {/* Location */}
-        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <MapPin className="h-3 w-3 flex-shrink-0" />
           <span className="truncate">
             {user.city}
             {user.distance_km && (
@@ -112,11 +130,18 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
         </div>
 
         {/* Preferred Moments */}
-        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-          <Heart className="h-3 w-3 fill-current text-pink-500" />
-          <span className="truncate text-center">{getPreferredMomentsText()}</span>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Heart className="h-3 w-3 flex-shrink-0 fill-current text-pink-500" />
+          <span className="truncate">{getPreferredMomentsText()}</span>
         </div>
       </div>
+
+      {/* Quick Invite Modal */}
+      <QuickInviteModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        targetUser={nearbyUser}
+      />
     </Card>
   );
 }

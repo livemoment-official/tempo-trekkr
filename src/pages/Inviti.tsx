@@ -145,7 +145,7 @@ export default function Inviti() {
                   Vedi tutti
                 </Button>
               </div>
-              <div className="grid gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {filteredUsers.slice(0, 6).map((user) => (
                   <UserDiscoveryCard 
                     key={user.id} 
