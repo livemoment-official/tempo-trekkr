@@ -124,7 +124,7 @@ export default function TrovaAmici() {
               )}
             </div>
             
-            <div className="grid gap-3 pb-20">
+            <div className="grid grid-cols-2 gap-3 pb-20">
               {filteredUsers.map(user => (
                 <UserDiscoveryCard 
                   key={user.id} 
