@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, CalendarPlus, MessageSquarePlus } from "lucide-react";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
 export default function Crea() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,7 +18,13 @@ export default function Crea() {
       
 
       <div className="flex items-center gap-2 mb-6">
-        <img src="/lovable-uploads/cb47fb5b-64b8-404d-bec3-3b27340dfb91.png" alt="Logo LiveMoment" className="h-8 w-auto" />
+        <EnhancedImage 
+          src="/lovable-uploads/04aa6251-ccf1-4f59-8562-c3edb68824dc.png" 
+          alt="Logo LiveMoment" 
+          className="h-8 w-auto"
+          fallbackSrc="/placeholder.svg"
+          showSkeleton={false}
+        />
         <p className="text-sm text-muted-foreground">Crea velocemente un Momento, un Evento o un Invito</p>
       </div>
       

@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
 const Header = ({
   onOpenSearch,
   onOpenFriends
@@ -26,7 +27,13 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 w-full max-w-screen-sm items-center justify-between px-4">
         <button className="flex items-center gap-2 hover-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <img src="/lovable-uploads/cb47fb5b-64b8-404d-bec3-3b27340dfb91.png" alt="Logo LiveMoment" className="h-8 w-auto" />
+          <EnhancedImage 
+            src="/lovable-uploads/04aa6251-ccf1-4f59-8562-c3edb68824dc.png" 
+            alt="Logo LiveMoment" 
+            className="h-8 w-auto"
+            fallbackSrc="/placeholder.svg"
+            showSkeleton={false}
+          />
           <span className="sr-only">LiveMoment</span>
         </button>
         

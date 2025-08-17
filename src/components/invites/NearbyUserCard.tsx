@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, UserPlus, MessageCircle } from "lucide-react";
 import { useInviteCount } from "@/hooks/useNearbyUsers";
 import QuickInviteModal from "./QuickInviteModal";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
 
 interface NearbyUser {
   user_id: string;
@@ -43,7 +44,12 @@ export default function NearbyUserCard({ user }: NearbyUserCardProps) {
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={user.avatar_url} alt={user.name} />
+              <EnhancedImage 
+                src={user.avatar_url} 
+                alt={user.name}
+                className="w-full h-full object-cover rounded-full"
+                fallbackSrc="/placeholder.svg"
+              />
               <AvatarFallback>
                 {user.name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>

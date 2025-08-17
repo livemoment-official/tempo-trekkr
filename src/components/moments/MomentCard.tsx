@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
 
 interface MomentCardProps {
   id: string;
@@ -99,10 +100,12 @@ export function MomentCard({
       {/* Hero Image - 1080x1440 ratio */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-xl">
         {image ? (
-          <img 
+          <EnhancedImage 
             src={image} 
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
+            fallbackSrc="/placeholder.svg"
+            skeletonClassName="w-full h-full"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center">

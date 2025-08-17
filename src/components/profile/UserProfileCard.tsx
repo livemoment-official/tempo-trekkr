@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PersonalityBadge } from "./PersonalityBadge";
 import { MessageCircle, UserPlus, CheckCircle, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
 
 interface UserProfile {
   id: string;
@@ -47,7 +48,12 @@ export const UserProfileCard = ({
         <div className="flex items-start gap-4">
           <Link to={`/profilo/${profile.username}`} className="shrink-0">
             <Avatar className={compact ? "h-12 w-12" : "h-16 w-16"}>
-              <AvatarImage src={profile.avatar_url || undefined} />
+              <EnhancedImage 
+                src={profile.avatar_url || undefined} 
+                alt={profile.name || profile.username || 'User'}
+                className="w-full h-full object-cover rounded-full"
+                fallbackSrc="/placeholder.svg"
+              />
               <AvatarFallback className="bg-gradient-primary text-white font-medium">
                 {profile.name?.charAt(0) || profile.username?.charAt(0) || 'U'}
               </AvatarFallback>
