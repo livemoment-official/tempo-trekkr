@@ -21,6 +21,8 @@ import CreaInvito from "./pages/CreaInvito";
 import Agenda from "./pages/Agenda";
 import UserProfile from "./pages/UserProfile";
 import ChatFullscreen from "./pages/ChatFullscreen";
+import TrovaAmici from "./pages/TrovaAmici";
+import Premi from "./pages/Premi";
 
 const queryClient = new QueryClient();
 
@@ -47,9 +49,11 @@ const App = () => (
                 <Route path="/crea/invito" element={<CreaInvito />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/profilo/:username" element={<UserProfile />} />
-        <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
-        <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
+                <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
+                <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
+                <Route path="/trova-amici" element={<TrovaAmici />} />
+                <Route path="/premi" element={<Premi />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

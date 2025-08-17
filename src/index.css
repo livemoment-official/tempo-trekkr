@@ -15,45 +15,45 @@ All colors MUST be HSL.
     --brand-white: 0 0% 100%; /* #FFFFFF - Bianco */
     --brand-gray: 0 0% 96%; /* #F5F5F5 - Grigio chiaro */
 
-    /* Surface Colors - Minimal Palette */
-    --background: 0 0% 100%;
+    /* Surface Colors - Warm Cream Palette */
+    --background: 48 86% 97%; /* #FFFCEF */
     --foreground: 0 0% 0%;
 
-    --card: 0 0% 100%;
+    --card: 48 86% 97%; /* #FFFCEF */
     --card-foreground: 0 0% 0%;
 
-    --popover: 0 0% 100%;
+    --popover: 48 86% 97%; /* #FFFCEF */
     --popover-foreground: 0 0% 0%;
 
     /* Primary - Live Moment Yellow */
     --primary: 45 100% 50%;
     --primary-foreground: 0 0% 0%;
 
-    /* Secondary - Subtle Gray */
-    --secondary: 0 0% 98%;
+    /* Secondary - Warm Cream Subtle */
+    --secondary: 48 60% 96%;
     --secondary-foreground: 0 0% 15%;
 
-    /* Muted - Lighter Touch */
-    --muted: 0 0% 97%;
+    /* Muted - Warm Lighter Touch */
+    --muted: 48 50% 95%;
     --muted-foreground: 0 0% 45%;
 
-    /* Accent - Clean Highlight */
-    --accent: 0 0% 97%;
+    /* Accent - Warm Clean Highlight */
+    --accent: 48 50% 95%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Borders - Subtle & Clean */
-    --border: 0 0% 92%;
-    --input: 0 0% 92%;
+    /* Borders - Warm Subtle & Clean */
+    --border: 48 30% 90%;
+    --input: 48 30% 90%;
     --ring: 45 100% 50%;
 
     /* Apple-style border radius */
     --radius: 1rem;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 48 60% 96%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;

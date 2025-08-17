@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -41,8 +41,8 @@ const Header = ({
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
-          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl" onClick={onOpenFriends} aria-label="Trova amici">
-            <UserPlus className="h-5 w-5" />
+          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl" onClick={() => navigate("/premi")} aria-label="Premi">
+            <Trophy className="h-5 w-5" />
           </Button>
           
           <NavLink to="/profilo" className="relative">
