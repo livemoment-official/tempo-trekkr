@@ -16,6 +16,13 @@ export default function Crea() {
 
       
 
+      <div className="flex items-center gap-2 mb-6">
+        <img src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-8 w-auto" />
+        <p className="text-sm text-muted-foreground">Crea velocemente un Momento, un Evento o un Invito</p>
+      </div>
+      
+      <h1 className="text-base font-medium mb-6">Crea</h1>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Momento Card */}
         <Card className="hover:shadow-md transition-shadow cursor-pointer group" onClick={() => navigate("/crea/momento")}>

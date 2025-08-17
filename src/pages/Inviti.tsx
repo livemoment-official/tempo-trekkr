@@ -13,36 +13,20 @@ import InviteCard from "@/components/invites/InviteCard";
 import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
 import FriendsSearchFilters from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
+import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 export default function Inviti() {
   const location = useLocation();
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
   
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
 
+  const { location: userLocation, isLoading: locationLoading } = useAutoGeolocation();
   const { data: inviteData, isLoading: invitesLoading } = useMyInvites();
   const { data: nearbyUsers = [], isLoading: nearbyLoading } = useNearbyUsers(userLocation, radiusKm);
-
-  // Ottieni la posizione dell'utente
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    }
-  }, []);
 
   // Filtra utenti vicini per ricerca e filtri
   const filteredNearbyUsers = nearbyUsers.filter(user => {
@@ -72,11 +56,15 @@ export default function Inviti() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
+      <div className="flex items-center gap-2">
+        <img src="/lovable-uploads/226af222-cb67-49c4-b2d9-a7d1ee44345e.png" alt="Logo LiveMoment" className="h-8 w-auto" />
+        <p className="text-sm text-muted-foreground">Gestisci i tuoi inviti e trova persone vicine</p>
+      </div>
+      
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Inviti</h1>
-        <Button onClick={() => navigate("/crea-invito")} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Nuovo Invito
+        <h1 className="text-base font-medium">Inviti</h1>
+        <Button onClick={() => navigate("/crea-invito")} size="icon" className="rounded-full shadow-brand hover-scale">
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
 
@@ -132,10 +120,15 @@ export default function Inviti() {
               onAvailabilityChange={setAvailabilityFilter}
             />
 
-            {!userLocation ? (
+            {locationLoading ? (
               <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Abilita la geolocalizzazione per trovare persone vicine</p>
+                <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
+              </div>
+            ) : !userLocation ? (
+              <div className="text-center py-8">
+                <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">Posizione non disponibile</p>
               </div>
             ) : nearbyLoading ? (
               <div className="text-center py-8">

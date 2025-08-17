@@ -226,82 +226,32 @@ export default function Agenda() {
         </div>
 
         <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="calendar">Calendario</TabsTrigger>
-            <TabsTrigger value="availability">Disponibilità</TabsTrigger>
-            <TabsTrigger value="events">Impegni</TabsTrigger>
             <TabsTrigger value="notifications">Notifiche</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
-                  Vista Calendario
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-96">
-                  <Calendar
-                    localizer={localizer}
-                    events={calendarEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: '100%' }}
-                    culture="it"
-                    messages={{
-                      next: "Avanti",
-                      previous: "Indietro",
-                      today: "Oggi",
-                      month: "Mese",
-                      week: "Settimana",
-                      day: "Giorno",
-                      agenda: "Agenda",
-                      date: "Data",
-                      time: "Ora",
-                      event: "Evento",
-                      noEventsInRange: "Nessuna disponibilità in questo periodo.",
-                      allDay: "Tutto il giorno"
-                    }}
-                    onSelectEvent={(event) => {
-                      console.log('Selected event:', event);
-                    }}
-                    className="text-sm"
-                  />
+            <UpcomingEvents />
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Filtri</h3>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">Tutti</Button>
+                  <Button variant="outline" size="sm">Confermati</Button>
+                  <Button variant="outline" size="sm">Da confermare</Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="availability" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" />
-                    Aggiungi Disponibilità
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AvailabilityForm />
-                </CardContent>
-              </Card>
+              </div>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Le Tue Disponibilità</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AvailabilityList />
-                </CardContent>
-              </Card>
+              <div className="flex gap-2">
+                <Badge variant="secondary">Momenti</Badge>
+                <Badge variant="secondary">Eventi</Badge>
+                <Badge variant="secondary">Inviti</Badge>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="events" className="space-y-4">
-            <UpcomingEvents />
-          </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
             <NotificationCenter />
