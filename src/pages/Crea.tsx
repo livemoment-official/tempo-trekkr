@@ -18,14 +18,8 @@ export default function Crea() {
       
 
       <div className="flex items-center gap-2 mb-6">
-        <EnhancedImage 
-          src="/lovable-uploads/04aa6251-ccf1-4f59-8562-c3edb68824dc.png" 
-          alt="Logo LiveMoment" 
-          className="h-8 w-auto"
-          fallbackSrc="/placeholder.svg"
-          showSkeleton={false}
-        />
-        <p className="text-sm text-muted-foreground">Crea velocemente un Momento, un Evento o un Invito</p>
+        
+        
       </div>
       
       <h1 className="text-base font-medium mb-6">Crea</h1>
