@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AICarousel, CarouselItem } from './AICarousel';
 import { AIRecommendationCard } from './AIRecommendationCard';
-import { UserProfileCard } from '../profile/UserProfileCard';
+import { UserDiscoveryCard } from '../profile/UserDiscoveryCard';
 
 export function AIDiscoveryCarousels() {
   // Fetch available users

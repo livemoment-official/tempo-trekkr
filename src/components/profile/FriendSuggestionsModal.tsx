@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserProfileCard } from "@/components/profile/UserProfileCard";
+import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { Search, MapPin, Users, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -131,25 +131,17 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
               ) : filteredNearbyUsers.length > 0 ? (
                 <div className="space-y-3">
                   {filteredNearbyUsers.map((user) => (
-                    <UserProfileCard
+                    <UserDiscoveryCard
                       key={user.user_id}
-                      profile={{
+                      user={{
                         id: user.user_id,
                         name: user.name,
-                        username: user.username,
                         avatar_url: user.avatar_url,
-                        bio: null,
-                        personality_type: null,
-                        job_title: user.job_title,
-                        mood: user.mood,
-                        interests: user.interests,
-                        followers_count: 0,
-                        following_count: 0,
-                        is_verified: false,
-                        instagram_username: null,
-                        chat_permission: "everyone"
+                        city: user.job_title || 'Milano',
+                        is_available: true,
+                        preferred_moments: user.interests || [],
+                        distance_km: 2.5
                       }}
-                      compact
                     />
                   ))}
                 </div>
@@ -173,12 +165,17 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
               {filteredContacts.length > 0 ? (
                 <div className="space-y-3">
                   {filteredContacts.map((contact) => (
-                    <UserProfileCard
+                    <UserDiscoveryCard
                       key={contact.id}
-                      profile={contact}
-                      compact
-                      onFollow={() => console.log('Follow', contact.id)}
-                      onMessage={() => console.log('Message', contact.id)}
+                      user={{
+                        id: contact.id,
+                        name: contact.name,
+                        avatar_url: contact.avatar_url,
+                        city: 'Milano',
+                        is_available: true,
+                        preferred_moments: contact.interests || [],
+                      }}
+                      onInvite={() => console.log('Invite', contact.id)}
                     />
                   ))}
                 </div>
