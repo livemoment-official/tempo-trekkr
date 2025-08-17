@@ -2,8 +2,9 @@ import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, CalendarPlus, MessageSquarePlus, ArrowLeft } from "lucide-react";
+import { Plus, CalendarPlus, MessageSquarePlus, ArrowLeft, Users } from "lucide-react";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
+import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
 export default function Crea() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function Crea() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-lg font-semibold">Crea il Momento</h1>
+          <h1 className="text-lg font-semibold">Crea</h1>
         </div>
       </header>
 
@@ -119,6 +120,37 @@ export default function Crea() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Gruppo Card */}
+          <CreateGroupModal>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors flex-shrink-0">
+                    <Users className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-base font-semibold">Gruppo</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Crea un gruppo di interesse
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 pb-3">
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
+                    <span>Categoria e location</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
+                    <span>Persone con interessi simili</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </CreateGroupModal>
         </div>
       </div>
     </div>;
