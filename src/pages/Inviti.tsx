@@ -117,9 +117,7 @@ export default function Inviti() {
                 <p className="text-sm text-muted-foreground">
                   {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
                 </p>
-                <Button onClick={() => navigate("/trova-amici")} variant="outline" size="sm">
-                  Vedi tutti
-                </Button>
+                
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
