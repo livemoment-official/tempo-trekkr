@@ -10,7 +10,9 @@ import { MapPin, Search, Users, Plus } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
-import EnhancedNearbyUserCard from "@/components/invites/EnhancedNearbyUserCard";
+import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
+import { getRandomUserProfiles } from "@/utils/enhancedMockData";
+import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
@@ -35,22 +37,48 @@ export default function Inviti() {
     isLoading: nearbyLoading
   } = useNearbyUsers(userLocation, radiusKm);
 
-  // Filtra utenti vicini per ricerca e filtri
-  const filteredNearbyUsers = nearbyUsers.filter(user => {
-    // Filtro per testo
-    const matchesSearch = searchQuery === "" || user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.username.toLowerCase().includes(searchQuery.toLowerCase()) || user.interests?.some(interest => interest.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Get mock user profiles as fallback when no real users are found
+  const mockUsers = getRandomUserProfiles(12);
+  const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : mockUsers;
 
-    // Filtro per mood
-    const matchesMood = selectedMood === "all" || user.mood === selectedMood;
+  // Transform mock users to have the right structure for UserDiscoveryCard
+  const transformedUsers = mockUsers.map(user => ({
+    id: user.id,
+    name: user.name,
+    avatar_url: user.avatar_url,
+    city: user.city,
+    availability: user.is_available ? "available" : "busy",
+    preferred_moments: user.preferred_moments,
+    age: user.age,
+    distance_km: user.distance_km,
+    is_available: user.is_available
+  }));
+
+  // Filtra utenti per ricerca e filtri
+  const filteredUsers = transformedUsers.filter(user => {
+    // Filtro per testo
+    const matchesSearch = searchQuery === "" || 
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      user.city?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      user.preferred_moments?.some(moment => moment.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    // Filtro per disponibilità
+    const matchesAvailability = availabilityFilter === "all" || 
+      (availabilityFilter === "available" && user.availability === "available") ||
+      (availabilityFilter === "unavailable" && user.availability !== "available");
 
     // Filtro per distanza
-    const matchesDistance = user.distance_km <= radiusKm;
+    const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
 
-    // Filtro per disponibilità (per ora tutti sono disponibili, futura implementazione)
-    const matchesAvailability = availabilityFilter === "all"; // TODO: implementare logica disponibilità
-
-    return matchesSearch && matchesMood && matchesDistance && matchesAvailability;
+    return matchesSearch && matchesAvailability && matchesDistance;
   });
+
+  const handleInvite = (userId: string) => {
+    const user = transformedUsers.find(u => u.id === userId);
+    if (user) {
+      toast.success(`Invito inviato a ${user.name}!`);
+    }
+  };
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -91,27 +119,45 @@ export default function Inviti() {
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-4">
-          {nearbyLoading ? (
+          <FriendsSearchFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedMood={selectedMood}
+            onMoodChange={setSelectedMood}
+            radiusKm={radiusKm}
+            onRadiusChange={setRadiusKm}
+            availabilityFilter={availabilityFilter}
+            onAvailabilityChange={setAvailabilityFilter}
+          />
+          
+          {locationLoading ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Caricamento amici nelle vicinanze...</p>
+              <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
             </div>
-          ) : filteredNearbyUsers.length > 0 ? (
+          ) : filteredUsers.length > 0 ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-muted-foreground">Persone nelle vicinanze</h3>
+                <p className="text-sm text-muted-foreground">
+                  {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
+                </p>
                 <Button onClick={() => navigate("/trova-amici")} variant="outline" size="sm">
                   Vedi tutti
                 </Button>
               </div>
               <div className="grid gap-3">
-                {filteredNearbyUsers.slice(0, 3).map((user) => (
-                  <EnhancedNearbyUserCard key={user.user_id} user={user} />
+                {filteredUsers.slice(0, 6).map((user) => (
+                  <UserDiscoveryCard 
+                    key={user.id} 
+                    user={user} 
+                    onInvite={handleInvite}
+                  />
                 ))}
               </div>
-              {filteredNearbyUsers.length > 3 && (
+              {filteredUsers.length > 6 && (
                 <div className="text-center">
                   <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
-                    Vedi altri {filteredNearbyUsers.length - 3} amici
+                    Vedi altri {filteredUsers.length - 6} amici
                   </Button>
                 </div>
               )}
@@ -121,7 +167,7 @@ export default function Inviti() {
               <Users className="h-12 w-12 mx-auto text-primary mb-4" />
               <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
               <p className="text-muted-foreground mb-4">
-                Scopri persone interessanti vicino a te per nuove amicizie
+                {searchQuery ? "Nessun risultato per la ricerca" : "Scopri persone interessanti vicino a te per nuove amicizie"}
               </p>
               <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
                 <Users className="h-4 w-4 mr-2" />

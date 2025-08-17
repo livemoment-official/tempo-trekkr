@@ -31,7 +31,7 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/logo.png" alt="Live Moment Logo" className="h-8 w-auto" fallbackSrc="/placeholder.svg" showSkeleton={false} />
+          <EnhancedImage src="/logo.png" alt="Live Moment Logo" className="h-8 w-auto object-contain max-w-[120px]" fallbackSrc="/placeholder.svg" showSkeleton={false} />
           <span className="sr-only">Live Moment</span>
         </button>
         
