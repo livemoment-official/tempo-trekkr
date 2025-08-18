@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGeolocation } from "./useGeolocation";
 import { useUserLocation } from "./useUserLocation";
+import { generateMockMoments } from "@/utils/mockData";
 
 export interface Moment {
   id: string;
@@ -67,6 +68,41 @@ export function useMoments() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<MomentsFilters>({});
+
+  // Convert mock data to Moment interface
+  const convertMockToMoment = (mockMoment: any): Moment => {
+    return {
+      id: mockMoment.id,
+      title: mockMoment.title,
+      description: mockMoment.description,
+      when_at: mockMoment.date,
+      place: {
+        lat: 45.4642 + (Math.random() - 0.5) * 0.1, // Milan area with variation
+        lng: 9.1900 + (Math.random() - 0.5) * 0.1,
+        name: mockMoment.location,
+        address: mockMoment.location
+      },
+      host_id: mockMoment.organizer.user_id,
+      host: {
+        id: mockMoment.organizer.user_id,
+        name: mockMoment.organizer.name,
+        avatar_url: mockMoment.organizer.avatar_url
+      },
+      participants: Array.from({ length: mockMoment.participant_count }, (_, i) => `mock_user_${i + 1}`),
+      max_participants: mockMoment.max_participants,
+      capacity: mockMoment.max_participants,
+      mood_tag: mockMoment.mood,
+      tags: mockMoment.tags,
+      photos: [mockMoment.image_url, ...(mockMoment.photos || [])],
+      is_public: true,
+      age_range_min: 18,
+      age_range_max: 65,
+      registration_status: 'open',
+      created_at: mockMoment.created_at,
+      updated_at: mockMoment.created_at,
+      participant_count: mockMoment.participant_count
+    };
+  };
 
   // Load moments with filters and pagination
   const loadMoments = useCallback(async (
@@ -177,6 +213,12 @@ export function useMoments() {
           host: host
         };
       }) as unknown as Moment[];
+
+      // If we have few real moments, add mock data to enrich the experience
+      if (processedMoments.length < 5 && currentPage === 0) {
+        const mockMoments = generateMockMoments(15).map(convertMockToMoment);
+        processedMoments = [...processedMoments, ...mockMoments];
+      }
 
       // Add distance calculation if user location is available
       const userLoc = location || await getUserLocation();
