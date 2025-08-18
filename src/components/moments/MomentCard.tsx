@@ -196,46 +196,44 @@ export function MomentCard({
         </div>
 
 
-        {/* Participants & Actions */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" strokeWidth={1.5} />
-            <span>
-              <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <ShareModal contentType="moment" contentId={id} title={title}>
-              <Button size="xs" variant="ghost">
-                <Share2 className="h-4 w-4" strokeWidth={1.5} />
-              </Button>
-            </ShareModal>
-            
-            <Button
-              size="xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                // Open chat with organizer
-              }}
-            >
-              <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-            </Button>
-          </div>
+        {/* Participants */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+          <Users className="h-4 w-4" strokeWidth={1.5} />
+          <span>
+            <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
+          </span>
         </div>
 
-        {/* Action Button */}
-        <Button 
-          variant="outline"
-          className="w-full mt-4" 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}
-        >
-          Scopri di più
-        </Button>
+        {/* Actions Row */}
+        <div className="flex items-center gap-3 pt-4">
+          <Button 
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-black font-medium shadow-md hover:shadow-lg transition-all duration-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
+          >
+            Partecipa
+          </Button>
+          
+          <ShareModal contentType="moment" contentId={id} title={title}>
+            <Button size="icon" variant="outline" className="h-10 w-10">
+              <Share2 className="h-4 w-4" strokeWidth={1.5} />
+            </Button>
+          </ShareModal>
+          
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-10 w-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Open chat with organizer
+            }}
+          >
+            <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
