@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
-import { MapPin, Heart, MessageCircle } from "lucide-react";
+import { MapPin, Heart, MessageCircle, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuickInviteModal from "@/components/invites/QuickInviteModal";
 
@@ -69,9 +69,8 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
       "relative bg-background border border-border/50 hover:border-primary/30 transition-all duration-200 hover-scale overflow-hidden",
       className
     )}>
-      {/* Header with badges and button */}
-      <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
-        {/* Availability Badge */}
+      {/* Availability Badge - positioned at bottom left */}
+      <div className="absolute bottom-3 left-3 z-10">
         <Badge 
           className={cn(
             "text-xs px-2 py-1.5 bg-white text-foreground border border-border/30 shadow-sm",
@@ -86,16 +85,6 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
           )} />
           {getAvailabilityText()}
         </Badge>
-
-        {/* Invite Button */}
-        <Button 
-          size="icon" 
-          variant="outline"
-          onClick={handleInvite}
-          className="h-8 w-8 bg-white border-2 border-foreground hover:bg-muted/50 rounded-full shadow-sm"
-        >
-          <MessageCircle className="h-4 w-4 text-foreground" />
-        </Button>
       </div>
 
       {/* Profile Image */}
@@ -133,6 +122,24 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Heart className="h-3 w-3 flex-shrink-0 fill-current text-pink-500" />
           <span className="truncate">{getPreferredMomentsText()}</span>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-2">
+          <Button 
+            onClick={handleInvite}
+            className="flex-1 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-black font-medium h-8 text-xs"
+          >
+            <MessageCircle className="h-3 w-3 mr-1" />
+            Invita
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 border-border/50"
+          >
+            <UserPlus className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 

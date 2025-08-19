@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle } from "lucide-react";
+import { MapPin, MessageCircle, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 interface UserProfile {
@@ -28,8 +28,8 @@ export function UserListItem({
     onFollow?.(user.id);
     toast.success(`Ora segui ${user.name}!`);
   };
-  const handleMessage = () => {
-    toast.info("Funzionalità messaggi in arrivo!");
+  const handleInvite = () => {
+    toast.info("Funzionalità inviti in arrivo!");
   };
 
   // Simulate shared friends count
@@ -72,10 +72,21 @@ export function UserListItem({
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        
-        
-        <Button onClick={handleFollow} size="sm" variant="outline" className="bg-background border-border/50 text-foreground hover:bg-muted px-4 py-2 h-9">
-          Segui
+        <Button 
+          onClick={handleInvite}
+          size="sm" 
+          className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-black font-medium h-8 px-3 text-xs"
+        >
+          <MessageCircle className="h-3 w-3 mr-1" />
+          Invita
+        </Button>
+        <Button 
+          onClick={handleFollow} 
+          size="sm" 
+          variant="outline" 
+          className="h-8 w-8 p-0 border-border/50"
+        >
+          <UserPlus className="h-3 w-3" />
         </Button>
       </div>
     </div>;
