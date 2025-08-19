@@ -29,6 +29,7 @@ export interface Moment {
   mood_tag?: string;
   tags?: string[];
   photos?: string[];
+  image?: string;
   is_public: boolean;
   age_range_min?: number;
   age_range_max?: number;
@@ -94,6 +95,7 @@ export function useMoments() {
       mood_tag: mockMoment.mood,
       tags: mockMoment.tags,
       photos: [mockMoment.image_url, ...(mockMoment.photos || [])],
+      image: mockMoment.image_url,
       is_public: true,
       age_range_min: 18,
       age_range_max: 65,

@@ -69,8 +69,8 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
       "relative bg-background border border-border/50 hover:border-primary/30 transition-all duration-200 hover-scale overflow-hidden",
       className
     )}>
-      {/* Availability Badge - positioned at bottom left */}
-      <div className="absolute bottom-3 left-3 z-10">
+      {/* Availability Badge - positioned at top right */}
+      <div className="absolute top-3 right-3 z-10">
         <Badge 
           className={cn(
             "text-xs px-2 py-1.5 bg-white text-foreground border border-border/30 shadow-sm",

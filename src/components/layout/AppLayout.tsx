@@ -12,6 +12,7 @@ import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import mascotLogo from "@/assets/livemoment-mascot.png";
 const Header = ({
   onOpenSearch,
   onOpenFriends
@@ -31,8 +32,8 @@ const Header = ({
   return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src="/lovable-uploads/8ad0427b-94ee-4098-882e-34e8c9ef92b9.png" alt="Live Moment Logo" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-auto object-contain overflow-auto " />
-          <span className="sr-only">Live Moment</span>
+          <EnhancedImage src={mascotLogo} alt="LiveMoment Mascot" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-8 object-contain" />
+          <span className="text-lg font-bold text-primary">LiveMoment</span>
         </button>
         
         <div className="flex items-center gap-3">
