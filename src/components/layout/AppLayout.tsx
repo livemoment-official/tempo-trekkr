@@ -33,7 +33,7 @@ const Header = ({
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
           <EnhancedImage src={mascotLogo} alt="LiveMoment Mascot" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-8 object-contain" />
-          <span className="text-lg font-bold text-primary">LiveMoment</span>
+          
         </button>
         
         <div className="flex items-center gap-3">
