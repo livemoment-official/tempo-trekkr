@@ -97,8 +97,8 @@ export function MomentCard({
       className="w-full max-w-sm mx-auto cursor-pointer transition-smooth hover:shadow-elevated group"
       onClick={handleCardClick}
     >
-      {/* Hero Image - 1080x1440 ratio */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-xl">
+      {/* Hero Image - Extended vertical ratio */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-t-xl">
         {image ? (
           <EnhancedImage 
             src={image} 
