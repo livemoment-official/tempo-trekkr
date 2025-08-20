@@ -98,7 +98,7 @@ export function MomentCard({
       onClick={handleCardClick}
     >
       {/* Hero Image - Extended vertical ratio */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-t-xl">
+      <div className="relative aspect-[3/5] w-full overflow-hidden rounded-t-xl">
         {image ? (
           <EnhancedImage 
             src={image} 
