@@ -98,7 +98,7 @@ export function MomentCard({
       onClick={handleCardClick}
     >
       {/* Hero Image - Extended vertical ratio */}
-      <div className="relative aspect-[3/5] w-full overflow-hidden rounded-t-xl">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-t-xl">
         {image ? (
           <EnhancedImage 
             src={image} 
@@ -179,7 +179,7 @@ export function MomentCard({
       </div>
 
       {/* Content Below Image */}
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="px-4 pt-3 pb-4 space-y-3">
         {/* Title */}
         <h3 className="font-medium text-lg leading-tight line-clamp-2">{title}</h3>
         
