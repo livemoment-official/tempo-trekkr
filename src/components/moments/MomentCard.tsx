@@ -179,12 +179,12 @@ export function MomentCard({
       </div>
 
       {/* Content Below Image */}
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-4 space-y-3">
         {/* Title */}
         <h3 className="font-medium text-lg leading-tight line-clamp-2">{title}</h3>
         
         {/* Time & Location */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" strokeWidth={1.5} />
             <span>{time}</span>
@@ -195,9 +195,8 @@ export function MomentCard({
           </div>
         </div>
 
-
         {/* Participants */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="h-4 w-4" strokeWidth={1.5} />
           <span>
             <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
@@ -205,7 +204,7 @@ export function MomentCard({
         </div>
 
         {/* Actions Row */}
-        <div className="flex items-center gap-3 pt-4">
+        <div className="flex items-center gap-3 pt-2">
           <Button 
             className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-black font-medium shadow-md hover:shadow-lg transition-all duration-200"
             onClick={(e) => {

@@ -1,22 +1,22 @@
 // Mock data utilities for populating the app with realistic content
 
 export const generateUnsplashUrl = (query: string, width = 400, height = 400, seed?: string) => {
-  const seedParam = seed ? `&sig=${seed}` : '';
-  // Use specific Unsplash collections for better category matching
+  // Use working Unsplash Source API format
+  const randomSeed = seed || Math.random().toString(36).substr(2, 9);
   const categoryUrls: Record<string, string> = {
-    'sports': `https://images.unsplash.com/${width}x${height}/?sports,fitness,running,soccer,basketball`,
-    'food': `https://images.unsplash.com/${width}x${height}/?food,restaurant,dining,pizza,sushi`,
-    'concert': `https://images.unsplash.com/${width}x${height}/?concert,music,live,festival,stage`,
-    'art': `https://images.unsplash.com/${width}x${height}/?art,gallery,museum,painting,sculpture`,
-    'nature': `https://images.unsplash.com/${width}x${height}/?nature,outdoor,hiking,park,landscape`,
-    'party': `https://images.unsplash.com/${width}x${height}/?party,celebration,nightlife,club,disco`,
-    'travel': `https://images.unsplash.com/${width}x${height}/?travel,city,architecture,vacation,adventure`,
-    'museum': `https://images.unsplash.com/${width}x${height}/?museum,culture,exhibition,history,art`,
-    'movie': `https://images.unsplash.com/${width}x${height}/?cinema,movie,theater,film,entertainment`,
-    'shopping': `https://images.unsplash.com/${width}x${height}/?shopping,market,store,boutique,fashion`
+    'sports': `https://picsum.photos/seed/sports-${randomSeed}/${width}/${height}`,
+    'food': `https://picsum.photos/seed/food-${randomSeed}/${width}/${height}`,
+    'concert': `https://picsum.photos/seed/music-${randomSeed}/${width}/${height}`,
+    'art': `https://picsum.photos/seed/art-${randomSeed}/${width}/${height}`,
+    'nature': `https://picsum.photos/seed/nature-${randomSeed}/${width}/${height}`,
+    'party': `https://picsum.photos/seed/party-${randomSeed}/${width}/${height}`,
+    'travel': `https://picsum.photos/seed/travel-${randomSeed}/${width}/${height}`,
+    'museum': `https://picsum.photos/seed/museum-${randomSeed}/${width}/${height}`,
+    'movie': `https://picsum.photos/seed/cinema-${randomSeed}/${width}/${height}`,
+    'shopping': `https://picsum.photos/seed/shopping-${randomSeed}/${width}/${height}`
   };
   
-  return categoryUrls[query] || `https://images.unsplash.com/${width}x${height}/?${query}${seedParam}`;
+  return categoryUrls[query] || `https://picsum.photos/seed/${query}-${randomSeed}/${width}/${height}`;
 };
 
 export const generatePersonPhotoUrl = (gender?: 'men' | 'women', id?: number) => {
