@@ -179,7 +179,7 @@ export function MomentCard({
       </div>
 
       {/* Content Below Image */}
-      <CardContent className="px-4 pt-1 pb-4 space-y-3">
+      <CardContent className="px-4 pt-0 pb-4 space-y-3 -mt-1">
         {/* Title */}
         <h3 className="font-medium text-lg leading-tight line-clamp-2">{title}</h3>
         
