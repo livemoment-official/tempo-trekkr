@@ -11,7 +11,7 @@ import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
-import { getRandomUserProfiles } from "@/utils/enhancedMockData";
+import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
@@ -37,8 +37,9 @@ export default function Inviti() {
     isLoading: nearbyLoading
   } = useNearbyUsers(userLocation, radiusKm);
 
-  // Get mock user profiles as fallback when no real users are found
+  // Get mock data
   const mockUsers = getRandomUserProfiles(12);
+  const mockInvites = getMockInvites();
   const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : mockUsers;
 
   // Transform mock users to have the right structure for UserDiscoveryCard
@@ -91,11 +92,25 @@ export default function Inviti() {
         </TabsList>
         
         <TabsContent value="ricevuti" className="space-y-4">
-          {invitesLoading ? <div className="text-center py-8">
+          {invitesLoading ? (
+            <div className="text-center py-8">
               <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div> : inviteData?.received.length === 0 ? <div className="text-center py-8">
-              <p className="text-muted-foreground">Nessun invito ricevuto</p>
-            </div> : inviteData?.received.map(invite => <InviteCard key={invite.id} invite={invite} type="received" />)}
+            </div>
+          ) : (inviteData?.received.length === 0 || !inviteData) ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Inviti Ricevuti</h3>
+                <Badge variant="secondary">{mockInvites.length}</Badge>
+              </div>
+              {mockInvites.map(invite => (
+                <InviteCard key={invite.id} invite={invite} type="received" />
+              ))}
+            </div>
+          ) : (
+            inviteData.received.map(invite => (
+              <InviteCard key={invite.id} invite={invite} type="received" />
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="inviati" className="space-y-4">

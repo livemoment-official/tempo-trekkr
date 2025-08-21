@@ -130,7 +130,94 @@ export const mockMomentPhotos = [
   }
 ];
 
+export const mockInvites = [
+  {
+    id: "invite-1",
+    title: "Aperitivo al Duomo",
+    description: "Aperitivo con vista panoramica sui tetti di Milano. Ambiente rilassato e cocktail premium.",
+    sender: mockUserProfiles[0], // Sofia Romano
+    recipient_id: "current-user",
+    status: "pending",
+    when_at: "2024-08-22T18:30:00.000Z",
+    place: {
+      name: "Terrazza Duomo 21",
+      address: "Via Giuseppe Mengoni, 4, Milano"
+    },
+    participants: [mockUserProfiles[0], mockUserProfiles[2]],
+    created_at: "2024-08-21T10:30:00.000Z",
+    type: "aperitivo"
+  },
+  {
+    id: "invite-2", 
+    title: "Calcetto serale ⚽",
+    description: "Partita amichevole al tramonto. Livello principiante-intermedio, divertimento garantito!",
+    sender: mockUserProfiles[1], // Marco Bianchi
+    recipient_id: "current-user",
+    status: "pending",
+    when_at: "2024-08-23T19:00:00.000Z",
+    place: {
+      name: "Centro Sportivo Isola",
+      address: "Via Borsieri, 12, Milano"
+    },
+    participants: [mockUserProfiles[1], mockUserProfiles[3], mockUserProfiles[5]],
+    created_at: "2024-08-21T14:15:00.000Z",
+    type: "sport"
+  },
+  {
+    id: "invite-3",
+    title: "Mostra d'arte contemporanea 🎨",
+    description: "Visitiamo insieme l'ultima mostra di Palazzo Reale. Tour guidato e aperitivo culturale.",
+    sender: mockUserProfiles[2], // Giulia Ferretti
+    recipient_id: "current-user", 
+    status: "pending",
+    when_at: "2024-08-24T15:00:00.000Z",
+    place: {
+      name: "Palazzo Reale",
+      address: "Piazza del Duomo, 12, Milano"
+    },
+    participants: [mockUserProfiles[2], mockUserProfiles[8]],
+    created_at: "2024-08-21T09:45:00.000Z",
+    type: "arte"
+  },
+  {
+    id: "invite-4",
+    title: "Jazz night al Blue Note 🎷",
+    description: "Serata jazz con cocktail signature. Musica dal vivo e atmosfera unica.",
+    sender: mockUserProfiles[3], // Alessandro Rossi
+    recipient_id: "current-user",
+    status: "pending", 
+    when_at: "2024-08-25T21:00:00.000Z",
+    place: {
+      name: "Blue Note Milano",
+      address: "Via Borsieri, 37, Milano"
+    },
+    participants: [mockUserProfiles[3], mockUserProfiles[6]],
+    created_at: "2024-08-21T16:20:00.000Z",
+    type: "musica"
+  },
+  {
+    id: "invite-5",
+    title: "Brunch domenicale 🥐",
+    description: "Brunch gourmet in location trendy. Menù ricco e atmosfera rilassante per iniziare bene la domenica.",
+    sender: mockUserProfiles[4], // Francesca Martini
+    recipient_id: "current-user",
+    status: "pending",
+    when_at: "2024-08-25T11:30:00.000Z", 
+    place: {
+      name: "Pavé Milano",
+      address: "Via Felice Casati, 27, Milano"
+    },
+    participants: [mockUserProfiles[4], mockUserProfiles[7], mockUserProfiles[9]],
+    created_at: "2024-08-21T12:10:00.000Z",
+    type: "cibo"
+  }
+];
+
 export const getRandomUserProfiles = (count: number = 10) => {
   const shuffled = [...mockUserProfiles].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
+};
+
+export const getMockInvites = () => {
+  return mockInvites;
 };
