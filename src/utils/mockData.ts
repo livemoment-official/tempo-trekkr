@@ -40,7 +40,7 @@ export const generateActivityPhotoUrl = (activity: string) => {
   };
   
   const query = activityMap[activity] || activity;
-  return generateUnsplashUrl(query, 600, 400);
+  return generateUnsplashUrl(query, 400, 720);
 };
 
 export const italianNames = [
