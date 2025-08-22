@@ -9,12 +9,15 @@ import { MomentsMap } from "@/components/moments/MomentsMap";
 import { LocationPermissionCard } from "@/components/location/LocationPermissionCard";
 import { useMoments } from "@/hooks/useMoments";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useSnapScroll } from "@/hooks/useSnapScroll";
 
 export default function MomentiEventi() {
   const location = useLocation();
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/";
   const [view, setView] = useState<'list' | 'map'>('list');
+  const isMobile = useIsMobile();
   
   // Use real moments data
   const {
@@ -34,6 +37,14 @@ export default function MomentiEventi() {
     hasMore,
     isLoading,
     onLoadMore: loadMore
+  });
+
+  // Mobile snap scroll
+  const { containerRef, scrollToIndex, currentIndex } = useSnapScroll({
+    enabled: isMobile && view === 'list',
+    onSnapChange: (index) => {
+      console.log('Snapped to card:', index);
+    }
   });
 
   // Load initial data
@@ -68,8 +79,21 @@ export default function MomentiEventi() {
 
       {/* Content */}
       {view === 'list' ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          ref={containerRef}
+          className={isMobile 
+            ? "overflow-y-auto snap-y snap-mandatory h-screen -mx-4 -mt-4" 
+            : "space-y-6"
+          }
+          style={isMobile ? { 
+            scrollSnapType: 'y mandatory',
+            WebkitOverflowScrolling: 'touch'
+          } : undefined}
+        >
+          <div className={isMobile 
+            ? "flex flex-col" 
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          }>
             {moments.map(moment => (
               <MomentCard 
                 key={moment.id} 
