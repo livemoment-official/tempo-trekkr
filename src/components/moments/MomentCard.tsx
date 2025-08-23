@@ -136,12 +136,12 @@ export function MomentCard({
     >
       {isMobile ? (
         // Mobile Full-Screen Layout
-        <div className={imageContainerClasses}>
+        <div className="relative w-full flex-1 overflow-hidden rounded-xl">
           {hasVideo && videoUrl ? (
             <video
               ref={videoRef}
               src={videoUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-xl"
               muted
               loop
               playsInline
@@ -151,55 +151,52 @@ export function MomentCard({
             <EnhancedImage 
               src={image} 
               alt={title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-xl"
               fallbackSrc="/placeholder.svg"
               skeletonClassName="w-full h-full"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center rounded-xl">
               <span className="text-6xl opacity-60">{getCategoryEmoji(category)}</span>
             </div>
           )}
           
-          {/* Category Badge */}
-          <Badge 
-            variant="minimal" 
-            className="absolute top-6 left-4 bg-white/95 backdrop-blur-md border-white/40 z-10"
-          >
-            {getCategoryEmoji(category)} {category}
-          </Badge>
+          {/* Enhanced gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/80 via-60% via-black/60 via-40% via-black/30 via-20% to-transparent rounded-xl z-10" />
 
-          {/* Edit/Delete Menu for Owner */}
-          {isCurrentUserOwner && (
-            <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
-              <EditDeleteMenu
-                contentType="moments"
-                contentId={id}
-                isOwner={isCurrentUserOwner}
-              />
+          {/* Top Section - Reorganized Layout */}
+          <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-safe">
+            <div className="flex items-start justify-between">
+              {/* Left side - Organizer and Mood */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/20">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={organizer.avatar} />
+                    <AvatarFallback className="text-xs text-white">{organizer.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-medium text-white drop-shadow-lg">{organizer.name}</span>
+                </div>
+                {mood && (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-black/40 backdrop-blur-md border-white/20 text-white text-xs self-start"
+                  >
+                    {mood}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Right side - Menu */}
+              <div className="flex items-center">
+                {isCurrentUserOwner && (
+                  <EditDeleteMenu
+                    contentType="moments"
+                    contentId={id}
+                    isOwner={isCurrentUserOwner}
+                  />
+                )}
+              </div>
             </div>
-          )}
-
-          {/* Top Right Info */}
-          <div className="absolute top-6 right-4 flex flex-col gap-2 items-end z-10">
-            {/* Organizer */}
-            <div className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/40">
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={organizer.avatar} />
-                <AvatarFallback className="text-xs">{organizer.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <span className="text-xs font-medium">{organizer.name}</span>
-            </div>
-            
-            {/* Mood Badge */}
-            {mood && (
-              <Badge 
-                variant="outline" 
-                className="bg-white/95 backdrop-blur-md border-white/40 text-xs"
-              >
-                {mood}
-              </Badge>
-            )}
           </div>
 
           {/* Reactions Overlay */}
@@ -226,27 +223,27 @@ export function MomentCard({
           </div>
 
           {/* Mobile Bottom Content Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pb-8">
+          <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 z-20">
             <div className="space-y-3">
               {/* Title */}
-              <h3 className="font-semibold text-xl leading-tight text-white line-clamp-2">{title}</h3>
+              <h3 className="font-semibold text-xl leading-tight text-white line-clamp-2 drop-shadow-lg">{title}</h3>
               
               {/* Time & Location */}
               <div className="flex items-center gap-4 text-white/90">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" strokeWidth={1.5} />
-                  <span className="text-sm">{time}</span>
+                  <Clock className="h-4 w-4 drop-shadow-lg" strokeWidth={1.5} />
+                  <span className="text-sm drop-shadow-lg">{time}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" strokeWidth={1.5} />
-                  <span className="text-sm line-clamp-1">{location}</span>
+                  <MapPin className="h-4 w-4 drop-shadow-lg" strokeWidth={1.5} />
+                  <span className="text-sm line-clamp-1 drop-shadow-lg">{location}</span>
                 </div>
               </div>
 
               {/* Participants */}
               <div className="flex items-center gap-2 text-white/90">
-                <Users className="h-4 w-4" strokeWidth={1.5} />
-                <span className="text-sm">
+                <Users className="h-4 w-4 drop-shadow-lg" strokeWidth={1.5} />
+                <span className="text-sm drop-shadow-lg">
                   <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
                 </span>
               </div>
