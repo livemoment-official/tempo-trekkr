@@ -73,7 +73,7 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
       <div className="absolute top-3 right-3 z-10">
         <Badge 
           className={cn(
-            "text-xs px-2 py-1.5 bg-stone-50 text-foreground border border-border/30 shadow-sm",
+            "text-xs px-2 py-1.5 bg-brand-cream text-foreground border border-border/30 shadow-sm",
             user.is_available 
               ? "text-foreground" 
               : "text-muted-foreground"

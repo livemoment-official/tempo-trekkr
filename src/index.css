@@ -13,6 +13,7 @@ All colors MUST be HSL.
     --brand-primary-variant: 33 100% 50%; /* #FF8A00 - Arancione gradient */
     --brand-black: 0 0% 0%; /* #000000 - Nero */
     --brand-white: 0 0% 100%; /* #FFFFFF - Bianco */
+    --brand-cream: 50 80% 98%; /* #FFFEF5 - Bianca panna */
     --brand-gray: 0 0% 96%; /* #F5F5F5 - Grigio chiaro */
 
     /* Surface Colors - Warm Cream Palette */
