@@ -6,12 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Users, Plus, UserCheck, Sparkles, TrendingUp, Clock } from "lucide-react";
+import { MapPin, Search, Users, Plus } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
-import { FriendSuggestionsCarousel } from "@/components/invites/FriendSuggestionsCarousel";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
@@ -39,12 +38,12 @@ export default function Inviti() {
   } = useNearbyUsers(userLocation, radiusKm);
 
   // Get mock data
-  const mockUsers = getRandomUserProfiles(24);
+  const mockUsers = getRandomUserProfiles(12);
   const mockInvites = getMockInvites();
   const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : mockUsers;
 
-  // Transform mock users to have the right structure for carousels
-  const transformedUsers = mockUsers.map((user, index) => ({
+  // Transform mock users to have the right structure for UserDiscoveryCard
+  const transformedUsers = mockUsers.map(user => ({
     id: user.id,
     name: user.name,
     avatar_url: user.avatar_url,
@@ -53,19 +52,8 @@ export default function Inviti() {
     preferred_moments: user.preferred_moments,
     age: user.age,
     distance_km: user.distance_km,
-    is_available: user.is_available,
-    compatibility_score: index < 6 ? Math.floor(Math.random() * 30) + 70 : undefined, // High compatibility for first 6
-    is_new: index >= 6 && index < 12, // Next 6 are new users
-    is_popular: index >= 12 && index < 18, // Next 6 are popular
-    is_online: index >= 18, // Last 6 are online
-    last_seen: !user.is_available && index % 3 === 0 ? "2h fa" : undefined
+    is_available: user.is_available
   }));
-
-  // Categorize users for different carousels
-  const nearbyUsersForCarousel = transformedUsers.filter(user => user.distance_km && user.distance_km <= radiusKm).slice(0, 8);
-  const newUsersCarousel = transformedUsers.filter(user => user.is_new).slice(0, 6);
-  const similarInterestsCarousel = transformedUsers.filter(user => user.compatibility_score && user.compatibility_score > 70).slice(0, 6);
-  const activeUsersCarousel = transformedUsers.filter(user => user.is_online || user.is_popular).slice(0, 6);
 
   // Filtra utenti per ricerca e filtri
   const filteredUsers = transformedUsers.filter(user => {
@@ -133,88 +121,38 @@ export default function Inviti() {
             </div> : inviteData?.sent.map(invite => <InviteCard key={invite.id} invite={invite} type="sent" />)}
         </TabsContent>
 
-        <TabsContent value="amici" className="space-y-6">
-          {locationLoading ? (
-            <div className="text-center py-8">
+        <TabsContent value="amici" className="space-y-4">
+          <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
+          
+          {locationLoading ? <div className="text-center py-8">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* Friend Suggestion Carousels */}
-              {nearbyUsersForCarousel.length > 0 && (
-                <FriendSuggestionsCarousel
-                  title="Persone nelle Vicinanze"
-                  icon={<MapPin className="h-5 w-5" />}
-                  users={nearbyUsersForCarousel}
-                  onInvite={handleInvite}
-                />
-              )}
-
-              {similarInterestsCarousel.length > 0 && (
-                <FriendSuggestionsCarousel
-                  title="Con Interessi Simili"
-                  icon={<Sparkles className="h-5 w-5" />}
-                  users={similarInterestsCarousel}
-                  onInvite={handleInvite}
-                />
-              )}
-
-              {newUsersCarousel.length > 0 && (
-                <FriendSuggestionsCarousel
-                  title="Nuovi Iscritti"
-                  icon={<UserCheck className="h-5 w-5" />}
-                  users={newUsersCarousel}
-                  onInvite={handleInvite}
-                />
-              )}
-
-              {activeUsersCarousel.length > 0 && (
-                <FriendSuggestionsCarousel
-                  title="Più Attivi"
-                  icon={<TrendingUp className="h-5 w-5" />}
-                  users={activeUsersCarousel}
-                  onInvite={handleInvite}
-                />
-              )}
-
-              {/* Search and Filters - Only show if no carousels have content */}
-              {nearbyUsersForCarousel.length === 0 && similarInterestsCarousel.length === 0 && newUsersCarousel.length === 0 && activeUsersCarousel.length === 0 && (
-                <>
-                  <FriendsSearchFilters 
-                    searchQuery={searchQuery} 
-                    onSearchChange={setSearchQuery} 
-                    selectedMood={selectedMood} 
-                    onMoodChange={setSelectedMood} 
-                    radiusKm={radiusKm} 
-                    onRadiusChange={setRadiusKm} 
-                    availabilityFilter={availabilityFilter} 
-                    onAvailabilityChange={setAvailabilityFilter} 
-                  />
-                  
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 mx-auto text-primary mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Scopri persone interessanti vicino a te per nuove amicizie
-                    </p>
-                    <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
-                      <Users className="h-4 w-4 mr-2" />
-                      Esplora Amici Nelle Vicinanze
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {/* View More Button */}
-              <div className="text-center pt-4">
-                <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
-                  <Search className="h-4 w-4 mr-2" />
-                  Esplora Tutti gli Amici
-                </Button>
+            </div> : filteredUsers.length > 0 ? <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
+                </p>
+                
               </div>
-            </div>
-          )}
+              <div className="grid grid-cols-2 gap-3">
+                {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
+              </div>
+              {filteredUsers.length > 6 && <div className="text-center">
+                  <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
+                    Vedi altri {filteredUsers.length - 6} amici
+                  </Button>
+                </div>}
+            </div> : <div className="text-center py-8">
+              <Users className="h-12 w-12 mx-auto text-primary mb-4" />
+              <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? "Nessun risultato per la ricerca" : "Scopri persone interessanti vicino a te per nuove amicizie"}
+              </p>
+              <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
+                <Users className="h-4 w-4 mr-2" />
+                Esplora Amici Nelle Vicinanze
+              </Button>
+            </div>}
         </TabsContent>
       </Tabs>
     </div>;
