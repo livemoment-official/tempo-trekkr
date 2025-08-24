@@ -163,8 +163,8 @@ export function MomentCard({
               </div>
             )}
             
-            {/* Enhanced gradient overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/80 via-60% via-black/60 via-40% via-black/30 via-20% to-transparent rounded-xl z-10" />
+            {/* Light gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-xl z-10" />
 
             {/* Top Section - Reorganized Layout */}
             <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-safe">
