@@ -130,7 +130,6 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
             onClick={handleInvite}
             className="flex-1 bg-background border border-border/30 hover:bg-secondary text-foreground font-medium h-8 text-xs"
           >
-            <MessageCircle className="h-3 w-3 mr-1" />
             Invita
           </Button>
           <Button 
