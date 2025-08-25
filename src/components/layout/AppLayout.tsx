@@ -123,13 +123,13 @@ export default function AppLayout() {
       </main>
 
       {/* Apple-style Floating Create Button - hidden on create page */}
-      {!isCreatePage && <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
-          <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button size="lg" className="shadow-ios-floating opacity-80 rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20">
-                <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Accedi per creare
+      {!isCreatePage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
+          <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button className="shadow-ios-floating opacity-80 rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20">
+                <Plus className="h-6 w-6" strokeWidth={2.5} />
               </Button>}>
-            <NavLink to="/crea" aria-label="Crea un momento o invito">
-              <Button size="lg" className="shadow-ios-floating rounded-2xl h-14 px-8 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
-                <Plus className="mr-2 h-6 w-6" strokeWidth={2.5} /> Crea
+            <NavLink to="/crea" aria-label="Crea">
+              <Button className="shadow-ios-floating rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
+                <Plus className="h-6 w-6" strokeWidth={2.5} />
               </Button>
             </NavLink>
           </AuthGuard>
