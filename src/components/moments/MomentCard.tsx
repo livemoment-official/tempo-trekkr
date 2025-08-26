@@ -118,313 +118,161 @@ export function MomentCard({
     return categories[cat.toLowerCase()] || '✨';
   };
 
-  // Mobile responsive layout - ensure all info is visible
-  const containerClasses = isMobile 
-    ? "w-full h-screen flex flex-col cursor-pointer transition-smooth group snap-start" 
-    : "w-full max-w-sm mx-auto cursor-pointer transition-smooth hover:shadow-elevated group";
-
-  const imageContainerClasses = isMobile
-    ? "relative w-full overflow-hidden"
-    : "relative aspect-[9/16] w-full overflow-hidden rounded-t-xl";
-
   return (
     <div 
       ref={targetRef}
-      className={containerClasses}
+      className="w-full cursor-pointer transition-smooth group md:max-w-sm md:mx-auto snap-start"
       onClick={handleCardClick}
       data-snap-card
     >
-      {isMobile ? (
-        // Mobile Responsive Layout - Fixed heights for guaranteed content visibility
-        <div className="w-full h-screen flex flex-col">
-          {/* Image Section - Responsive height based on screen size */}
-          <div className="relative w-full h-[65vh] min-h-[400px] max-h-[650px] overflow-hidden rounded-xl">
-            {hasVideo && videoUrl ? (
-              <video
-                ref={videoRef}
-                src={videoUrl}
-                className="w-full h-full object-cover rounded-xl"
-                muted
-                loop
-                playsInline
-                poster={image}
-              />
-            ) : image ? (
-              <EnhancedImage 
-                src={image} 
-                alt={title}
-                className="w-full h-full object-cover rounded-xl"
-                fallbackSrc="/placeholder.svg"
-                skeletonClassName="w-full h-full"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center rounded-xl">
-                <span className="text-6xl opacity-60">{getCategoryEmoji(category)}</span>
-              </div>
-            )}
-            
-            {/* Light gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-xl z-10" />
-
-            {/* Top Section - Reorganized Layout */}
-            <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-safe">
-              <div className="flex items-start justify-between">
-                {/* Left side - Organizer and Mood */}
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/20">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={organizer.avatar} />
-                      <AvatarFallback className="text-xs text-white">{organizer.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium text-white drop-shadow-lg">{organizer.name}</span>
-                  </div>
-                  {mood && (
-                    <Badge 
-                      variant="outline" 
-                      className="bg-black/40 backdrop-blur-md border-white/20 text-white text-xs self-start"
-                    >
-                      {mood}
-                    </Badge>
-                  )}
-                </div>
-                
-                {/* Right side - Menu */}
-                <div className="flex items-center">
-                  {isCurrentUserOwner && (
-                    <EditDeleteMenu
-                      contentType="moments"
-                      contentId={id}
-                      isOwner={isCurrentUserOwner}
-                    />
-                  )}
-                </div>
-              </div>
+      {/* Unified Responsive Layout */}
+      <div className="w-full h-screen md:h-auto flex flex-col bg-background rounded-xl md:shadow-card md:hover:shadow-elevated overflow-hidden">
+        {/* Hero Image Section */}
+        <div className="relative w-full h-[65vh] md:h-80 lg:h-96 overflow-hidden md:rounded-t-xl">
+          {hasVideo && videoUrl ? (
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+              poster={image}
+            />
+          ) : image ? (
+            <EnhancedImage 
+              src={image} 
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
+              fallbackSrc="/placeholder.svg"
+              skeletonClassName="w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center">
+              <span className="text-6xl opacity-60">{getCategoryEmoji(category)}</span>
             </div>
+          )}
+          
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10" />
 
-            {/* Reactions Overlay */}
-            <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-              {Object.entries(reactions).map(([type, count]) => {
-                if (count === 0) return null;
-                const Icon = reactionIcons[type as keyof typeof reactionIcons];
-                const isActive = userReaction === type;
-                return (
-                  <button
-                    key={type}
-                    onClick={(e) => handleReaction(type, e)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-smooth ${
-                      isActive 
-                        ? 'gradient-brand text-brand-black shadow-brand' 
-                        : 'bg-white/95 backdrop-blur-md hover:bg-white border border-white/40 shadow-card'
-                    }`}
+          {/* Top Section */}
+          <div className="absolute top-0 left-0 right-0 z-20 p-4">
+            <div className="flex items-start justify-between">
+              {/* Left side - Organizer and Mood */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/20">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={organizer.avatar} />
+                    <AvatarFallback className="text-xs text-white">{organizer.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-medium text-white drop-shadow-lg">{organizer.name}</span>
+                </div>
+                {mood && (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-black/40 backdrop-blur-md border-white/20 text-white text-xs self-start"
                   >
-                    <Icon className={`h-3 w-3 ${isActive ? 'fill-current' : ''}`} strokeWidth={1.5} />
-                    {count}
-                  </button>
-                );
-              })}
+                    {mood}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Right side - Menu */}
+              <div className="flex items-center">
+                {isCurrentUserOwner && (
+                  <EditDeleteMenu
+                    contentType="moments"
+                    contentId={id}
+                    isOwner={isCurrentUserOwner}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Content Section - Fixed space for all information */}
-          <div className="flex-1 px-4 py-3 space-y-2.5 bg-background rounded-b-xl min-h-0">
-            {/* Title */}
-            <h3 className="font-semibold text-lg leading-tight line-clamp-2">{title}</h3>
-            
-            {/* Time & Location - Compact row */}
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5" strokeWidth={1.5} />
-                <span className="text-sm">{time}</span>
-              </div>
-              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
-                <span className="text-sm truncate">{location}</span>
-              </div>
-            </div>
-
-            {/* Participants */}
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Users className="h-3.5 w-3.5" strokeWidth={1.5} />
-              <span className="text-sm">
-                <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
-              </span>
-            </div>
-
-            {/* Actions - Compact layout */}
-            <div className="flex items-center gap-2.5 pt-1">
-              <Button 
-                size="sm"
-                className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCardClick();
-                }}
-              >
-                Partecipa
-              </Button>
-              
-              <ShareModal contentType="moment" contentId={id} title={title}>
-                <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                  <Share2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-                </Button>
-              </ShareModal>
-              
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 w-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Open chat with organizer
-                }}
-              >
-                <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />
-              </Button>
-            </div>
+          {/* Reactions Overlay */}
+          <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+            {Object.entries(reactions).map(([type, count]) => {
+              if (count === 0) return null;
+              const Icon = reactionIcons[type as keyof typeof reactionIcons];
+              const isActive = userReaction === type;
+              return (
+                <button
+                  key={type}
+                  onClick={(e) => handleReaction(type, e)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-smooth ${
+                    isActive 
+                      ? 'gradient-brand text-brand-black shadow-brand' 
+                      : 'bg-white/95 backdrop-blur-md hover:bg-white border border-white/40 shadow-card'
+                  }`}
+                >
+                  <Icon className={`h-3 w-3 ${isActive ? 'fill-current' : ''}`} strokeWidth={1.5} />
+                  {count}
+                </button>
+              );
+            })}
           </div>
         </div>
-      ) : (
-        // Desktop Card Layout
-        <Card className="w-full max-w-sm mx-auto cursor-pointer transition-smooth hover:shadow-elevated group">
-          {/* Hero Image - Extended vertical ratio */}
-          <div className="relative aspect-[9/16] w-full overflow-hidden rounded-t-xl">
-            {image ? (
-              <EnhancedImage 
-                src={image} 
-                alt={title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
-                fallbackSrc="/placeholder.svg"
-                skeletonClassName="w-full h-full"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-brand-gray to-muted flex items-center justify-center">
-                <span className="text-6xl opacity-60">{getCategoryEmoji(category)}</span>
-              </div>
-            )}
-            
-            {/* Category Badge */}
-            <Badge 
-              variant="minimal" 
-              className="absolute top-4 left-4 bg-white/95 backdrop-blur-md border-white/40"
-            >
-              {getCategoryEmoji(category)} {category}
-            </Badge>
 
-            {/* Edit/Delete Menu for Owner */}
-            {isCurrentUserOwner && (
-              <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-                <EditDeleteMenu
-                  contentType="moments"
-                  contentId={id}
-                  isOwner={isCurrentUserOwner}
-                />
-              </div>
-            )}
-
-            {/* Top Right Info */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-              {/* Organizer */}
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/40">
-                <Avatar className="h-5 w-5">
-                  <AvatarImage src={organizer.avatar} />
-                  <AvatarFallback className="text-xs">{organizer.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-xs font-medium">{organizer.name}</span>
-              </div>
-              
-              {/* Mood Badge */}
-              {mood && (
-                <Badge 
-                  variant="outline" 
-                  className="bg-white/95 backdrop-blur-md border-white/40 text-xs"
-                >
-                  {mood}
-                </Badge>
-              )}
+        {/* Content Section */}
+        <div className="flex-1 md:flex-initial px-4 py-4 space-y-3 bg-background md:rounded-b-xl">
+          {/* Title */}
+          <h3 className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{title}</h3>
+          
+          {/* Time & Location */}
+          <div className="flex items-center gap-4 text-muted-foreground flex-wrap md:flex-col md:items-start md:gap-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" strokeWidth={1.5} />
+              <span className="text-sm">{time}</span>
             </div>
-
-            {/* Reactions Overlay */}
-            <div className="absolute bottom-4 right-4 flex gap-2">
-              {Object.entries(reactions).map(([type, count]) => {
-                if (count === 0) return null;
-                const Icon = reactionIcons[type as keyof typeof reactionIcons];
-                const isActive = userReaction === type;
-                return (
-                  <button
-                    key={type}
-                    onClick={(e) => handleReaction(type, e)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-smooth ${
-                      isActive 
-                        ? 'gradient-brand text-brand-black shadow-brand' 
-                        : 'bg-white/95 backdrop-blur-md hover:bg-white border border-white/40 shadow-card'
-                    }`}
-                  >
-                    <Icon className={`h-3.5 w-3.5 ${isActive ? 'fill-current' : ''}`} strokeWidth={1.5} />
-                    {count}
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
+              <MapPin className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
+              <span className="text-sm truncate">{location}</span>
             </div>
           </div>
 
-          {/* Content Below Image */}
-          <CardContent className="px-4 pt-1 pb-4 space-y-3">
-            {/* Title */}
-            <h3 className="font-medium text-lg leading-tight line-clamp-2">{title}</h3>
+          {/* Participants */}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="h-4 w-4" strokeWidth={1.5} />
+            <span className="text-sm">
+              <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 pt-2">
+            <Button 
+              size="sm"
+              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick();
+              }}
+            >
+              Partecipa
+            </Button>
             
-            {/* Time & Location */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" strokeWidth={1.5} />
-                <span>{time}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" strokeWidth={1.5} />
-                <span className="line-clamp-1">{location}</span>
-              </div>
-            </div>
-
-            {/* Participants */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" strokeWidth={1.5} />
-              <span>
-                <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
-              </span>
-            </div>
-
-            {/* Actions Row */}
-            <div className="flex items-center gap-3 pt-2">
-              <Button 
-                className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-black font-medium shadow-md hover:shadow-lg transition-all duration-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCardClick();
-                }}
-              >
-                Partecipa
+            <ShareModal contentType="moment" contentId={id} title={title}>
+              <Button size="sm" variant="outline" className="h-9 w-9 p-0">
+                <Share2 className="h-4 w-4" strokeWidth={1.5} />
               </Button>
-              
-              <ShareModal contentType="moment" contentId={id} title={title}>
-                <Button size="icon" variant="outline" className="h-10 w-10">
-                  <Share2 className="h-4 w-4" strokeWidth={1.5} />
-                </Button>
-              </ShareModal>
-              
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-10 w-10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Open chat with organizer
-                }}
-              >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </ShareModal>
+            
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 w-9 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Open chat with organizer
+              }}
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
