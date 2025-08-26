@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,9 +20,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { Users, Settings, MessageCircle } from "lucide-react";
+import { Crown, Settings, MessageCircle } from "lucide-react";
 export default function Profilo() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -162,11 +163,11 @@ export default function Profilo() {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => setShowFriendSuggestions(true)}
-          className="flex items-center gap-2"
+          onClick={() => navigate('/abbonamento')}
+          className="flex items-center gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
         >
-          <Users className="h-4 w-4" />
-          Trova amici
+          <Crown className="h-4 w-4" />
+          Upgrade Profilo
         </Button>
       </div>
 

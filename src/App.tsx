@@ -23,6 +23,7 @@ import UserProfile from "./pages/UserProfile";
 import ChatFullscreen from "./pages/ChatFullscreen";
 import TrovaAmici from "./pages/TrovaAmici";
 import Premi from "./pages/Premi";
+import Abbonamento from "./pages/Abbonamento";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                 <Route path="/moment/:id" element={<MomentDetail />} />
                 <Route path="/trova-amici" element={<TrovaAmici />} />
                 <Route path="/premi" element={<Premi />} />
+                <Route path="/abbonamento" element={<Abbonamento />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
