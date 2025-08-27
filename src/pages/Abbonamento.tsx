@@ -94,6 +94,7 @@ const accountTypes = [
 ];
 
 export default function Abbonamento() {
+  console.log('Abbonamento component loading...');
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<'1' | '3' | '12'>('3');
   const [selectedBusinessType, setSelectedBusinessType] = useState<string>('location');
