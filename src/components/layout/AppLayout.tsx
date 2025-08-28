@@ -21,15 +21,25 @@ const Header = ({
   onOpenFriends: () => void;
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     isAuthenticated,
     isLoading,
     user
   } = useAuth();
 
+  // Check if we're on inviti page for transparent header
+  const isInvitiPage = location.pathname === '/inviti';
+  
   // Debug log per verificare lo stato di autenticazione
   console.log('Header - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
-  return <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
+  
+  return <header className={cn(
+    "sticky top-0 z-40", 
+    isInvitiPage 
+      ? "bg-transparent border-transparent" 
+      : "border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light"
+  )}>
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
           <EnhancedImage src={mascotLogo} alt="LiveMoment Mascot" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-8 object-contain" />
