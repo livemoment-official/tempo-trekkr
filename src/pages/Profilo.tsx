@@ -163,10 +163,7 @@ export default function Profilo() {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => {
-            console.log('Navigating to abbonamento...');
-            navigate('/abbonamento');
-          }}
+          onClick={() => navigate('/abbonamento')}
           className="flex items-center gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
         >
           <Crown className="h-4 w-4" />
