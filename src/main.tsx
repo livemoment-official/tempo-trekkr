@@ -26,6 +26,7 @@ import CreaEvento from './pages/CreaEvento'
 import MomentDetail from './pages/MomentDetail'
 import Chat from './pages/Chat'
 import ChatFullscreen from './pages/ChatFullscreen'
+import Abbonamento from './pages/Abbonamento'
 import NotFound from './pages/NotFound'
 
 import './index.css'
@@ -49,6 +50,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="agenda" element={<Agenda />} />
               <Route path="profilo" element={<Profilo />} />
               <Route path="profilo/:userId" element={<UserProfile />} />
+              <Route path="abbonamento" element={<Abbonamento />} />
               <Route path="crea" element={<Crea />} />
               <Route path="chat" element={<Chat />} />
             </Route>
