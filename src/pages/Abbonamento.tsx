@@ -116,7 +116,23 @@ export default function Abbonamento() {
       </Helmet>
 
       {/* Header */}
-      
+      <header className="sticky top-0 z-50 bg-gray-50 border-b border-gray-200">
+        <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+          <img 
+            src="/lovable-uploads/be87aac4-28ee-46dc-a364-a47e28f79fb5.png" 
+            alt="LiveMoment Mascot" 
+            className="h-10 w-10"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="text-gray-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
+      </header>
 
       <div className="max-w-md mx-auto pb-32">
         {/* Plan Toggle */}
