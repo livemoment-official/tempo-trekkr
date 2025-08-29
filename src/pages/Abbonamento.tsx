@@ -3,8 +3,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, MessageSquare, Check, Ticket, Users, MessageCircle, Shield, Star, Gift, Crown, MapPin, Palette, Clipboard, Camera, Calendar, Heart } from "lucide-react";
+import { ArrowLeft, MessageSquare, Check, Ticket, Users, MessageCircle, Shield, Star, Gift, Crown, MapPin, Palette, Clipboard, Camera, Calendar, Heart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 const proFeatures = [{
   icon: <Check className="h-5 w-5" />,
   title: "Partecipa e Crea senza limiti",
@@ -80,6 +84,9 @@ export default function Abbonamento() {
   const [selectedBusinessType, setSelectedBusinessType] = useState<string>('location');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { session, subscribed, subscriptionTier, checkSubscription } = useAuth();
   const pricingPlans = {
     '1': {
       months: '1',
@@ -100,14 +107,78 @@ export default function Abbonamento() {
       saving: 'Risparmi 59,89€'
     }
   };
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!acceptedTerms) {
-      alert('Accetta i termini e le condizioni di Live Moment');
+      toast.error("Devi accettare i termini e condizioni per continuare");
       return;
     }
 
-    // TODO: Implement Stripe checkout
-    console.log(`Subscribing to ${activeTab} plan:`, selectedPlan);
+    if (!session) {
+      toast.error("Devi essere autenticato per abbonarti");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          planType: activeTab,
+          duration: selectedPlan,
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        toast.error("Errore durante la creazione del checkout");
+        return;
+      }
+
+      // Open Stripe checkout in a new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Reindirizzamento al pagamento...");
+      }
+    } catch (error) {
+      console.error('Exception during checkout:', error);
+      toast.error("Errore durante il processo di pagamento");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (!session) {
+      toast.error("Devi essere autenticato per gestire l'abbonamento");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Customer portal error:', error);
+        toast.error("Errore durante l'apertura del portale cliente");
+        return;
+      }
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Apertura portale gestione abbonamento...");
+      }
+    } catch (error) {
+      console.error('Exception during customer portal:', error);
+      toast.error("Errore durante l'apertura del portale");
+    } finally {
+      setIsLoading(false);
+    }
   };
   return <div className="min-h-screen bg-gray-50">
       <Helmet>
@@ -243,9 +314,32 @@ export default function Abbonamento() {
             </label>
           </div>
           
-          <Button onClick={handleSubscribe} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base" disabled={!acceptedTerms}>
-            {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
-          </Button>
+          <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
+            {subscribed ? (
+              <div className="space-y-2">
+                <div className="text-center text-sm text-gray-600">
+                  Abbonamento attivo: {subscriptionTier}
+                </div>
+                <Button 
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base"
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Gestisci Abbonamento
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={handleSubscribe} 
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base" 
+                disabled={!acceptedTerms || isLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
+              </Button>
+            )}
+          </AuthGuard>
         </div>
       </div>
     </div>;

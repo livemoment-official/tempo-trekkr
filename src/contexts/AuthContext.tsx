@@ -16,6 +16,12 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  // Subscription state
+  subscribed: boolean;
+  subscriptionTier: string | null;
+  subscriptionEnd: string | null;
+  isSubscriptionLoading: boolean;
+  checkSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +30,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Subscription state
+  const [subscribed, setSubscribed] = useState<boolean>(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -41,12 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setIsLoading(false);
         
-        // Trigger profile creation for new signups
+        // Trigger profile creation and subscription check for new signups
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('User signed in, ensuring profile exists...');
           setTimeout(() => {
             // Check if profile exists, create if not
             ensureProfileExists(session.user.id, session.user.email || '');
+            // Check subscription status
+            checkSubscription();
           }, 100);
         }
       }
@@ -362,8 +376,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const checkSubscription = async () => {
+    if (!user || !session) return;
+    
+    setIsSubscriptionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking subscription:', error);
+        return;
+      }
+
+      setSubscribed(data.subscribed || false);
+      setSubscriptionTier(data.subscription_tier || null);
+      setSubscriptionEnd(data.subscription_end || null);
+    } catch (error) {
+      console.error('Exception checking subscription:', error);
+    } finally {
+      setIsSubscriptionLoading(false);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clear subscription state on sign out
+    setSubscribed(false);
+    setSubscriptionTier(null);
+    setSubscriptionEnd(null);
   };
 
   const value = {
@@ -380,6 +424,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     signOut,
     isAuthenticated: !!user,
+    // Subscription state and functions
+    subscribed,
+    subscriptionTier,
+    subscriptionEnd,
+    isSubscriptionLoading,
+    checkSubscription,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
