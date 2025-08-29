@@ -12,7 +12,7 @@ import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import mascotLogo from "@/assets/smiley-mascot.png";
+import mascotLogo from "@/assets/mascot-yellow.png";
 const Header = ({
   onOpenSearch,
   onOpenFriends
