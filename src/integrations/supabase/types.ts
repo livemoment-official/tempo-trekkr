@@ -265,6 +265,81 @@ export type Database = {
         }
         Relationships: []
       }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          message_type: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          message_type?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          message_type?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      groups: {
+        Row: {
+          avatar_url: string | null
+          category: string
+          created_at: string
+          description: string | null
+          host_id: string
+          id: string
+          is_public: boolean | null
+          location: Json | null
+          max_participants: number | null
+          participants: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          host_id: string
+          id?: string
+          is_public?: boolean | null
+          location?: Json | null
+          max_participants?: number | null
+          participants?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          host_id?: string
+          id?: string
+          is_public?: boolean | null
+          location?: Json | null
+          max_participants?: number | null
+          participants?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invites: {
         Row: {
           can_be_public: boolean | null

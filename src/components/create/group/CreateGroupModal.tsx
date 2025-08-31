@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
-import LocationSearchInput from "@/components/location/LocationSearchInput";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LocationSearchInput } from '@/components/location/LocationSearchInput';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const categories = [
   { id: 'aperitivo', label: 'Aperitivo', emoji: '🍺' },
@@ -27,11 +27,12 @@ interface CreateGroupModalProps {
 
 export function CreateGroupModal({ children }: CreateGroupModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
-    category: "",
-    location: { name: "", coordinates: null as [number, number] | null }
+    title: '',
+    category: '',
+    location: '',
   });
 
   const handleCategorySelect = (categoryId: string) => {
@@ -39,35 +40,52 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
   };
 
   const handleLocationChange = (name: string, coordinates?: { lat: number; lng: number }) => {
-    setFormData(prev => ({
-      ...prev,
-      location: {
-        name,
-        coordinates: coordinates ? [coordinates.lat, coordinates.lng] : null
-      }
-    }));
+    setFormData(prev => ({ ...prev, location: name }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.category || !formData.location.name) {
+    if (!formData.title || !formData.category) {
       toast({
-        title: "Campi mancanti",
-        description: "Compila tutti i campi per creare il gruppo",
-        variant: "destructive"
+        title: "Errore",
+        description: "Inserisci titolo e categoria",
+        variant: "destructive",
       });
       return;
     }
 
-    // Here you would normally create the group via API
-    toast({
-      title: "Gruppo creato!",
-      description: `Il gruppo "${formData.title}" è stato creato con successo`
-    });
-    
-    setOpen(false);
-    setFormData({ title: "", category: "", location: { name: "", coordinates: null } });
+    try {
+      const { data, error } = await supabase
+        .from('groups')
+        .insert({
+          title: formData.title,
+          category: formData.category,
+          location: formData.location ? { name: formData.location } : null,
+          host_id: user?.id,
+          participants: [user?.id],
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Gruppo creato!",
+        description: `Il gruppo "${formData.title}" è stato creato con successo.`,
+      });
+
+      // Reset form and close modal
+      setFormData({ title: '', category: '', location: '' });
+      setOpen(false);
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile creare il gruppo. Riprova.",
+        variant: "destructive",
+      });
+    }
   };
 
   const selectedCategory = categories.find(cat => cat.id === formData.category);
@@ -115,7 +133,7 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
             <Label>Posizione</Label>
             <div className="mt-2">
               <LocationSearchInput
-                value={formData.location.name}
+                value={formData.location}
                 onChange={handleLocationChange}
                 placeholder="Seleziona una zona..."
               />
@@ -131,7 +149,7 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
                 </div>
                 <div>
                   <p className="font-medium">{formData.title || "Nome del gruppo"}</p>
-                  <p className="text-sm text-muted-foreground">{formData.location.name || "Posizione"}</p>
+                  <p className="text-sm text-muted-foreground">{formData.location || "Posizione"}</p>
                 </div>
               </div>
             </div>
