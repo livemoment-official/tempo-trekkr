@@ -14,6 +14,8 @@ interface TicketingData {
   maxTickets?: number;
   ticketType: "standard" | "vip" | "early_bird";
   description?: string;
+  livemomentFeePercentage?: number;
+  organizerFeePercentage?: number;
 }
 interface TicketingSystemProps {
   data: TicketingData;
@@ -112,21 +114,82 @@ export const TicketingSystem = ({
           })} placeholder="Incluso nel prezzo..." />
             </div>
 
-            {/* Preview */}
+            {/* Fee Settings */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="livemomentFee">Fee LiveMoment (%)</Label>
+                <Input 
+                  id="livemomentFee" 
+                  type="number" 
+                  min="0" 
+                  max="20" 
+                  step="0.5"
+                  value={localData.livemomentFeePercentage || 5} 
+                  onChange={e => updateData({
+                    livemomentFeePercentage: parseFloat(e.target.value) || 5
+                  })} 
+                  placeholder="5" 
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="organizerFee">Fee organizzatore (%)</Label>
+                <Input 
+                  id="organizerFee" 
+                  type="number" 
+                  min="0" 
+                  max="10" 
+                  step="0.5"
+                  value={localData.organizerFeePercentage || 0} 
+                  onChange={e => updateData({
+                    organizerFeePercentage: parseFloat(e.target.value) || 0
+                  })} 
+                  placeholder="0" 
+                />
+              </div>
+            </div>
+
+            {/* Preview with Fee Breakdown */}
             <div className="p-3 bg-background rounded-lg border">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div>
                   <Badge variant="secondary" className="mb-1">
                     {ticketTypes.find(t => t.value === localData.ticketType)?.label}
                   </Badge>
-                  <p className="font-semibold">
-                    {localData.price} {localData.currency}
-                  </p>
-                  {localData.description && <p className="text-xs text-muted-foreground mt-1">
+                  {localData.description && <p className="text-xs text-muted-foreground">
                       {localData.description}
                     </p>}
                 </div>
                 <Ticket className="h-6 w-6 text-primary" />
+              </div>
+              
+              {/* Price Breakdown */}
+              <div className="space-y-1 text-xs border-t pt-2">
+                <div className="flex justify-between">
+                  <span>Prezzo base:</span>
+                  <span className="font-medium">{localData.price} {localData.currency}</span>
+                </div>
+                {(localData.livemomentFeePercentage || 5) > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Fee LiveMoment ({localData.livemomentFeePercentage || 5}%):</span>
+                    <span>{((localData.price * (localData.livemomentFeePercentage || 5)) / 100).toFixed(2)} {localData.currency}</span>
+                  </div>
+                )}
+                {(localData.organizerFeePercentage || 0) > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Fee organizzatore ({localData.organizerFeePercentage || 0}%):</span>
+                    <span>{((localData.price * (localData.organizerFeePercentage || 0)) / 100).toFixed(2)} {localData.currency}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-semibold pt-1 border-t">
+                  <span>Totale utente:</span>
+                  <span>
+                    {(localData.price + 
+                      (localData.price * (localData.livemomentFeePercentage || 5)) / 100 + 
+                      (localData.price * (localData.organizerFeePercentage || 0)) / 100
+                    ).toFixed(2)} {localData.currency}
+                  </span>
+                </div>
               </div>
             </div>
           </div>}

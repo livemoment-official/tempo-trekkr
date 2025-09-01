@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle, Share2 } from "lucide-react";
+import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle, Share2, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 
 interface MomentCardProps {
   id: string;
@@ -41,6 +42,9 @@ interface MomentCardProps {
   hostId?: string;
   hasVideo?: boolean;
   videoUrl?: string;
+  paymentRequired?: boolean;
+  price?: number;
+  currency?: string;
 }
 
 const reactionIcons = {
@@ -66,13 +70,17 @@ export function MomentCard({
   isOwner = false,
   hostId,
   hasVideo = false,
-  videoUrl
+  videoUrl,
+  paymentRequired = false,
+  price = 0,
+  currency = 'EUR'
 }: MomentCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const isCurrentUserOwner = user?.id === hostId;
@@ -240,17 +248,45 @@ export function MomentCard({
             </span>
           </div>
 
+          {/* Price Display */}
+          {paymentRequired && price > 0 && (
+            <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-lg">
+              <span className="text-sm font-medium">Prezzo:</span>
+              <span className="font-bold text-lg text-brand">
+                {new Intl.NumberFormat('it-IT', {
+                  style: 'currency',
+                  currency: currency
+                }).format(price / 100)}
+              </span>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
             <Button 
               size="sm"
-              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              variant={paymentRequired ? "default" : "default"}
+              className={paymentRequired 
+                ? "flex-1 bg-gradient-to-r from-brand to-brand-accent hover:from-brand-accent hover:to-brand text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                : "flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              }
               onClick={(e) => {
                 e.stopPropagation();
-                handleCardClick();
+                if (paymentRequired && price > 0) {
+                  setShowTicketModal(true);
+                } else {
+                  handleCardClick();
+                }
               }}
             >
-              Partecipa
+              {paymentRequired && price > 0 ? (
+                <>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Acquista Biglietto
+                </>
+              ) : (
+                'Partecipa'
+              )}
             </Button>
             
             <ShareModal contentType="moment" contentId={id} title={title}>
@@ -273,6 +309,27 @@ export function MomentCard({
           </div>
         </div>
       </div>
+
+      {/* Ticket Purchase Modal */}
+      {paymentRequired && price > 0 && (
+        <TicketPurchaseModal
+          open={showTicketModal}
+          onOpenChange={setShowTicketModal}
+          moment={{
+            id,
+            title,
+            description,
+            when_at: time,
+            place: { name: location },
+            price_cents: price * 100, // Convert to cents
+            currency,
+            livemoment_fee_percentage: 5,
+            organizer_fee_percentage: 0,
+            max_participants: maxParticipants,
+            participant_count: participants
+          }}
+        />
+      )}
     </div>
   );
 }

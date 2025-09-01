@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
 import { Toaster } from './components/ui/toaster'
+import { PushNotificationService } from './components/notifications/PushNotificationService'
 
 // Layout Components
 import AppLayout from './components/layout/AppLayout'
@@ -66,6 +67,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
+          <PushNotificationService />
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
