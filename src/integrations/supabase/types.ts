@@ -116,6 +116,33 @@ export type Database = {
         }
         Relationships: []
       }
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_participants: {
         Row: {
           created_at: string
@@ -455,32 +482,47 @@ export type Database = {
       }
       moment_participants: {
         Row: {
+          amount_paid_cents: number | null
           created_at: string
+          currency: string | null
           id: string
+          livemoment_fee_cents: number | null
           moment_id: string | null
+          organizer_fee_cents: number | null
           payment_status: string | null
           status: string
           stripe_payment_id: string | null
+          stripe_session_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          amount_paid_cents?: number | null
           created_at?: string
+          currency?: string | null
           id?: string
+          livemoment_fee_cents?: number | null
           moment_id?: string | null
+          organizer_fee_cents?: number | null
           payment_status?: string | null
           status?: string
           stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          amount_paid_cents?: number | null
           created_at?: string
+          currency?: string | null
           id?: string
+          livemoment_fee_cents?: number | null
           moment_id?: string | null
+          organizer_fee_cents?: number | null
           payment_status?: string | null
           status?: string
           stripe_payment_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -524,15 +566,20 @@ export type Database = {
           age_range_min: number | null
           capacity: number | null
           created_at: string
+          currency: string | null
           description: string | null
           host_id: string
           id: string
           is_public: boolean
+          livemoment_fee_percentage: number | null
           max_participants: number | null
           mood_tag: string | null
+          organizer_fee_percentage: number | null
           participants: string[] | null
+          payment_required: boolean | null
           photos: string[] | null
           place: Json | null
+          price_cents: number | null
           registration_status: string | null
           tags: string[] | null
           ticketing: Json | null
@@ -545,15 +592,20 @@ export type Database = {
           age_range_min?: number | null
           capacity?: number | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           host_id: string
           id?: string
           is_public?: boolean
+          livemoment_fee_percentage?: number | null
           max_participants?: number | null
           mood_tag?: string | null
+          organizer_fee_percentage?: number | null
           participants?: string[] | null
+          payment_required?: boolean | null
           photos?: string[] | null
           place?: Json | null
+          price_cents?: number | null
           registration_status?: string | null
           tags?: string[] | null
           ticketing?: Json | null
@@ -566,15 +618,20 @@ export type Database = {
           age_range_min?: number | null
           capacity?: number | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           host_id?: string
           id?: string
           is_public?: boolean
+          livemoment_fee_percentage?: number | null
           max_participants?: number | null
           mood_tag?: string | null
+          organizer_fee_percentage?: number | null
           participants?: string[] | null
+          payment_required?: boolean | null
           photos?: string[] | null
           place?: Json | null
+          price_cents?: number | null
           registration_status?: string | null
           tags?: string[] | null
           ticketing?: Json | null
@@ -613,6 +670,48 @@ export type Database = {
           read?: boolean
           title?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_sessions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          livemoment_fee_cents: number
+          moment_id: string | null
+          organizer_fee_cents: number
+          status: string
+          stripe_session_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          livemoment_fee_cents?: number
+          moment_id?: string | null
+          organizer_fee_cents?: number
+          status?: string
+          stripe_session_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          livemoment_fee_cents?: number
+          moment_id?: string | null
+          organizer_fee_cents?: number
+          status?: string
+          stripe_session_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
