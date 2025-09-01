@@ -25,6 +25,10 @@ interface GroupChatInfo {
   participant_count: number;
   event_date?: string;
   location?: string;
+  subtitle?: string;
+  date?: string;
+  time?: string;
+  memberCount?: number;
 }
 
 export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', groupId: string) {
@@ -36,35 +40,39 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
 
   const loadGroupInfo = async () => {
     try {
-      let query;
-      let tableName = '';
+      let data, error;
       
       switch (groupType) {
         case 'moment':
-          tableName = 'moments';
+          ({ data, error } = await supabase
+            .from('moments')
+            .select('*')
+            .eq('id', groupId)
+            .single());
           break;
         case 'event':
-          tableName = 'events';
+          ({ data, error } = await supabase
+            .from('events')
+            .select('*')
+            .eq('id', groupId)
+            .single());
           break;
         case 'group':
-          tableName = 'groups';
+          ({ data, error } = await supabase
+            .from('groups')
+            .select('*')
+            .eq('id', groupId)
+            .single());
           break;
         case 'city':
           // For city groups, we might need a different approach
           return;
       }
 
-      query = supabase
-        .from(tableName)
-        .select('*')
-        .eq('id', groupId)
-        .single();
-
-      const { data, error } = await query;
-
       if (error) throw error;
 
       if (data) {
+        const eventDate = data.when_at ? new Date(data.when_at) : null;
         setGroupInfo({
           id: data.id,
           title: data.title,
@@ -72,6 +80,10 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
           participant_count: data.participants?.length || 0,
           event_date: data.when_at,
           location: data.place?.name || data.location?.name || '',
+          subtitle: data.description || `Chat di ${groupType}`,
+          date: eventDate ? eventDate.toLocaleDateString('it-IT') : undefined,
+          time: eventDate ? eventDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : undefined,
+          memberCount: data.participants?.length || 0,
         });
       }
     } catch (error) {
@@ -87,33 +99,42 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
           id,
           content,
           sender_id,
-          created_at,
-          profiles!sender_id (
-            id,
-            name,
-            avatar_url
-          )
+          created_at
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      const formattedMessages: GroupMessage[] = data?.map(msg => ({
-        id: msg.id,
-        content: msg.content,
-        sender_id: msg.sender_id,
-        sender_info: {
-          id: msg.profiles?.id || msg.sender_id,
-          name: msg.profiles?.name || 'Utente',
-          avatar_url: msg.profiles?.avatar_url,
-        },
-        group_info: {
-          id: groupId,
-          title: groupInfo?.title || 'Chat di gruppo',
-        },
-        created_at: msg.created_at,
-      })) || [];
+      // Get unique sender IDs to fetch profiles
+      const senderIds = [...new Set(data?.map(msg => msg.sender_id) || [])];
+      
+      // Fetch profiles for all senders
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', senderIds);
+
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const formattedMessages: GroupMessage[] = data?.map(msg => {
+        const profile = profilesMap.get(msg.sender_id);
+        return {
+          id: msg.id,
+          content: msg.content,
+          sender_id: msg.sender_id,
+          sender_info: {
+            id: msg.sender_id,
+            name: profile?.name || 'Utente',
+            avatar_url: profile?.avatar_url,
+          },
+          group_info: {
+            id: groupId,
+            title: groupInfo?.title || 'Chat di gruppo',
+          },
+          created_at: msg.created_at,
+        };
+      }) || [];
 
       setMessages(formattedMessages);
     } catch (error) {
@@ -139,26 +160,28 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
           id,
           content,
           sender_id,
-          created_at,
-          profiles!sender_id (
-            id,
-            name,
-            avatar_url
-          )
+          created_at
         `)
         .single();
 
       if (error) throw error;
 
       if (data) {
+        // Get sender profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url')
+          .eq('id', data.sender_id)
+          .single();
+
         const newMessage: GroupMessage = {
           id: data.id,
           content: data.content,
           sender_id: data.sender_id,
           sender_info: {
-            id: data.profiles?.id || data.sender_id,
-            name: data.profiles?.name || 'Tu',
-            avatar_url: data.profiles?.avatar_url,
+            id: data.sender_id,
+            name: profile?.name || 'Tu',
+            avatar_url: profile?.avatar_url,
           },
           group_info: {
             id: groupId,
