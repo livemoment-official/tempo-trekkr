@@ -13,14 +13,17 @@ import { AvailabilityList } from "@/components/availability/AvailabilityList";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { OnboardingModal } from "@/components/profile/OnboardingModal";
 import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
-import { PhotoGalleryCarousel } from "@/components/profile/PhotoGalleryCarousel";
+import { EnhancedPhotoGallery } from "@/components/profile/EnhancedPhotoGallery";
 import { ChatPermissionSettings } from "@/components/profile/ChatPermissionSettings";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
+import { ProfileProgressIndicator } from "@/components/profile/ProfileProgressIndicator";
+import { QuickEditField } from "@/components/profile/QuickEditField";
+import { CollapsibleSection } from "@/components/profile/CollapsibleSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { Crown, Settings, MessageCircle } from "lucide-react";
+import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock } from "lucide-react";
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,6 +106,10 @@ export default function Profilo() {
     setProfile({ ...profile, chat_permission: newPermission });
   };
 
+  const handleFieldUpdate = (fieldKey: string, value: string) => {
+    setProfile({ ...profile, [fieldKey]: value });
+  };
+
   if (!isAuthenticated) {
     return (
       <AuthGuard title="Accedi per vedere il profilo" description="Accedi per gestire il tuo profilo e le tue preferenze">
@@ -171,21 +178,31 @@ export default function Profilo() {
         </Button>
       </div>
 
-      {/* Galleria foto principale */}
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <PhotoGalleryCarousel
-            photos={profile?.gallery || []}
-            isOwnProfile={true}
-            onPhotosUpdate={handlePhotosUpdate}
-          />
-        </CardContent>
-      </Card>
+      {/* Progress Indicator */}
+      <ProfileProgressIndicator profile={profile} />
 
-      {/* Informazioni profilo */}
-      <Card className="shadow-sm">
-        <CardContent className="flex items-center gap-4 p-4">
-          <Avatar className="h-16 w-16">
+      {/* Galleria foto principale */}
+      <CollapsibleSection
+        title="Galleria Foto"
+        icon={<Camera className="h-4 w-4" />}
+        badge={profile?.gallery?.length ? `${profile.gallery.length} foto` : "Vuota"}
+        badgeVariant={profile?.gallery?.length ? "secondary" : "outline"}
+      >
+        <EnhancedPhotoGallery
+          photos={profile?.gallery || []}
+          isOwnProfile={true}
+          onPhotosUpdate={handlePhotosUpdate}
+        />
+      </CollapsibleSection>
+
+      {/* Informazioni profilo principali */}
+      <CollapsibleSection
+        title="Profilo"
+        icon={<User className="h-4 w-4" />}
+        defaultOpen={true}
+      >
+        <div className="flex items-center gap-4 mb-4">
+          <Avatar className="h-16 w-16 avatar-ring">
             <AvatarImage src={profile?.avatar_url} />
             <AvatarFallback className="bg-gradient-brand text-white">
               {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
@@ -196,9 +213,6 @@ export default function Profilo() {
             <div className="text-sm text-muted-foreground">
               @{profile?.username || 'username'}
             </div>
-            {profile?.bio && (
-              <div className="text-sm text-muted-foreground mt-1">{profile.bio}</div>
-            )}
             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
               <span><strong className="text-foreground">{profile?.followers_count || 0}</strong> follower</span>
               <span><strong className="text-foreground">{profile?.following_count || 0}</strong> seguiti</span>
@@ -222,100 +236,157 @@ export default function Profilo() {
               Chat
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Disponibilità - spostata prima di social e galleria */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            Disponibilità
-            <Badge variant="outline" className="text-xs">
-              {profile?.chat_permission === 'everyone' ? 'Pubblico' : 'Limitato'}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Indica quando sei libero per uscire o partecipare a eventi.
-            </p>
+        {/* Quick edit fields */}
+        <div className="space-y-4">
+          <QuickEditField
+            label="Bio"
+            value={profile?.bio || ''}
+            fieldKey="bio"
+            type="textarea"
+            placeholder="Racconta qualcosa di te..."
+            onUpdate={handleFieldUpdate}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <QuickEditField
+              label="Mood"
+              value={profile?.mood || ''}
+              fieldKey="mood"
+              placeholder="Es. Energico, Chill..."
+              onUpdate={handleFieldUpdate}
+            />
+            <QuickEditField
+              label="Lavoro"
+              value={profile?.job_title || ''}
+              fieldKey="job_title"
+              placeholder="La tua professione"
+              onUpdate={handleFieldUpdate}
+            />
           </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Disponibilità */}
+      <CollapsibleSection
+        title="Disponibilità"
+        icon={<Clock className="h-4 w-4" />}
+        badge={profile?.chat_permission === 'everyone' ? 'Pubblico' : 'Limitato'}
+        badgeVariant="outline"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Indica quando sei libero per uscire o partecipare a eventi.
+          </p>
           <AvailabilityForm />
           <div className="space-y-2">
             <div className="text-sm font-medium">I tuoi slot</div>
             <AvailabilityList />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CollapsibleSection>
 
       {/* Informazioni personali e interessi */}
-      {(profile?.mood || profile?.job_title || profile?.interests?.length > 0) && (
-        <Card className="shadow-sm">
-          <CardContent className="space-y-4 p-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {profile?.mood && (
-                <div>
-                  <div className="text-sm font-medium">Mood</div>
-                  <Badge variant="outline" className="mt-1">{profile.mood}</Badge>
-                </div>
-              )}
-              {profile?.job_title && (
-                <div>
-                  <div className="text-sm font-medium">Lavoro</div>
-                  <Badge variant="secondary" className="mt-1">{profile.job_title}</Badge>
-                </div>
-              )}
-            </div>
-
-            {profile?.interests && profile.interests.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Interessi</div>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests.map((interest: string) => (
-                    <Badge key={interest} variant="outline">{interest}</Badge>
-                  ))}
-                </div>
+      <CollapsibleSection
+        title="Dettagli Personali"
+        icon={<Sparkles className="h-4 w-4" />}
+        badge={profile?.interests?.length ? `${profile.interests.length} interessi` : "Da completare"}
+        badgeVariant={profile?.interests?.length ? "secondary" : "outline"}
+      >
+        <div className="space-y-4">
+          {/* Status attuale */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {profile?.mood && (
+              <div>
+                <div className="text-sm font-medium">Mood</div>
+                <Badge variant="outline" className="mt-1">{profile.mood}</Badge>
               </div>
             )}
-
-            <div className="flex items-center justify-between pt-2">
+            {profile?.job_title && (
               <div>
-                <div className="font-medium">Notifiche</div>
-                <div className="text-sm text-muted-foreground">Inviti, chat, conferme</div>
+                <div className="text-sm font-medium">Lavoro</div>
+                <Badge variant="secondary" className="mt-1">{profile.job_title}</Badge>
               </div>
-              <Switch defaultChecked />
+            )}
+            {profile?.relationship_status && (
+              <div>
+                <div className="text-sm font-medium">Relazione</div>
+                <Badge variant="outline" className="mt-1">{profile.relationship_status}</Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Interessi */}
+          {profile?.interests && profile.interests.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Interessi</div>
+              <div className="flex flex-wrap gap-2">
+                {profile.interests.map((interest: string) => (
+                  <Badge key={interest} variant="outline" className="hover-scale">{interest}</Badge>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+
+          {/* Quick edit per relationship status */}
+          <QuickEditField
+            label="Stato Relazione"
+            value={profile?.relationship_status || ''}
+            fieldKey="relationship_status"
+            placeholder="Single, In coppia, È complicato..."
+            onUpdate={handleFieldUpdate}
+          />
+
+          {/* Notifiche */}
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div>
+              <div className="font-medium">Notifiche</div>
+              <div className="text-sm text-muted-foreground">Inviti, chat, conferme</div>
+            </div>
+            <Switch defaultChecked />
+          </div>
+        </div>
+      </CollapsibleSection>
 
 
       {/* Social links */}
-      <Card className="shadow-sm">
-        <CardContent className="space-y-3 p-4">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Social</div>
-            {profile?.instagram_username ? (
-              <div className="flex items-center gap-2">
-                <Input 
-                  value={`@${profile.instagram_username}`} 
-                  readOnly 
-                  aria-label="Instagram username" 
-                />
-                <Button variant="secondary" size="sm">Collegato</Button>
+      <CollapsibleSection
+        title="Social & Contatti"
+        icon={<Heart className="h-4 w-4" />}
+        badge={profile?.instagram_username ? "Collegato" : "Da collegare"}
+        badgeVariant={profile?.instagram_username ? "secondary" : "outline"}
+      >
+        <div className="space-y-4">
+          <QuickEditField
+            label="Instagram"
+            value={profile?.instagram_username || ''}
+            fieldKey="instagram_username"
+            placeholder="@il_tuo_username"
+            onUpdate={handleFieldUpdate}
+          />
+          
+          {profile?.instagram_username && (
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm">Instagram collegato</span>
+                <Badge variant="secondary" className="text-xs">Attivo</Badge>
               </div>
-            ) : (
-              <Button variant="outline" size="sm" className="w-full">
-                Collega Instagram
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+        </div>
+      </CollapsibleSection>
 
 
-      <FriendshipSystem />
+      {/* Sistema Amicizie */}
+      <CollapsibleSection
+        title="Amicizie & Connessioni"
+        icon={<Users className="h-4 w-4" />}
+        badge="Gestisci"
+        badgeVariant="outline"
+      >
+        <FriendshipSystem />
+      </CollapsibleSection>
 
       {/* Modals */}
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
