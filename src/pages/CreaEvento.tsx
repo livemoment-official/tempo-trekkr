@@ -148,52 +148,6 @@ export default function CreaEvento() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Header with save action */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Crea Nuovo Evento</h1>
-            <p className="text-muted-foreground">Organizza un evento indimenticabile</p>
-          </div>
-          
-        </div>
-
-        {/* Smart Progress Indicator */}
-        <div className="mb-8">
-          <SmartProgressIndicator currentStep={currentStep} eventData={eventData} onStepChange={handleStepChange} steps={steps} />
-        </div>
-
-        {/* Main Content Card */}
-        <Card className="shadow-elevated">
-          <CardHeader className="border-b bg-muted/30">
-            <CardTitle className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                {currentStep}
-              </span>
-              {currentStepData?.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={setEventData} onNext={handleNext} />}
-            
-            {/* Navigation Footer */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-between items-center mt-8 pt-6 border-t">
-              <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1} className="w-full sm:w-auto">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Indietro
-              </Button>
-              
-              <div className="flex gap-2 w-full sm:w-auto">
-                {currentStep < steps.length ? <Button onClick={handleNext} disabled={!canProceedToNext()} className="w-full sm:w-auto">
-                    Avanti
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button> : <Button onClick={() => navigate("/eventi")} disabled={!validation.overall.isValid} className="w-full sm:w-auto gradient-brand">
-                    Pubblica Evento
-                  </Button>}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
     </div>;
 }
