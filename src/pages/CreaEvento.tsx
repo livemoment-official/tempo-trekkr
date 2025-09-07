@@ -47,7 +47,10 @@ export default function CreaEvento() {
     date: null,
     startTime: "",
     endTime: "",
-    location: { name: "", coordinates: null },
+    location: {
+      name: "",
+      coordinates: null
+    },
     capacity: null,
     ticketing: null,
     selectedArtists: [],
@@ -59,8 +62,9 @@ export default function CreaEvento() {
     },
     photos: []
   });
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
   const steps = [{
     id: 1,
     title: "Dettagli",
@@ -82,7 +86,6 @@ export default function CreaEvento() {
     title: "Anteprima",
     component: EventPreviewStep
   }];
-
   const validation = useEventValidation(eventData);
 
   // Auto-save functionality
@@ -90,9 +93,8 @@ export default function CreaEvento() {
     // In a real app, this would save to localStorage or make an API call
     localStorage.setItem('draft_event', JSON.stringify(data));
   }, []);
-
-  useAutoSave({ 
-    data: eventData, 
+  useAutoSave({
+    data: eventData,
     onSave: handleAutoSave,
     delay: 8000,
     enabled: true
@@ -117,34 +119,29 @@ export default function CreaEvento() {
       setCurrentStep(currentStep + 1);
     }
   };
-  
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
-
   const handleStepChange = (stepId: number) => {
     setCurrentStep(stepId);
   };
-
   const handleManualSave = () => {
     handleAutoSave(eventData);
     toast({
       title: "Evento salvato",
       description: "Le tue modifiche sono state salvate",
-      duration: 2000,
+      duration: 2000
     });
   };
-
   const canProceedToNext = () => {
     if (currentStep === 1) {
       return validation.steps.details.isValid;
     }
     return true; // Other steps are optional
   };
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Helmet>
         <title>LiveMoment · Crea Evento</title>
         <meta name="description" content="Organizza un nuovo evento su LiveMoment con artisti e location." />
@@ -158,20 +155,12 @@ export default function CreaEvento() {
             <h1 className="text-2xl font-bold">Crea Nuovo Evento</h1>
             <p className="text-muted-foreground">Organizza un evento indimenticabile</p>
           </div>
-          <Button variant="outline" onClick={handleManualSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Salva Bozza
-          </Button>
+          
         </div>
 
         {/* Smart Progress Indicator */}
         <div className="mb-8">
-          <SmartProgressIndicator 
-            currentStep={currentStep}
-            eventData={eventData}
-            onStepChange={handleStepChange}
-            steps={steps}
-          />
+          <SmartProgressIndicator currentStep={currentStep} eventData={eventData} onStepChange={handleStepChange} steps={steps} />
         </div>
 
         {/* Main Content Card */}
@@ -185,50 +174,26 @@ export default function CreaEvento() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {CurrentStepComponent && (
-              <CurrentStepComponent 
-                data={eventData} 
-                onChange={setEventData} 
-                onNext={handleNext} 
-              />
-            )}
+            {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={setEventData} onNext={handleNext} />}
             
             {/* Navigation Footer */}
             <div className="flex flex-col sm:flex-row gap-3 justify-between items-center mt-8 pt-6 border-t">
-              <Button 
-                variant="outline" 
-                onClick={handlePrevious} 
-                disabled={currentStep === 1}
-                className="w-full sm:w-auto"
-              >
+              <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1} className="w-full sm:w-auto">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Indietro
               </Button>
               
               <div className="flex gap-2 w-full sm:w-auto">
-                {currentStep < steps.length ? (
-                  <Button 
-                    onClick={handleNext}
-                    disabled={!canProceedToNext()}
-                    className="w-full sm:w-auto"
-                  >
+                {currentStep < steps.length ? <Button onClick={handleNext} disabled={!canProceedToNext()} className="w-full sm:w-auto">
                     Avanti
                     <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => navigate("/eventi")}
-                    disabled={!validation.overall.isValid}
-                    className="w-full sm:w-auto gradient-brand"
-                  >
+                  </Button> : <Button onClick={() => navigate("/eventi")} disabled={!validation.overall.isValid} className="w-full sm:w-auto gradient-brand">
                     Pubblica Evento
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 }
