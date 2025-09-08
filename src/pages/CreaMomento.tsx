@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, Upload, X, MapPin, Calendar as CalendarIcon, Users, Clock } from "lucide-react";
+import { ArrowLeft, Upload, X, MapPin, Calendar as CalendarIcon, Users, Clock, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCallback } from "react";
 import { format } from "date-fns";
@@ -20,6 +20,7 @@ import { MOMENT_CATEGORIES, MOOD_TAGS } from "@/constants/unifiedTags";
 import { TicketingSystem } from "@/components/TicketingSystem";
 import LocationSearchInput from "@/components/location/LocationSearchInput";
 import { supabase } from "@/integrations/supabase/client";
+import { QuickCreateMomentModal } from "@/components/create/moment/QuickCreateMomentModal";
 interface MomentData {
   photos: string[];
   title: string;
@@ -74,6 +75,7 @@ export default function CreaMomento() {
     }
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -225,6 +227,40 @@ export default function CreaMomento() {
         <meta name="description" content="Crea un nuovo momento condiviso su LiveMoment." />
         <link rel="canonical" href={canonical} />
       </Helmet>
+
+      {/* Quick Create Options */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <Button 
+          onClick={() => setShowQuickCreate(true)}
+          className="h-16 gradient-brand shadow-brand hover-scale text-left"
+          size="lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-full">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="font-semibold">Creazione Veloce</div>
+              <div className="text-xs opacity-90">30 secondi</div>
+            </div>
+          </div>
+        </Button>
+        <Button 
+          variant="outline" 
+          className="h-16 hover-scale text-left"
+          size="lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-full">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="font-semibold">Modalità Avanzata</div>
+              <div className="text-xs text-muted-foreground">Controllo completo</div>
+            </div>
+          </div>
+        </Button>
+      </div>
 
       <Card>
         
@@ -461,5 +497,15 @@ export default function CreaMomento() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Quick Create Modal */}
+      <QuickCreateMomentModal 
+        open={showQuickCreate}
+        onOpenChange={setShowQuickCreate}
+        onSuccess={() => {
+          setShowQuickCreate(false);
+          navigate("/");
+        }}
+      />
     </div>;
 }
