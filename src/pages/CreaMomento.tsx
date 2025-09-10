@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,16 +11,17 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, Upload, X, MapPin, Calendar as CalendarIcon, Users, Clock, Zap } from "lucide-react";
+import { ArrowLeft, Upload, X, MapPin, Calendar as CalendarIcon, Users, Clock, Zap, Camera, ChevronLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useCallback } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MOMENT_CATEGORIES, MOOD_TAGS } from "@/constants/unifiedTags";
 import { TicketingSystem } from "@/components/TicketingSystem";
 import LocationSearchInput from "@/components/location/LocationSearchInput";
 import { supabase } from "@/integrations/supabase/client";
-import { QuickCreateMomentModal } from "@/components/create/moment/QuickCreateMomentModal";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { useGeolocation } from "@/hooks/useGeolocation";
 interface MomentData {
   photos: string[];
   title: string;
@@ -51,9 +52,29 @@ export default function CreaMomento() {
   const location = useLocation();
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/momento";
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { uploadGalleryImage, isUploading } = useImageUpload();
+  const { titleSuggestions, categorySuggestions, generateSuggestions, isGenerating } = useAISuggestions();
+  const { location: userLocation, requestLocation } = useGeolocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Quick Create Flow States
+  const [quickCreateStep, setQuickCreateStep] = useState<'none' | 'camera' | 'form'>('none');
+  const [quickPhoto, setQuickPhoto] = useState<File | null>(null);
+  const [quickPhotoPreview, setQuickPhotoPreview] = useState<string | null>(null);
+
+  // Quick Create Data
+  const [quickData, setQuickData] = useState({
+    title: "",
+    selectedTime: "now" as "now" | "tonight" | "tomorrow" | "custom",
+    customDateTime: "",
+    location: "",
+    selectedCategory: "",
+    moodTag: "Spontaneo"
+  });
+
+  // Advanced Form Data
   const [momentData, setMomentData] = useState<MomentData>({
     photos: [],
     title: "",
@@ -75,7 +96,178 @@ export default function CreaMomento() {
     }
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  // Quick Create Flow Handlers
+  const startQuickCreate = useCallback(async () => {
+    setQuickCreateStep('camera');
+    // Auto-detect location
+    try {
+      await requestLocation();
+    } catch (error) {
+      console.log('Geolocation not available');
+    }
+    
+    // Auto-trigger camera
+    setTimeout(() => {
+      cameraInputRef.current?.click();
+    }, 100);
+  }, [requestLocation]);
+
+  const handleQuickPhotoCapture = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setQuickPhoto(file);
+    const preview = URL.createObjectURL(file);
+    setQuickPhotoPreview(preview);
+    
+    // Auto-set location if available
+    if (userLocation) {
+      setQuickData(prev => ({ ...prev, location: "Posizione attuale" }));
+    }
+    
+    // Generate AI suggestions
+    await generateSuggestions({ photo: file, location: quickData.location });
+    
+    // Move to form step
+    setQuickCreateStep('form');
+  }, [userLocation, quickData.location, generateSuggestions]);
+
+  const getQuickDateTime = useCallback((timeOption: string, customDateTime?: string): Date => {
+    const now = new Date();
+    
+    switch (timeOption) {
+      case "now":
+        return now;
+      case "tonight":
+        const tonight = new Date(now);
+        tonight.setHours(20, 0, 0, 0);
+        if (tonight <= now) {
+          tonight.setDate(tonight.getDate() + 1);
+        }
+        return tonight;
+      case "tomorrow":
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(19, 0, 0, 0);
+        return tomorrow;
+      case "custom":
+        return customDateTime ? new Date(customDateTime) : now;
+      default:
+        return now;
+    }
+  }, []);
+
+  const handleQuickCreate = useCallback(async () => {
+    if (!quickPhoto || !quickData.title.trim()) {
+      toast({
+        title: "Errore",
+        description: "Foto e titolo sono obbligatori",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per creare un momento",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Upload photo
+      const photoUrl = await uploadGalleryImage(quickPhoto);
+      if (!photoUrl) {
+        throw new Error("Failed to upload photo");
+      }
+
+      // Get location coordinates if needed
+      let locationCoordinates;
+      if (userLocation) {
+        locationCoordinates = {
+          lat: userLocation.lat,
+          lng: userLocation.lng
+        };
+      }
+
+      // Prepare moment data
+      const when_at = getQuickDateTime(quickData.selectedTime, quickData.customDateTime);
+      
+      const momentToCreate = {
+        title: quickData.title,
+        description: `Creato velocemente ${quickData.selectedCategory ? ` • ${quickData.selectedCategory}` : ''}`,
+        photos: [photoUrl],
+        when_at: when_at.toISOString(),
+        place: quickData.location ? {
+          name: quickData.location,
+          coordinates: locationCoordinates
+        } : null,
+        age_range_min: 18,
+        age_range_max: 65,
+        max_participants: null,
+        mood_tag: quickData.moodTag,
+        tags: quickData.selectedCategory ? [quickData.selectedCategory] : ["Spontaneo"],
+        ticketing: {
+          enabled: true,
+          price: 0,
+          currency: "EUR",
+          platform_fee_percentage: 5, // Fixed 5% Live Moment fee
+          organizer_fee_percentage: 0, // No organizer fee for moments
+          ticketType: "standard"
+        },
+        host_id: user.id,
+        is_public: true
+      };
+
+      // Create moment in database
+      const { data, error } = await supabase
+        .from('moments')
+        .insert([momentToCreate])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Momento creato! 🎉",
+        description: "Il tuo momento è stato pubblicato in 30 secondi",
+        duration: 4000
+      });
+
+      navigate("/");
+      
+    } catch (error) {
+      console.error('Error creating quick moment:', error);
+      toast({
+        title: "Errore",
+        description: "Non è stato possibile creare il momento velocemente",
+        variant: "destructive"
+      });
+    }
+  }, [quickPhoto, quickData, userLocation, uploadGalleryImage, getQuickDateTime, toast, navigate]);
+
+  const resetQuickCreate = useCallback(() => {
+    setQuickCreateStep('none');
+    setQuickPhoto(null);
+    setQuickPhotoPreview(null);
+    setQuickData({
+      title: "",
+      selectedTime: "now",
+      customDateTime: "",
+      location: "",
+      selectedCategory: "",
+      moodTag: "Spontaneo"
+    });
+  }, []);
+
+  // Advanced Form Handlers (existing logic)
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -221,46 +413,274 @@ export default function CreaMomento() {
       });
     }
   };
-  return <div className="space-y-4">
+  return (
+    <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Crea Momento</title>
         <meta name="description" content="Crea un nuovo momento condiviso su LiveMoment." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Quick Create Options */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <Button 
-          onClick={() => setShowQuickCreate(true)}
-          className="h-16 gradient-brand shadow-brand hover-scale text-left"
-          size="lg"
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Zap className="h-5 w-5" />
+      {/* Quick Create Flow - Step 1: Camera */}
+      {quickCreateStep === 'camera' && (
+        <Card>
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Camera className="h-8 w-8 text-primary" />
             </div>
+            <CardTitle>Scatta una foto</CardTitle>
+            <p className="text-sm text-muted-foreground">Cattura il momento che vuoi condividere</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {quickPhotoPreview ? (
+              <div className="relative">
+                <img src={quickPhotoPreview} alt="Preview" className="w-full h-64 object-cover rounded-lg" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="absolute top-2 right-2"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Cambia foto
+                </Button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-primary/25 rounded-lg p-8 text-center">
+                <Camera className="mx-auto h-12 w-12 text-primary/50 mb-4" />
+                <Button onClick={() => cameraInputRef.current?.click()} className="mb-2">
+                  <Camera className="mr-2 h-4 w-4" />
+                  Scatta foto
+                </Button>
+                <p className="text-xs text-muted-foreground">o seleziona dalla galleria</p>
+              </div>
+            )}
+            
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleQuickPhotoCapture}
+            />
+            
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={resetQuickCreate} className="flex-1">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Indietro
+              </Button>
+              {quickPhoto && (
+                <Button onClick={() => setQuickCreateStep('form')} className="flex-1">
+                  Continua
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Create Flow - Step 2: Form */}
+      {quickCreateStep === 'form' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => setQuickCreateStep('camera')}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-center flex-1">Completa i dettagli</CardTitle>
+              <div className="w-8" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Photo Preview */}
+            {quickPhotoPreview && (
+              <div className="relative h-32 rounded-lg overflow-hidden">
+                <img src={quickPhotoPreview} alt="Preview" className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {/* Title with AI Suggestions */}
             <div>
-              <div className="font-semibold">Creazione Veloce</div>
-              <div className="text-xs opacity-90">30 secondi</div>
+              <Label htmlFor="quick-title">Titolo *</Label>
+              <Input
+                id="quick-title"
+                value={quickData.title}
+                onChange={(e) => setQuickData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Dai un titolo al momento..."
+                className="mt-2"
+              />
+              {titleSuggestions.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground flex items-center">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Suggerimenti AI:
+                  </span>
+                  {titleSuggestions.slice(0, 3).map((suggestion, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-6"
+                      onClick={() => setQuickData(prev => ({ ...prev, title: suggestion }))}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </Button>
-        <Button 
-          variant="outline" 
-          className="h-16 hover-scale text-left"
-          size="lg"
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
+
+            {/* Quick Time Selection */}
             <div>
-              <div className="font-semibold">Modalità Avanzata</div>
-              <div className="text-xs text-muted-foreground">Controllo completo</div>
+              <Label>Quando?</Label>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                <Button
+                  variant={quickData.selectedTime === "now" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setQuickData(prev => ({ ...prev, selectedTime: "now" }))}
+                >
+                  Ora
+                </Button>
+                <Button
+                  variant={quickData.selectedTime === "tonight" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setQuickData(prev => ({ ...prev, selectedTime: "tonight" }))}
+                >
+                  Stasera
+                </Button>
+                <Button
+                  variant={quickData.selectedTime === "tomorrow" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setQuickData(prev => ({ ...prev, selectedTime: "tomorrow" }))}
+                >
+                  Domani
+                </Button>
+              </div>
+              {quickData.selectedTime === "custom" && (
+                <Input
+                  type="datetime-local"
+                  value={quickData.customDateTime}
+                  onChange={(e) => setQuickData(prev => ({ ...prev, customDateTime: e.target.value }))}
+                  className="mt-2"
+                />
+              )}
             </div>
+
+            {/* Location */}
+            <div>
+              <Label>Dove?</Label>
+              <Input
+                value={quickData.location}
+                onChange={(e) => setQuickData(prev => ({ ...prev, location: e.target.value }))}
+                placeholder={userLocation ? "Posizione attuale" : "Aggiungi luogo..."}
+                className="mt-2"
+              />
+            </div>
+
+            {/* Mood Tags */}
+            <div>
+              <Label>Mood</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {["Spontaneo", "Relax", "Energia", "Avventura", "Social"].map(mood => (
+                  <Badge
+                    key={mood}
+                    variant={quickData.moodTag === mood ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => setQuickData(prev => ({ ...prev, moodTag: mood }))}
+                  >
+                    {mood}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Category Suggestions */}
+            {categorySuggestions.length > 0 && (
+              <div>
+                <Label className="flex items-center">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Categorie suggerite
+                </Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {categorySuggestions.slice(0, 5).map((category, index) => (
+                    <Badge
+                      key={index}
+                      variant={quickData.selectedCategory === category ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setQuickData(prev => ({ ...prev, selectedCategory: category }))}
+                    >
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fee Info */}
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <div className="flex items-center justify-between text-sm">
+                <span>Fee Live Moment</span>
+                <span className="font-medium">5%</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Fee fissa per tutti i momenti (non modificabile)
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={resetQuickCreate} className="flex-1">
+                Annulla
+              </Button>
+              <Button 
+                onClick={handleQuickCreate} 
+                disabled={!quickData.title.trim() || isUploading}
+                className="flex-1"
+              >
+                {isUploading ? "Creando..." : "Crea in 30sec"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Mode Selection & Advanced Form */}
+      {quickCreateStep === 'none' && (
+        <>
+          {/* Quick Create Options */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <Button 
+              onClick={startQuickCreate}
+              className="h-16 gradient-brand shadow-brand hover-scale text-left"
+              size="lg"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="font-semibold">Creazione Veloce</div>
+                  <div className="text-xs opacity-90">30 secondi</div>
+                </div>
+              </div>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-16 hover-scale text-left"
+              size="lg"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold">Modalità Avanzata</div>
+                  <div className="text-xs text-muted-foreground">Controllo completo</div>
+                </div>
+              </div>
+            </Button>
           </div>
-        </Button>
-      </div>
 
       <Card>
         
@@ -497,15 +917,8 @@ export default function CreaMomento() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Quick Create Modal */}
-      <QuickCreateMomentModal 
-        open={showQuickCreate}
-        onOpenChange={setShowQuickCreate}
-        onSuccess={() => {
-          setShowQuickCreate(false);
-          navigate("/");
-        }}
-      />
-    </div>;
+      </>
+      )}
+    </div>
+  );
 }
