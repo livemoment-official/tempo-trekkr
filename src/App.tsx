@@ -22,6 +22,7 @@ import Agenda from "./pages/Agenda";
 import UserProfile from "./pages/UserProfile";
 import ChatFullscreen from "./pages/ChatFullscreen";
 import TrovaAmici from "./pages/TrovaAmici";
+import Profili from "./pages/Profili";
 import Premi from "./pages/Premi";
 import Abbonamento from "./pages/Abbonamento";
 
@@ -54,6 +55,7 @@ const App = () => (
                 <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
                 <Route path="/trova-amici" element={<TrovaAmici />} />
+                <Route path="/profili" element={<Profili />} />
                 <Route path="/premi" element={<Premi />} />
                 <Route path="/abbonamento" element={<Abbonamento />} />
               </Route>

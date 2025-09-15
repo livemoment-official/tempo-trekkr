@@ -27,6 +27,7 @@ export type Database = {
           name: string
           pricing: Json | null
           updated_at: string
+          user_id: string | null
           verified: boolean
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           name: string
           pricing?: Json | null
           updated_at?: string
+          user_id?: string | null
           verified?: boolean
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           name?: string
           pricing?: Json | null
           updated_at?: string
+          user_id?: string | null
           verified?: boolean
         }
         Relationships: []
@@ -812,6 +815,51 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_info: Json | null
+          created_at: string
+          experience_years: number | null
+          id: string
+          name: string
+          role: string
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          name: string
+          role: string
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          name?: string
+          role?: string
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -937,6 +985,7 @@ export type Database = {
           name: string
           pricing: Json | null
           updated_at: string
+          user_id: string | null
           verified: boolean
         }
         Insert: {
@@ -952,6 +1001,7 @@ export type Database = {
           name: string
           pricing?: Json | null
           updated_at?: string
+          user_id?: string | null
           verified?: boolean
         }
         Update: {
@@ -967,6 +1017,7 @@ export type Database = {
           name?: string
           pricing?: Json | null
           updated_at?: string
+          user_id?: string | null
           verified?: boolean
         }
         Relationships: []
