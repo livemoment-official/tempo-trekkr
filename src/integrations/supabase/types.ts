@@ -299,31 +299,54 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          duration_seconds: number | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string | null
           group_id: string
           id: string
           message_type: string | null
+          poll_id: string | null
           sender_id: string
           updated_at: string
         }
         Insert: {
           content: string
           created_at?: string
+          duration_seconds?: number | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
           group_id: string
           id?: string
           message_type?: string | null
+          poll_id?: string | null
           sender_id: string
           updated_at?: string
         }
         Update: {
           content?: string
           created_at?: string
+          duration_seconds?: number | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
           group_id?: string
           id?: string
           message_type?: string | null
+          poll_id?: string | null
           sender_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       groups: {
         Row: {
@@ -426,7 +449,13 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string | null
+          duration_seconds: number | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string | null
           id: string
+          message_type: string | null
+          poll_id: string | null
           read_at: string | null
           sender_id: string
         }
@@ -434,7 +463,13 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string | null
+          duration_seconds?: number | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
           id?: string
+          message_type?: string | null
+          poll_id?: string | null
           read_at?: string | null
           sender_id: string
         }
@@ -442,7 +477,13 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string | null
+          duration_seconds?: number | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
           id?: string
+          message_type?: string | null
+          poll_id?: string | null
           read_at?: string | null
           sender_id?: string
         }
@@ -452,6 +493,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
             referencedColumns: ["id"]
           },
         ]
@@ -716,6 +764,74 @@ export type Database = {
           stripe_session_id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          allows_multiple: boolean | null
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_anonymous: boolean | null
+          options: Json
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          allows_multiple?: boolean | null
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          options: Json
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          allows_multiple?: boolean | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          options?: Json
+          question?: string
+          updated_at?: string
         }
         Relationships: []
       }
