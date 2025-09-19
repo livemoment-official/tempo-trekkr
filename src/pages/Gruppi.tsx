@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,37 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Plus, X, Users, MapPin } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search, Filter, Plus, X, Users, MapPin, Loader2 } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
+import { useGroups } from "@/hooks/useGroups";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Province italiane
 const provincieItaliane = ["Agrigento", "Alessandria", "Ancona", "Aosta", "Arezzo", "Ascoli Piceno", "Asti", "Avellino", "Bari", "Barletta-Andria-Trani", "Belluno", "Benevento", "Bergamo", "Biella", "Bologna", "Bolzano", "Brescia", "Brindisi", "Cagliari", "Caltanissetta", "Campobasso", "Carbonia-Iglesias", "Caserta", "Catania", "Catanzaro", "Chieti", "Como", "Cosenza", "Cremona", "Crotone", "Cuneo", "Enna", "Fermo", "Ferrara", "Firenze", "Foggia", "Forlì-Cesena", "Frosinone", "Genova", "Gorizia", "Grosseto", "Imperia", "Isernia", "L'Aquila", "La Spezia", "Latina", "Lecce", "Lecco", "Livorno", "Lodi", "Lucca", "Macerata", "Mantova", "Massa-Carrara", "Matera", "Medio Campidano", "Messina", "Milano", "Modena", "Monza e Brianza", "Napoli", "Novara", "Nuoro", "Ogliastra", "Olbia-Tempio", "Oristano", "Padova", "Palermo", "Parma", "Pavia", "Perugia", "Pesaro e Urbino", "Pescara", "Piacenza", "Pisa", "Pistoia", "Pordenone", "Potenza", "Prato", "Ragusa", "Ravenna", "Reggio Calabria", "Reggio Emilia", "Rieti", "Rimini", "Roma", "Rovigo", "Salerno", "Sassari", "Savona", "Siena", "Siracusa", "Sondrio", "Taranto", "Teramo", "Terni", "Torino", "Trapani", "Trento", "Treviso", "Trieste", "Udine", "Varese", "Venezia", "Verbano-Cusio-Ossola", "Vercelli", "Verona", "Vibo Valentia", "Vicenza", "Viterbo"];
 
-// Mock data per gruppi creati dagli utenti
-const mockGruppiUtenti = [{
-  id: "1",
-  emoji: "🍔",
-  title: "Aperitivi Milano",
-  participants: 500,
-  location: "Milano",
-  category: "aperitivo"
-}, {
-  id: "2",
-  emoji: "🎉",
-  title: "Feste in Casa",
-  participants: 5,
-  location: "Milano",
-  category: "festa"
-}, {
-  id: "3",
-  emoji: "🥃",
-  title: "Drink Easy",
-  participants: 30,
-  location: "Milano, Live Moment House",
-  category: "drink"
-}];
+// Emoji per categorie
+const categoryEmojis: Record<string, string> = {
+  "aperitivo": "🍹",
+  "festa": "🎉", 
+  "drink": "🥃",
+  "cibo": "🍔",
+  "sport": "⚽",
+  "musica": "🎵",
+  "arte": "🎨",
+  "viaggio": "✈️",
+  "natura": "🌳",
+  "tecnologia": "💻",
+  "moment_chat": "💬",
+  "default": "👥"
+};
 
 // Mock data per chat con amici
 const mockChatAmici = [{
@@ -120,10 +116,20 @@ const GroupInfoModal = ({
 };
 const GroupCard = ({
   group,
-  type = "user"
+  type = "user",
+  onJoin,
+  onLeave,
+  isJoining = false,
+  isLeaving = false,
+  currentUserId
 }: {
   group: any;
   type?: "user" | "city" | "friend" | "moment";
+  onJoin?: (groupId: string) => Promise<void>;
+  onLeave?: (groupId: string) => Promise<void>;
+  isJoining?: boolean;
+  isLeaving?: boolean;
+  currentUserId?: string;
 }) => {
   const navigate = useNavigate();
   if (type === "city") {
@@ -193,24 +199,66 @@ const GroupCard = ({
   }
 
   // Default user group
+  const isHost = currentUserId === group.host_id;
+  const isParticipant = group.participants?.includes(currentUserId);
+  const participantCount = Array.isArray(group.participants) ? group.participants.length : 0;
+  const emoji = categoryEmojis[group.category] || categoryEmojis.default;
+  const locationName = group.location?.name || group.location || "Posizione non specificata";
+
   return <Card className="mb-3">
       <CardContent className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl">
-            {group.emoji}
+            {group.avatar_url ? (
+              <img src={group.avatar_url} alt={group.title} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              emoji
+            )}
           </div>
           <div>
             <h3 className="font-semibold">{group.title}</h3>
-            <p className="text-sm text-primary">{group.participants} Partecipanti</p>
-            <p className="text-sm text-muted-foreground">{group.location}</p>
+            <p className="text-sm text-primary">{participantCount} Partecipanti</p>
+            <p className="text-sm text-muted-foreground">{locationName}</p>
+            {group.description && (
+              <p className="text-xs text-muted-foreground line-clamp-1">{group.description}</p>
+            )}
           </div>
         </div>
         <AuthGuard fallback={<Button variant="outline" size="sm" disabled>
             Accedi
           </Button>}>
-          <Button size="sm" className="rounded-xl">
-            Iscriviti
-          </Button>
+          <div className="flex gap-2">
+            {isHost ? (
+              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/chat/group/${group.id}`)}>
+                Gestisci
+              </Button>
+            ) : isParticipant ? (
+              <>
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/chat/group/${group.id}`)}>
+                  Chat
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="rounded-xl" 
+                  onClick={() => onLeave?.(group.id)}
+                  disabled={isLeaving}
+                >
+                  {isLeaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Esci"}
+                </Button>
+              </>
+            ) : (
+              <Button 
+                size="sm" 
+                className="rounded-xl" 
+                onClick={() => onJoin?.(group.id)}
+                disabled={isJoining}
+              >
+                {isJoining ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {isJoining ? "Iscrivendo..." : "Iscriviti"}
+              </Button>
+            )}
+          </div>
         </AuthGuard>
       </CardContent>
     </Card>;
@@ -218,16 +266,102 @@ const GroupCard = ({
 export default function Gruppi() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { groups, userGroups, isLoading, joinGroup, leaveGroup, loadPublicGroups, loadUserGroups } = useGroups();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [showBanner, setShowBanner] = useState(() => {
     return localStorage.getItem('gruppi-banner-dismissed') !== 'true';
   });
+  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
+  const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
+
   const dismissBanner = () => {
     setShowBanner(false);
     localStorage.setItem('gruppi-banner-dismissed', 'true');
   };
-  const filteredProvince = provincieItaliane.filter(provincia => provincia.toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredGruppi = mockGruppiUtenti.filter(gruppo => gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // Combine user groups and public groups, removing duplicates
+  const allGroups = [...userGroups, ...groups.filter(g => !userGroups.some(ug => ug.id === g.id))];
+  
+  const filteredProvince = provincieItaliane.filter(provincia => 
+    provincia.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredGruppi = allGroups.filter(gruppo => 
+    gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleJoinGroup = async (groupId: string) => {
+    if (!user) return;
+    
+    setJoiningGroups(prev => new Set(prev).add(groupId));
+    
+    try {
+      const success = await joinGroup(groupId);
+      if (success) {
+        toast({
+          title: "Iscrizione completata",
+          description: "Ti sei iscritto al gruppo con successo!",
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: "Non è stato possibile iscriverti al gruppo.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'iscrizione.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningGroups(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(groupId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleLeaveGroup = async (groupId: string) => {
+    if (!user) return;
+    
+    setLeavingGroups(prev => new Set(prev).add(groupId));
+    
+    try {
+      const success = await leaveGroup(groupId);
+      if (success) {
+        toast({
+          title: "Uscita completata", 
+          description: "Hai lasciato il gruppo.",
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: "Non è stato possibile lasciare il gruppo. Gli host non possono uscire dal proprio gruppo.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore.",
+        variant: "destructive",
+      });
+    } finally {
+      setLeavingGroups(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(groupId);
+        return newSet;
+      });
+    }
+  };
   return <div className="min-h-screen bg-background">
       <Helmet>
         <title>Gruppi - LiveMoment</title>
@@ -279,7 +413,54 @@ export default function Gruppi() {
                 </CardContent>
               </Card>}
 
-            {filteredGruppi.map(gruppo => <GroupCard key={gruppo.id} group={gruppo} type="user" />)}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="mb-3">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-16 rounded-xl" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredGruppi.length > 0 ? (
+              filteredGruppi.map(gruppo => (
+                <GroupCard 
+                  key={gruppo.id} 
+                  group={gruppo} 
+                  type="user"
+                  onJoin={handleJoinGroup}
+                  onLeave={handleLeaveGroup}
+                  isJoining={joiningGroups.has(gruppo.id)}
+                  isLeaving={leavingGroups.has(gruppo.id)}
+                  currentUserId={user?.id}
+                />
+              ))
+            ) : (
+              <Card className="bg-muted/50">
+                <CardContent className="p-6 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {searchQuery ? "Non ci sono gruppi che corrispondono alla tua ricerca." : "Non ci sono ancora gruppi disponibili."}
+                  </p>
+                  <CreateGroupModal>
+                    <Button className="rounded-xl">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Crea il primo gruppo
+                    </Button>
+                  </CreateGroupModal>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="citta" className="space-y-4">

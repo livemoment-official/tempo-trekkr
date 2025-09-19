@@ -25,6 +25,8 @@ import TrovaAmici from "./pages/TrovaAmici";
 import Profili from "./pages/Profili";
 import Premi from "./pages/Premi";
 import Abbonamento from "./pages/Abbonamento";
+import GroupChat from "./pages/GroupChat";
+import CityChat from "./pages/CityChat";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,8 @@ const App = () => (
                 <Route path="/profilo/:username" element={<UserProfile />} />
                 <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
                 <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
+                <Route path="/chat/group/:groupId" element={<GroupChat />} />
+                <Route path="/chat/city/:cityName" element={<CityChat />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
                 <Route path="/trova-amici" element={<TrovaAmici />} />
                 <Route path="/profili" element={<Profili />} />
