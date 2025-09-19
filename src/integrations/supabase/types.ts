@@ -844,6 +844,8 @@ export type Database = {
             | null
           cover_image_url: string | null
           created_at: string
+          current_level: number | null
+          current_streak: number | null
           followers_count: number | null
           following_count: number | null
           gallery: string[] | null
@@ -852,6 +854,7 @@ export type Database = {
           interests: string[] | null
           is_verified: boolean | null
           job_title: string | null
+          last_activity_date: string | null
           location: Json | null
           mood: string | null
           name: string | null
@@ -864,6 +867,7 @@ export type Database = {
             | Database["public"]["Enums"]["privacy_level_type"]
             | null
           relationship_status: string | null
+          total_points: number | null
           updated_at: string
           username: string | null
         }
@@ -875,6 +879,8 @@ export type Database = {
             | null
           cover_image_url?: string | null
           created_at?: string
+          current_level?: number | null
+          current_streak?: number | null
           followers_count?: number | null
           following_count?: number | null
           gallery?: string[] | null
@@ -883,6 +889,7 @@ export type Database = {
           interests?: string[] | null
           is_verified?: boolean | null
           job_title?: string | null
+          last_activity_date?: string | null
           location?: Json | null
           mood?: string | null
           name?: string | null
@@ -895,6 +902,7 @@ export type Database = {
             | Database["public"]["Enums"]["privacy_level_type"]
             | null
           relationship_status?: string | null
+          total_points?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -906,6 +914,8 @@ export type Database = {
             | null
           cover_image_url?: string | null
           created_at?: string
+          current_level?: number | null
+          current_streak?: number | null
           followers_count?: number | null
           following_count?: number | null
           gallery?: string[] | null
@@ -914,6 +924,7 @@ export type Database = {
           interests?: string[] | null
           is_verified?: boolean | null
           job_title?: string | null
+          last_activity_date?: string | null
           location?: Json | null
           mood?: string | null
           name?: string | null
@@ -926,6 +937,7 @@ export type Database = {
             | Database["public"]["Enums"]["privacy_level_type"]
             | null
           relationship_status?: string | null
+          total_points?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -1012,6 +1024,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          description: string
+          id: string
+          points: number
+          progress: number | null
+          target: number | null
+          title: string
+          unlocked: boolean
+          unlocked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type: string
+          created_at?: string
+          description: string
+          id?: string
+          points?: number
+          progress?: number | null
+          target?: number | null
+          title: string
+          unlocked?: boolean
+          unlocked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          points?: number
+          progress?: number | null
+          target?: number | null
+          title?: string
+          unlocked?: boolean
+          unlocked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_analytics: {
         Row: {
           created_at: string
@@ -1032,6 +1089,36 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_points: {
+        Row: {
+          created_at: string
+          id: string
+          points: number
+          reason: string
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points: number
+          reason: string
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points?: number
+          reason?: string
+          reference_id?: string | null
+          reference_type?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1159,6 +1246,16 @@ export type Database = {
       }
     }
     Functions: {
+      add_user_points: {
+        Args: {
+          points_amount: number
+          reason: string
+          ref_id?: string
+          ref_type?: string
+          target_user_id: string
+        }
+        Returns: undefined
+      }
       calculate_distance_km: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
@@ -1196,6 +1293,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_user_achievements: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      unlock_achievement: {
+        Args: { achievement_type: string; target_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

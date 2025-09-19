@@ -25,7 +25,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 import { useProfileMetrics } from "@/hooks/useProfileMetrics";
 import { ProfileTypeSelector } from "@/components/profiles/ProfileTypeSelector";
-import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock, UserPlus, Calendar, UserCheck, Music, MapPin, Bell, Globe, HelpCircle, BookOpen, ChevronRight } from "lucide-react";
+import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock, UserPlus, Calendar, UserCheck, Music, MapPin, Bell, Globe, HelpCircle, BookOpen, ChevronRight, Trophy } from "lucide-react";
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -418,6 +418,26 @@ export default function Profilo() {
                     <BookOpen className="h-4 w-4" />
                   </div>
                   <span className="font-medium">Guida all'app</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="shadow-card hover:shadow-sm transition-smooth cursor-pointer"
+            onClick={() => navigate('/premi')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500">
+                    <Trophy className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-medium">🏆 Premi</span>
+                    <div className="text-xs text-muted-foreground">Guadagna punti e sblocca ricompense</div>
+                  </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
