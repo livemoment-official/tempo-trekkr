@@ -6,15 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Users, Plus } from "lucide-react";
+import { MapPin, Search, Users, Plus, LayoutGrid, Heart } from "lucide-react";
 import { useMyInvites } from "@/hooks/useInvites";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
+import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
-import { SwipeInterface } from "@/components/profile/SwipeInterface";
 import { useNavigate } from "react-router-dom";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,7 +27,7 @@ export default function Inviti() {
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
+  const [inviteViewMode, setInviteViewMode] = useState<"swipe" | "list">("list");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -88,18 +88,21 @@ export default function Inviti() {
     }
   };
 
-  // Convert transformed users to SwipeInterface format
-  const swipeUsers = transformedUsers.map(user => ({
-    id: user.id,
-    name: user.name,
-    avatar_url: user.avatar_url,
-    city: user.city,
-    is_available: user.is_available,
-    preferred_moments: user.preferred_moments || [],
-    age: user.age,
-    distance_km: user.distance_km,
-  }));
-  return <div className="space-y-4">
+  const handleAcceptInvite = (inviteId: string) => {
+    const invite = mockInvites.find(i => i.id === inviteId);
+    if (invite) {
+      toast.success(`Invito accettato! Ci vediamo da ${invite.sender?.name}`);
+    }
+  };
+
+  const handleRejectInvite = (inviteId: string) => {
+    const invite = mockInvites.find(i => i.id === inviteId);
+    if (invite) {
+      toast.success(`Invito di ${invite.sender?.name} rifiutato`);
+    }
+  };
+
+  return <div className="min-h-screen bg-background space-y-4 pb-20">
       <Helmet>
         <title>LiveMoment · Inviti</title>
         <meta name="description" content="Gestisci gli inviti ricevuti e inviati. Apri chat, proponi orari e crea Momenti." />
@@ -110,118 +113,160 @@ export default function Inviti() {
       
       
 
-      <Tabs defaultValue="amici">
-        <TabsList className="grid grid-cols-2 w-full">
-          <TabsTrigger value="ricevuti">Inviti</TabsTrigger>
-          <TabsTrigger value="amici">Trova Amici</TabsTrigger>
+      <Tabs defaultValue="ricevuti" className="px-4">
+        <TabsList className="grid grid-cols-2 w-full mb-6">
+          <TabsTrigger value="ricevuti" className="text-sm font-medium">
+            Inviti Ricevuti
+          </TabsTrigger>
+          <TabsTrigger value="amici" className="text-sm font-medium">
+            Trova Amici
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="ricevuti" className="space-y-4">
-          {/* Mobile-first swipe interface for invites */}
-          {isMobile && filteredUsers.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <Button
-                  variant={viewMode === "swipe" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("swipe")}
-                  className="h-8"
-                >
-                  💖 Swipe
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="h-8"
-                >
-                  📋 Lista
-                </Button>
-              </div>
+        <TabsContent value="ricevuti" className="space-y-6">
+          {/* Toggle between swipe and list view for invites */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">I tuoi inviti</h2>
+            <div className="flex items-center gap-2 bg-secondary/50 rounded-lg p-1">
+              <Button
+                variant={inviteViewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setInviteViewMode("list")}
+                className="h-8 px-3 text-xs"
+              >
+                <LayoutGrid className="h-3 w-3 mr-1" />
+                Lista
+              </Button>
+              <Button
+                variant={inviteViewMode === "swipe" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setInviteViewMode("swipe")}
+                className="h-8 px-3 text-xs"
+              >
+                <Heart className="h-3 w-3 mr-1" />
+                Swipe
+              </Button>
             </div>
-          )}
+          </div>
 
-          {isMobile && viewMode === "swipe" && filteredUsers.length > 0 ? (
-            <div className="h-[calc(100vh-300px)] min-h-[500px] relative">
-              <SwipeInterface
-                users={swipeUsers.filter(user => {
-                  const matchesSearch = searchQuery === "" || 
-                    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    user.city?.toLowerCase().includes(searchQuery.toLowerCase());
-                  const matchesAvailability = availabilityFilter === "all" || 
-                    (availabilityFilter === "available" && user.is_available) ||
-                    (availabilityFilter === "unavailable" && !user.is_available);
-                  return matchesSearch && matchesAvailability;
-                })}
-                onInvite={handleInvite}
-                onPass={handlePass}
-              />
+          {invitesLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Caricamento inviti...</p>
             </div>
           ) : (
             <>
-              {invitesLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Caricamento inviti...</p>
-                </div>
-              ) : (inviteData?.received.length === 0 || !inviteData) ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">Inviti Ricevuti</h3>
-                    <Badge variant="secondary">{mockInvites.length}</Badge>
-                  </div>
-                  {mockInvites.map(invite => (
-                    <InviteCard key={invite.id} invite={invite} type="received" />
-                  ))}
+              {/* Swipe Interface for Invites */}
+              {inviteViewMode === "swipe" ? (
+                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <InviteSwipeInterface
+                    invites={mockInvites.filter(invite => invite.status === 'pending')}
+                    onAccept={handleAcceptInvite}
+                    onReject={handleRejectInvite}
+                  />
                 </div>
               ) : (
-                inviteData.received.map(invite => (
-                  <InviteCard key={invite.id} invite={invite} type="received" />
-                ))
+                /* List View for Invites */
+                <div className="space-y-4">
+                  {mockInvites.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <Users className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Nessun invito</h3>
+                      <p className="text-muted-foreground">
+                        Non hai inviti in attesa al momento.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-muted-foreground">
+                          {mockInvites.filter(i => i.status === 'pending').length} inviti in attesa
+                        </p>
+                        <Badge variant="secondary">
+                          {mockInvites.length} totali
+                        </Badge>
+                      </div>
+                      {mockInvites.map(invite => (
+                        <InviteCard key={invite.id} invite={invite} type="received" />
+                      ))}
+                    </>
+                  )}
+                </div>
               )}
             </>
           )}
         </TabsContent>
 
-        <TabsContent value="inviati" className="space-y-4">
-          {invitesLoading ? <div className="text-center py-8">
-              <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div> : inviteData?.sent.length === 0 ? <div className="text-center py-8">
-              <p className="text-muted-foreground">Nessun invito inviato</p>
-            </div> : inviteData?.sent.map(invite => <InviteCard key={invite.id} invite={invite} type="sent" />)}
-        </TabsContent>
+        <TabsContent value="amici" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
+            <p className="text-muted-foreground text-sm mb-4">
+              Trova persone interessanti vicino a te per nuove amicizie
+            </p>
+          </div>
 
-        <TabsContent value="amici" className="space-y-4">
-          <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
+          <FriendsSearchFilters 
+            searchQuery={searchQuery} 
+            onSearchChange={setSearchQuery} 
+            selectedMood={selectedMood} 
+            onMoodChange={setSelectedMood} 
+            radiusKm={radiusKm} 
+            onRadiusChange={setRadiusKm} 
+            availabilityFilter={availabilityFilter} 
+            onAvailabilityChange={setAvailabilityFilter} 
+          />
           
-          {locationLoading ? <div className="text-center py-8">
+          {locationLoading ? (
+            <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-            </div> : filteredUsers.length > 0 ? <div className="space-y-4">
+            </div>
+          ) : filteredUsers.length > 0 ? (
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
                 </p>
-                
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
+              <div className="grid grid-cols-2 gap-4">
+                {filteredUsers.slice(0, 6).map(user => (
+                  <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />
+                ))}
               </div>
-              {filteredUsers.length > 6 && <div className="text-center">
-                  <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
+              {filteredUsers.length > 6 && (
+                <div className="text-center pt-4">
+                  <Button 
+                    onClick={() => navigate("/trova-amici")} 
+                    variant="outline" 
+                    className="w-full"
+                  >
                     Vedi altri {filteredUsers.length - 6} amici
                   </Button>
-                </div>}
-            </div> : <div className="text-center py-8">
-              <Users className="h-12 w-12 mx-auto text-primary mb-4" />
-              <h3 className="text-lg font-medium mb-2">Trova Nuovi Amici</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery ? "Nessun risultato per la ricerca" : "Scopri persone interessanti vicino a te per nuove amicizie"}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Trova Nuovi Amici</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                {searchQuery 
+                  ? "Nessun risultato per la ricerca" 
+                  : "Scopri persone interessanti vicino a te per nuove amicizie"
+                }
               </p>
-              <Button onClick={() => navigate("/trova-amici")} className="shadow-brand">
+              <Button 
+                onClick={() => navigate("/trova-amici")} 
+                className="shadow-md"
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Esplora Amici Nelle Vicinanze
               </Button>
-            </div>}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>;
