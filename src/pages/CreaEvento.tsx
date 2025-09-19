@@ -141,8 +141,7 @@ export default function CreaEvento() {
     }
     return true; // Other steps are optional
   };
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Helmet>
         <title>LiveMoment · Crea Evento</title>
         <meta name="description" content="Organizza un nuovo evento su LiveMoment con artisti e location." />
@@ -152,22 +151,10 @@ export default function CreaEvento() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container flex h-14 items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/crea')}
-            className="mr-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">Crea Evento</h1>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleManualSave}
-              className="ml-auto"
-            >
+            
+            <Button variant="outline" size="sm" onClick={handleManualSave} className="ml-auto">
               <Save className="h-4 w-4 mr-1" />
               Salva
             </Button>
@@ -180,65 +167,37 @@ export default function CreaEvento() {
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle>Passo {currentStep} di {steps.length}</CardTitle>
-              <SmartProgressIndicator
-                currentStep={currentStep}
-                eventData={eventData}
-                onStepChange={handleStepChange}
-                steps={steps}
-              />
+              
+              <SmartProgressIndicator currentStep={currentStep} eventData={eventData} onStepChange={handleStepChange} steps={steps} />
             </CardHeader>
             
             <CardContent className="space-y-6">
-              {CurrentStepComponent && (
-                <CurrentStepComponent
-                  data={eventData}
-                  onChange={setEventData}
-                  onNext={handleNext}
-                />
-              )}
+              {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={setEventData} onNext={handleNext} />}
 
               {/* Navigation Buttons */}
               <div className="flex items-center justify-between pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentStep === 1}
-                >
+                <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Indietro
                 </Button>
                 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {currentStep} di {steps.length}
-                  </span>
                   
-                  {currentStep < steps.length ? (
-                    <Button
-                      onClick={handleNext}
-                      disabled={!canProceedToNext()}
-                    >
+                  
+                  {currentStep < steps.length ? <Button onClick={handleNext} disabled={!canProceedToNext()}>
                       Avanti
                       <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        handleAutoSave(eventData);
-                        navigate('/momenti-eventi');
-                      }}
-                      disabled={!validation.overall.isValid}
-                    >
+                    </Button> : <Button onClick={() => {
+                  handleAutoSave(eventData);
+                  navigate('/momenti-eventi');
+                }} disabled={!validation.overall.isValid}>
                       Pubblica Evento
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 }
