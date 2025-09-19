@@ -12,7 +12,6 @@ import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
-import { SwipeInterface } from "@/components/profile/SwipeInterface";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
@@ -29,7 +28,6 @@ export default function Inviti() {
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [inviteViewMode, setInviteViewMode] = useState<"swipe" | "list">("list");
-  const [friendsViewMode, setFriendsViewMode] = useState<"swipe" | "list">("list");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -80,30 +78,26 @@ export default function Inviti() {
       toast.success(`Invito inviato a ${name}!`);
     }
   };
-
   const handlePass = (userId: string) => {
     const user = transformedUsers.find(u => u.id === userId);
     if (user) {
-      toast(`Hai saltato ${user.name}`, { 
+      toast(`Hai saltato ${user.name}`, {
         description: "Non vedrai più questo profilo"
       });
     }
   };
-
   const handleAcceptInvite = (inviteId: string) => {
     const invite = mockInvites.find(i => i.id === inviteId);
     if (invite) {
       toast.success(`Invito accettato! Ci vediamo da ${invite.sender?.name}`);
     }
   };
-
   const handleRejectInvite = (inviteId: string) => {
     const invite = mockInvites.find(i => i.id === inviteId);
     if (invite) {
       toast.success(`Invito di ${invite.sender?.name} rifiutato`);
     }
   };
-
   return <div className="min-h-screen bg-background space-y-4 pb-20">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -129,56 +123,18 @@ export default function Inviti() {
           {/* Toggle between swipe and list view for invites */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">I tuoi inviti</h2>
-            <div className="flex items-center bg-muted/60 rounded-xl p-1 shadow-card">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setInviteViewMode("list")}
-                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
-                  inviteViewMode === "list" 
-                    ? "bg-primary text-primary-foreground shadow-brand hover:bg-primary/90" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Lista
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setInviteViewMode("swipe")}
-                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
-                  inviteViewMode === "swipe" 
-                    ? "gradient-brand text-white shadow-brand hover:opacity-90" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                }`}
-              >
-                <Heart className="h-4 w-4 mr-2" />
-                Swipe
-              </Button>
-            </div>
+            
           </div>
 
-          {invitesLoading ? (
-            <div className="text-center py-12">
+          {invitesLoading ? <div className="text-center py-12">
               <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div>
-          ) : (
-            <>
+            </div> : <>
               {/* Swipe Interface for Invites */}
-              {inviteViewMode === "swipe" ? (
-                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <InviteSwipeInterface
-                    invites={mockInvites.filter(invite => invite.status === 'pending')}
-                    onAccept={handleAcceptInvite}
-                    onReject={handleRejectInvite}
-                  />
-                </div>
-              ) : (
-                /* List View for Invites */
-                <div className="space-y-4">
-                  {mockInvites.length === 0 ? (
-                    <div className="text-center py-12">
+              {inviteViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <InviteSwipeInterface invites={mockInvites.filter(invite => invite.status === 'pending')} onAccept={handleAcceptInvite} onReject={handleRejectInvite} />
+                </div> : (/* List View for Invites */
+          <div className="space-y-4">
+                  {mockInvites.length === 0 ? <div className="text-center py-12">
                       <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <Users className="h-8 w-8 text-primary" />
                       </div>
@@ -186,9 +142,7 @@ export default function Inviti() {
                       <p className="text-muted-foreground">
                         Non hai inviti in attesa al momento.
                       </p>
-                    </div>
-                  ) : (
-                    <>
+                    </div> : <>
                       <div className="flex items-center justify-between mb-4">
                         <p className="text-sm text-muted-foreground">
                           {mockInvites.filter(i => i.status === 'pending').length} inviti in attesa
@@ -197,126 +151,52 @@ export default function Inviti() {
                           {mockInvites.length} totali
                         </Badge>
                       </div>
-                      {mockInvites.map(invite => (
-                        <InviteCard key={invite.id} invite={invite} type="received" />
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                      {mockInvites.map(invite => <InviteCard key={invite.id} invite={invite} type="received" />)}
+                    </>}
+                </div>)}
+            </>}
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
-              <p className="text-muted-foreground text-sm">
-                Trova persone interessanti vicino a te per nuove amicizie
-              </p>
-            </div>
-            <div className="flex items-center bg-muted/60 rounded-xl p-1 shadow-card">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setFriendsViewMode("list")}
-                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
-                  friendsViewMode === "list" 
-                    ? "bg-primary text-primary-foreground shadow-brand hover:bg-primary/90" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Lista
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setFriendsViewMode("swipe")}
-                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
-                  friendsViewMode === "swipe" 
-                    ? "gradient-brand text-white shadow-brand hover:opacity-90" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                }`}
-              >
-                <Heart className="h-4 w-4 mr-2" />
-                Swipe
-              </Button>
-            </div>
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
+            <p className="text-muted-foreground text-sm mb-4">
+              Trova persone interessanti vicino a te per nuove amicizie
+            </p>
           </div>
 
-          {friendsViewMode === "list" && (
-            <FriendsSearchFilters 
-              searchQuery={searchQuery} 
-              onSearchChange={setSearchQuery} 
-              selectedMood={selectedMood} 
-              onMoodChange={setSelectedMood} 
-              radiusKm={radiusKm} 
-              onRadiusChange={setRadiusKm} 
-              availabilityFilter={availabilityFilter} 
-              onAvailabilityChange={setAvailabilityFilter} 
-            />
-          )}
+          <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
           
-          {friendsViewMode === "swipe" ? (
-            <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-              <SwipeInterface
-                users={filteredUsers}
-                onInvite={handleInvite}
-                onPass={handlePass}
-              />
-            </div>
-          ) : locationLoading ? (
-            <div className="text-center py-12">
+          {locationLoading ? <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-            </div>
-          ) : filteredUsers.length > 0 ? (
-            <div className="space-y-4">
+            </div> : filteredUsers.length > 0 ? <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {filteredUsers.slice(0, 6).map(user => (
-                  <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />
-                ))}
+                {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
               </div>
-              {filteredUsers.length > 6 && (
-                <div className="text-center pt-4">
-                  <Button 
-                    onClick={() => navigate("/trova-amici")} 
-                    variant="outline" 
-                    className="w-full"
-                  >
+              {filteredUsers.length > 6 && <div className="text-center pt-4">
+                  <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
                     Vedi altri {filteredUsers.length - 6} amici
                   </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-12">
+                </div>}
+            </div> : <div className="text-center py-12">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Trova Nuovi Amici</h3>
               <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                {searchQuery 
-                  ? "Nessun risultato per la ricerca" 
-                  : "Scopri persone interessanti vicino a te per nuove amicizie"
-                }
+                {searchQuery ? "Nessun risultato per la ricerca" : "Scopri persone interessanti vicino a te per nuove amicizie"}
               </p>
-              <Button 
-                onClick={() => navigate("/trova-amici")} 
-                className="shadow-md"
-              >
+              <Button onClick={() => navigate("/trova-amici")} className="shadow-md">
                 <Users className="h-4 w-4 mr-2" />
                 Esplora Amici Nelle Vicinanze
               </Button>
-            </div>
-          )}
+            </div>}
         </TabsContent>
       </Tabs>
     </div>;
