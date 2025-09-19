@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedImage } from '@/components/ui/enhanced-image';
-import { X, Heart, MapPin, Star } from 'lucide-react';
+import { X, Heart, MapPin, Star, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -141,26 +141,34 @@ export function SwipeUserCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
       </div>
 
-      {/* Swipe Indicators */}
+      {/* Swipe Indicators - Updated terminology */}
       {isDragging && (
         <>
+          {/* Right Swipe Indicator (Invite) */}
           <div
             className={cn(
-              "absolute top-20 left-8 px-4 py-2 rounded-lg font-bold text-2xl border-4 transition-opacity",
-              dragOffset.x > 50 ? "opacity-100" : "opacity-0",
-              "bg-green-500 text-white border-green-400"
+              "absolute top-1/2 right-8 transform -translate-y-1/2 transition-all duration-200",
+              dragOffset.x > 50 ? "opacity-100 scale-100" : "opacity-0 scale-50"
             )}
           >
-            LIKE
+            <div className="bg-green-500/90 backdrop-blur-sm px-5 py-3 rounded-full border-2 border-green-400 -rotate-12 shadow-lg">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-white" />
+                <span className="text-white font-bold text-lg">INVITA</span>
+              </div>
+            </div>
           </div>
+
+          {/* Left Swipe Indicator (Skip) */}
           <div
             className={cn(
-              "absolute top-20 right-8 px-4 py-2 rounded-lg font-bold text-2xl border-4 transition-opacity",
-              dragOffset.x < -50 ? "opacity-100" : "opacity-0",
-              "bg-red-500 text-white border-red-400"
+              "absolute top-1/2 left-8 transform -translate-y-1/2 transition-all duration-200",
+              dragOffset.x < -50 ? "opacity-100 scale-100" : "opacity-0 scale-50"
             )}
           >
-            PASS
+            <div className="bg-red-500/90 backdrop-blur-sm px-6 py-3 rounded-full border-2 border-red-400 rotate-12 shadow-lg">
+              <span className="text-white font-bold text-lg">SALTA</span>
+            </div>
           </div>
         </>
       )}
@@ -198,95 +206,120 @@ export function SwipeUserCard({
         )}
       </div>
 
-      {/* Bottom Info */}
-      <div className={cn(
-        "absolute bottom-0 left-0 right-0 text-white z-20",
-        isMobile ? "p-4 pb-20" : "p-6"
-      )}>
-        <div className={cn(isMobile ? "space-y-1.5" : "space-y-2")}>
-          <div className="flex items-baseline gap-2">
-            <h2 className={cn(
-              "font-bold",
-              isMobile ? "text-2xl" : "text-3xl"
-            )}>
-              {user.name}
-            </h2>
-            {user.age && (
-              <span className={cn(
-                "font-light opacity-90",
-                isMobile ? "text-xl" : "text-2xl"
-              )}>{user.age}</span>
-            )}
+      {/* Enhanced Bottom Info */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-6 pt-16 text-white z-20">
+        {/* Availability Badge - More Prominent */}
+        {user.is_available && (
+          <div className="inline-flex items-center gap-2 bg-green-500/30 backdrop-blur-sm px-4 py-2 rounded-full mb-4 border border-green-400/50 shadow-lg">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-sm" />
+            <span className="text-green-400 text-sm font-semibold">
+              Disponibile ora per eventi
+            </span>
           </div>
-          
-          <div className={cn(
-            "flex items-center gap-1.5 opacity-90",
-            isMobile ? "text-xs" : "text-sm"
-          )}>
-            <MapPin className={cn(isMobile ? "w-3 h-3" : "w-4 h-4")} />
-            <span>{user.city}</span>
-          </div>
+        )}
 
-          {user.preferred_moments && user.preferred_moments.length > 0 && (
-            <div className={cn(
-              "flex flex-wrap gap-1.5",
-              isMobile ? "mt-2" : "mt-3"
-            )}>
-              {user.preferred_moments.slice(0, isMobile ? 2 : 3).map((moment, index) => (
-                <Badge
+        {/* Distance - Better visibility */}
+        {user.distance_km && (
+          <div className="text-white/80 text-sm mb-3 font-medium">
+            📍 A {user.distance_km.toFixed(1)} km da te
+          </div>
+        )}
+
+        {/* Name and Age - Larger and more prominent */}
+        <div className="flex items-center gap-3 mb-3">
+          <h3 className="text-white text-2xl font-bold leading-tight">
+            {user.name}
+          </h3>
+          {user.age && (
+            <span className="text-white/90 text-xl font-medium">
+              {user.age}
+            </span>
+          )}
+        </div>
+
+        {/* City */}
+        {user.city && (
+          <div className="text-white/80 text-sm mb-4 font-medium">
+            🏙️ {user.city}
+          </div>
+        )}
+
+        {/* Preferred Moments - Better layout */}
+        {user.preferred_moments && user.preferred_moments.length > 0 && (
+          <div className="mb-4">
+            <div className="text-white/70 text-xs mb-2 font-medium uppercase tracking-wide">
+              Interessi
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {user.preferred_moments.slice(0, 3).map((moment, index) => (
+                <span
                   key={index}
-                  variant="outline"
-                  className={cn(
-                    "bg-white/20 backdrop-blur-sm text-white border-white/30",
-                    isMobile ? "text-xs px-2 py-0.5" : ""
-                  )}
+                  className="bg-white/25 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-medium border border-white/10"
                 >
-                  <Star className={cn(isMobile ? "w-2.5 h-2.5 mr-1" : "w-3 h-3 mr-1")} />
                   {moment}
-                </Badge>
+                </span>
               ))}
-              {user.preferred_moments.length > (isMobile ? 2 : 3) && (
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "bg-white/20 backdrop-blur-sm text-white border-white/30",
-                    isMobile ? "text-xs px-2 py-0.5" : ""
-                  )}
-                >
-                  +{user.preferred_moments.length - (isMobile ? 2 : 3)}
-                </Badge>
+              {user.preferred_moments.length > 3 && (
+                <span className="text-white/60 text-sm py-1.5 font-medium">
+                  +{user.preferred_moments.length - 3} altri
+                </span>
               )}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Call to Action Footer */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 mt-2">
+          <div className="flex items-center justify-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-400" />
+            <span className="text-white text-sm font-medium">
+              Swipe per invitare a un evento
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons - Only show on top card when not dragging */}
-      {isTop && !isDragging && (
-        <div className={cn(
-          "absolute left-1/2 transform -translate-x-1/2 flex gap-3 z-30",
-          isMobile ? "bottom-4" : "bottom-6"
-        )}>
+      {/* Action Buttons for Mobile - Updated with clearer messaging */}
+      {isMobile && isTop && !isDragging && (
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-6 z-30">
+          <button
+            onClick={() => onSwipeLeft(user.id)}
+            className="w-18 h-18 bg-red-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-red-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
+          >
+            <div className="text-center">
+              <div className="text-2xl font-bold mb-1">✕</div>
+              <div className="text-xs font-semibold">SALTA</div>
+            </div>
+          </button>
+          <button
+            onClick={() => onSwipeRight(user.id)}
+            className="w-18 h-18 bg-green-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-green-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
+          >
+            <div className="text-center">
+              <Calendar className="w-6 h-6 mx-auto mb-1" />
+              <div className="text-xs font-semibold">INVITA</div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Desktop Action Buttons */}
+      {!isMobile && isTop && !isDragging && (
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4 z-30">
           <Button
-            size={isMobile ? "default" : "lg"}
+            size="lg"
             variant="outline"
-            className={cn(
-              "rounded-full bg-white/90 backdrop-blur-sm border-white/30 hover:bg-white text-red-500 hover:text-red-600 shadow-lg",
-              isMobile ? "w-12 h-12" : "w-14 h-14"
-            )}
+            className="rounded-full bg-white/90 backdrop-blur-sm border-white/30 hover:bg-white text-red-500 hover:text-red-600 shadow-lg w-16 h-16"
             onClick={() => onSwipeLeft(user.id)}
           >
-            <X className={cn(isMobile ? "w-5 h-5" : "w-6 h-6")} />
+            <X className="w-6 h-6" />
           </Button>
           <Button
-            size={isMobile ? "default" : "lg"}
-            className={cn(
-              "rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg",
-              isMobile ? "w-12 h-12" : "w-14 h-14"
-            )}
+            size="lg"
+            className="rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg w-16 h-16"
             onClick={() => onSwipeRight(user.id)}
           >
-            <Heart className={cn(isMobile ? "w-5 h-5" : "w-6 h-6")} />
+            <Calendar className="w-6 h-6" />
           </Button>
         </div>
       )}
