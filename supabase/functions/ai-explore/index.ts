@@ -22,7 +22,7 @@ serve(async (req) => {
     
     if (!openAIApiKey) {
       return new Response(JSON.stringify({ 
-        reply: "AI non ancora configurata. Intanto ecco alcune idee: guarda persone disponibili ora ed eventi consigliati sotto." 
+        message: "AI non ancora configurata. Intanto ecco alcune idee: guarda persone disponibili ora ed eventi consigliati sotto. [TrovaAmici] [Eventi]" 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -40,24 +40,60 @@ serve(async (req) => {
 
     // Build context for AI
     const contextData = {
-      availablePeople: availableNow.data?.length || 0,
-      upcomingEvents: events.data?.length || 0,
-      publicMoments: moments.data?.length || 0,
-      sampleEvents: events.data?.slice(0, 2).map(e => ({ title: e.title, when: e.when_at })) || [],
-      sampleMoments: moments.data?.slice(0, 2).map(m => ({ title: m.title, when: m.when_at })) || []
+      availableUsers: { 
+        count: availableNow.data?.length || 0,
+        samples: availableNow.data?.slice(0, 3).map(u => ({ 
+          name: u.name, 
+          mood: u.mood, 
+          job_title: u.job_title 
+        })) || []
+      },
+      events: { 
+        count: events.data?.length || 0,
+        samples: events.data?.slice(0, 3).map(e => ({ 
+          title: e.title, 
+          place: e.place,
+          when_at: e.when_at 
+        })) || []
+      },
+      moments: { 
+        count: moments.data?.length || 0,
+        samples: moments.data?.slice(0, 3).map(m => ({ 
+          title: m.title, 
+          tags: m.tags,
+          when_at: m.when_at 
+        })) || []
+      }
     };
 
-    const systemPrompt = `Sei un assistente AI per LiveMoment, un'app social per organizzare incontri spontanei.
+    // Create system prompt with context and navigation links
+    const systemPrompt = `Sei un assistente AI esperto nel consigliare esperienze sociali e culturali. 
 
-Contesto attuale:
-- ${contextData.availablePeople} persone disponibili ora
-- ${contextData.upcomingEvents} eventi in zona
-- ${contextData.publicMoments} momenti pubblici
+Contesto attuale della piattaforma:
+- Persone disponibili: ${contextData.availableUsers.count}
+- Eventi in corso: ${contextData.events.count}  
+- Momenti condivisi: ${contextData.moments.count}
 
-Eventi esempio: ${contextData.sampleEvents.map(e => e.title).join(', ')}
-Momenti esempio: ${contextData.sampleMoments.map(m => m.title).join(', ')}
+Esempi di contenuti disponibili:
+${contextData.availableUsers.samples.length > 0 ? 'Utenti disponibili:\n' + contextData.availableUsers.samples.map(u => `- ${u.name} (${u.mood}) - ${u.job_title}`).join('\n') : ''}
 
-Rispondi in italiano, sii conciso e suggerisci attività concrete basate sui dati disponibili. Incoraggia l'utente a esplorare le sezioni sotto per vedere persone disponibili, eventi e momenti.`;
+${contextData.events.samples.length > 0 ? 'Eventi in programma:\n' + contextData.events.samples.map(e => `- ${e.title} - ${e.place?.name || 'Location TBD'}`).join('\n') : ''}
+
+${contextData.moments.samples.length > 0 ? 'Momenti recenti:\n' + contextData.moments.samples.map(m => `- ${m.title} - ${m.tags?.join(', ') || ''}`).join('\n') : ''}
+
+IMPORTANTE: Quando suggerisci azioni specifiche, includi nella risposta i link appropriati usando questi tag:
+- [Inviti] per creare inviti o cercare persone
+- [Eventi] per partecipare agli eventi
+- [Momenti] per esplorare momenti condivisi
+- [Profili] per scoprire artisti e professionisti
+- [TrovaAmici] per trovare nuove persone
+
+Le tue risposte devono essere:
+- Brevi e coinvolgenti (max 150 parole)
+- Specifiche e actionable
+- Focalizzate su esperienze reali disponibili sulla piattaforma
+- In italiano casual e amichevole
+- Includere sempre almeno un link di navigazione pertinente`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -81,18 +117,18 @@ Rispondi in italiano, sii conciso e suggerisci attività concrete basate sui dat
     }
 
     const data = await response.json();
-    const reply = data.choices[0].message.content;
+    const message = data.choices[0].message.content;
 
     console.log('AI response generated successfully');
     
-    return new Response(JSON.stringify({ reply }), {
+    return new Response(JSON.stringify({ message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in ai-explore function:', error);
     return new Response(JSON.stringify({ 
-      reply: "Scusa, c'è stato un errore. Prova a guardare le persone disponibili e gli eventi sotto!"
+      message: "Scusa, c'è stato un errore. Prova a guardare le persone disponibili e gli eventi sotto! [TrovaAmici] [Eventi]"
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

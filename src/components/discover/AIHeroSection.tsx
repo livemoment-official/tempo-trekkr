@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Sparkles, Users, MapPin, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useDynamicSuggestions } from '@/hooks/useDynamicSuggestions';
 interface AIHeroSectionProps {
   onSendMessage: (message: string) => void;
   loading?: boolean;
@@ -18,18 +19,20 @@ export function AIHeroSection({
       setInput('');
     }
   };
+  const { availableUsers, eventsCount, artistsCount } = useDynamicSuggestions();
+
   const quickSuggestions = [{
     icon: Users,
-    text: "Persone nuove con cui uscire oggi",
-    prompt: "Mi suggerisci persone nuove interessanti con cui potrei uscire oggi nella mia zona?"
+    text: `${availableUsers > 0 ? `${availableUsers} persone` : 'Persone'} disponibili ora`,
+    prompt: "Mi suggerisci persone nuove interessanti con cui potrei uscire oggi nella mia zona? [TrovaAmici]"
   }, {
     icon: MapPin,
-    text: "Locali ed eventi nella mia zona",
-    prompt: "Cerco locali o eventi interessanti nella mia zona a cui partecipare"
+    text: `${eventsCount > 0 ? `${eventsCount} eventi` : 'Eventi'} oggi nella zona`,
+    prompt: "Cerco locali o eventi interessanti nella mia zona a cui partecipare [Eventi]"
   }, {
     icon: Music,
-    text: "Artisti da scoprire",
-    prompt: "Vorrei trovare artisti forti da scoprire o invitare per fare un evento insieme"
+    text: `${artistsCount > 0 ? `${artistsCount} artisti` : 'Artisti'} da scoprire`,
+    prompt: "Vorrei trovare artisti forti da scoprire o invitare per fare un evento insieme [Profili]"
   }];
   return <div className="relative flex flex-col items-center justify-center min-h-[85vh] px-4">
       {/* Futuristic Background Gradient */}
