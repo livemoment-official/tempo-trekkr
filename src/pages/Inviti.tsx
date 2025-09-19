@@ -173,38 +173,15 @@ export default function Inviti() {
 
         <TabsContent value="amici" className="space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
-              <p className="text-muted-foreground text-sm mb-4">
-                Trova persone interessanti vicino a te per nuove amicizie
-              </p>
-            </div>
+            
             
             {/* Toggle between list and swipe view for friends */}
             <div className="bg-muted/50 backdrop-blur-sm p-1 rounded-lg border border-muted-foreground/20 shadow-sm">
               <div className="flex items-center gap-1">
-                <Button
-                  size="sm"
-                  variant={friendsViewMode === "list" ? "default" : "ghost"}
-                  onClick={() => setFriendsViewMode("list")}
-                  className={`h-8 w-8 p-0 transition-all duration-200 ${
-                    friendsViewMode === "list" 
-                      ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
+                <Button size="sm" variant={friendsViewMode === "list" ? "default" : "ghost"} onClick={() => setFriendsViewMode("list")} className={`h-8 w-8 p-0 transition-all duration-200 ${friendsViewMode === "list" ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
                   <LayoutGrid size={16} />
                 </Button>
-                <Button
-                  size="sm"
-                  variant={friendsViewMode === "swipe" ? "default" : "ghost"}
-                  onClick={() => setFriendsViewMode("swipe")}
-                  className={`h-8 w-8 p-0 transition-all duration-200 ${
-                    friendsViewMode === "swipe" 
-                      ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
+                <Button size="sm" variant={friendsViewMode === "swipe" ? "default" : "ghost"} onClick={() => setFriendsViewMode("swipe")} className={`h-8 w-8 p-0 transition-all duration-200 ${friendsViewMode === "swipe" ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
                   <Heart size={16} />
                 </Button>
               </div>
@@ -218,17 +195,10 @@ export default function Inviti() {
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
             </div> : filteredUsers.length > 0 ? <>
               {/* Swipe Interface for Friends */}
-              {friendsViewMode === "swipe" ? (
-                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <SwipeInterface 
-                    users={swipeUsers} 
-                    onInvite={handleInvite} 
-                    onPass={handlePass} 
-                  />
-                </div>
-              ) : (
-                /* List View for Friends */
-                <div className="space-y-4">
+              {friendsViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <SwipeInterface users={swipeUsers} onInvite={handleInvite} onPass={handlePass} />
+                </div> : (/* List View for Friends */
+          <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
                       {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
@@ -242,8 +212,7 @@ export default function Inviti() {
                         Vedi altri {filteredUsers.length - 6} amici
                       </Button>
                     </div>}
-                </div>
-              )}
+                </div>)}
             </> : <div className="text-center py-12">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
