@@ -611,6 +611,60 @@ export type Database = {
         }
         Relationships: []
       }
+      moment_reactions_detailed: {
+        Row: {
+          created_at: string
+          id: string
+          moment_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moment_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moment_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      moment_stories: {
+        Row: {
+          created_at: string
+          id: string
+          media_type: string
+          media_url: string
+          moment_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_type: string
+          media_url: string
+          moment_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          moment_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       moments: {
         Row: {
           age_range_max: number | null
