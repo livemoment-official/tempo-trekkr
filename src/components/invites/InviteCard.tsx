@@ -81,7 +81,7 @@ export default function InviteCard({
                 <h4 onClick={handleViewProfile} className="font-semibold cursor-pointer hover:text-primary transition-colors leading-tight text-xs">
                   {invite.sender?.name}
                 </h4>
-                <p className="text-sm text-muted-foreground">ti ha invitato a</p>
+                
               </div>
               
               <h3 className={`font-bold ${isMobile ? "text-lg" : "text-xl"} text-foreground leading-tight`}>
