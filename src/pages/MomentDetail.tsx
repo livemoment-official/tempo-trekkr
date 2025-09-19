@@ -41,6 +41,7 @@ export default function MomentDetail() {
   const [showChat, setShowChat] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [userReaction, setUserReaction] = useState<string | null>(null);
 
   // Fetch real moment data
   const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
@@ -86,7 +87,6 @@ export default function MomentDetail() {
     }
   ];
 
-  const [userReaction, setUserReaction] = useState<string | null>(null);
 
   const reactionIcons = {
     hearts: Heart,
