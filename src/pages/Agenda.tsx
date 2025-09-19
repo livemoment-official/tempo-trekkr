@@ -195,22 +195,7 @@ export default function Agenda() {
           <TabsContent value="calendar" className="space-y-4">
             <UpcomingEvents />
             
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Filtri</h3>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Tutti</Button>
-                  <Button variant="outline" size="sm">Confermati</Button>
-                  <Button variant="outline" size="sm">Da confermare</Button>
-                </div>
-              </div>
-              
-              <div className="flex gap-2">
-                <Badge variant="secondary">Momenti</Badge>
-                <Badge variant="secondary">Eventi</Badge>
-                <Badge variant="secondary">Inviti</Badge>
-              </div>
-            </div>
+            
           </TabsContent>
 
 
