@@ -94,9 +94,9 @@ export function SwipeInterface({ users, onInvite, onPass }: SwipeInterfaceProps)
   }
 
   return (
-    <div className="relative h-full min-h-[600px]">
+    <div className="relative h-full min-h-[500px] max-h-[calc(100vh-200px)] overflow-hidden">
       {/* Cards Stack */}
-      <div className="relative h-full">
+      <div className="relative h-full w-full">
         {displayUsers.map((user, index) => (
           <SwipeUserCard
             key={user.id}
@@ -114,33 +114,33 @@ export function SwipeInterface({ users, onInvite, onPass }: SwipeInterfaceProps)
         ))}
       </div>
 
-      {/* Progress Indicator */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-40">
-        <div className="bg-black/40 backdrop-blur-sm rounded-full px-4 py-2">
-          <span className="text-white text-sm font-medium">
+      {/* Progress Indicator - Mobile optimized */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40">
+        <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
+          <span className="text-white text-xs font-medium">
             {Math.min(currentIndex + 1, availableUsers.length)} / {availableUsers.length}
           </span>
         </div>
       </div>
 
-      {/* Instructions - Show only for first card */}
+      {/* Instructions - Mobile optimized */}
       {currentIndex === 0 && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-6 py-3 text-center animate-pulse">
-            <p className="text-white text-sm font-medium">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none px-4">
+          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2 text-center animate-pulse max-w-xs">
+            <p className="text-white text-xs font-medium">
               Scorri o tocca i pulsanti per decidere
             </p>
           </div>
         </div>
       )}
 
-      {/* Bottom Actions */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex gap-4 z-40">
+      {/* Bottom Actions - Mobile optimized */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-40">
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate('/inviti')}
-          className="bg-white/90 backdrop-blur-sm border-white/30"
+          className="bg-white/90 backdrop-blur-sm border-white/30 text-xs px-3 py-1"
         >
           Torna alla Lista
         </Button>

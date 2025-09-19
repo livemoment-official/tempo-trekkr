@@ -14,16 +14,20 @@ import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
+import { SwipeInterface } from "@/components/profile/SwipeInterface";
 import { useNavigate } from "react-router-dom";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
+import { useIsMobile } from "@/hooks/use-mobile";
 export default function Inviti() {
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/inviti";
   const [searchQuery, setSearchQuery] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -67,12 +71,34 @@ export default function Inviti() {
     const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
     return matchesSearch && matchesAvailability && matchesDistance;
   });
-  const handleInvite = (userId: string) => {
+  const handleInvite = (userId: string, userName?: string) => {
     const user = transformedUsers.find(u => u.id === userId);
-    if (user) {
-      toast.success(`Invito inviato a ${user.name}!`);
+    const name = userName || user?.name;
+    if (name) {
+      toast.success(`Invito inviato a ${name}!`);
     }
   };
+
+  const handlePass = (userId: string) => {
+    const user = transformedUsers.find(u => u.id === userId);
+    if (user) {
+      toast(`Hai saltato ${user.name}`, { 
+        description: "Non vedrai più questo profilo"
+      });
+    }
+  };
+
+  // Convert transformed users to SwipeInterface format
+  const swipeUsers = transformedUsers.map(user => ({
+    id: user.id,
+    name: user.name,
+    avatar_url: user.avatar_url,
+    city: user.city,
+    is_available: user.is_available,
+    preferred_moments: user.preferred_moments || [],
+    age: user.age,
+    distance_km: user.distance_km,
+  }));
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Inviti</title>
@@ -86,30 +112,73 @@ export default function Inviti() {
 
       <Tabs defaultValue="amici">
         <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="ricevuti">Inviti</TabsTrigger>
           <TabsTrigger value="amici">Trova Amici</TabsTrigger>
-          <TabsTrigger value="ricevuti">Tutti gli Inviti</TabsTrigger>
-          
         </TabsList>
         
         <TabsContent value="ricevuti" className="space-y-4">
-          {invitesLoading ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Caricamento inviti...</p>
-            </div>
-          ) : (inviteData?.received.length === 0 || !inviteData) ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Inviti Ricevuti</h3>
-                <Badge variant="secondary">{mockInvites.length}</Badge>
+          {/* Mobile-first swipe interface for invites */}
+          {isMobile && filteredUsers.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant={viewMode === "swipe" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("swipe")}
+                  className="h-8"
+                >
+                  💖 Swipe
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8"
+                >
+                  📋 Lista
+                </Button>
               </div>
-              {mockInvites.map(invite => (
-                <InviteCard key={invite.id} invite={invite} type="received" />
-              ))}
+            </div>
+          )}
+
+          {isMobile && viewMode === "swipe" && filteredUsers.length > 0 ? (
+            <div className="h-[calc(100vh-300px)] min-h-[500px] relative">
+              <SwipeInterface
+                users={swipeUsers.filter(user => {
+                  const matchesSearch = searchQuery === "" || 
+                    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    user.city?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesAvailability = availabilityFilter === "all" || 
+                    (availabilityFilter === "available" && user.is_available) ||
+                    (availabilityFilter === "unavailable" && !user.is_available);
+                  return matchesSearch && matchesAvailability;
+                })}
+                onInvite={handleInvite}
+                onPass={handlePass}
+              />
             </div>
           ) : (
-            inviteData.received.map(invite => (
-              <InviteCard key={invite.id} invite={invite} type="received" />
-            ))
+            <>
+              {invitesLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Caricamento inviti...</p>
+                </div>
+              ) : (inviteData?.received.length === 0 || !inviteData) ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Inviti Ricevuti</h3>
+                    <Badge variant="secondary">{mockInvites.length}</Badge>
+                  </div>
+                  {mockInvites.map(invite => (
+                    <InviteCard key={invite.id} invite={invite} type="received" />
+                  ))}
+                </div>
+              ) : (
+                inviteData.received.map(invite => (
+                  <InviteCard key={invite.id} invite={invite} type="received" />
+                ))
+              )}
+            </>
           )}
         </TabsContent>
 

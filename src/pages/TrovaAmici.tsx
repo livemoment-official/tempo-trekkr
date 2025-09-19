@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Users, ArrowLeft, Trophy, Star, Gift, Grid3X3, LayoutGrid, Heart } from "lucide-react";
+import { MapPin, Users, ArrowLeft, Trophy, Star, Gift } from "lucide-react";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
-import { SwipeInterface } from "@/components/profile/SwipeInterface";
+// SwipeInterface moved to Inviti page
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 import { getRandomUserProfiles } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ export default function TrovaAmici() {
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/trova-amici";
   const [activeTab, setActiveTab] = useState("vicinanze");
-  const [viewMode, setViewMode] = useState<"swipe" | "grid">("swipe");
+  // Removed swipe mode - only grid mode available
   const [searchQuery, setSearchQuery] = useState("");
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
@@ -103,113 +103,53 @@ Crea 1 Gruppo con almeno 15 Persone = +150 punti</p>
           </Card>
 
           <TabsContent value="vicinanze" className="space-y-4 mt-4">
-            {/* View Mode Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === "swipe" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("swipe")}
-                  className="h-8"
-                >
-                  <Heart className="h-3 w-3 mr-1" />
-                  Swipe
-                </Button>
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="h-8"
-                >
-                  <LayoutGrid className="h-3 w-3 mr-1" />
-                  Griglia
-                </Button>
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                {filteredUsers.length} persone
-              </Badge>
-            </div>
+            <FriendsSearchFilters 
+              searchQuery={searchQuery} 
+              onSearchChange={setSearchQuery} 
+              selectedMood={selectedMood} 
+              onMoodChange={setSelectedMood} 
+              radiusKm={radiusKm} 
+              onRadiusChange={setRadiusKm} 
+              availabilityFilter={availabilityFilter} 
+              onAvailabilityChange={setAvailabilityFilter} 
+            />
 
-            {viewMode === "swipe" ? (
-              // Swipe Mode - Dating App Style
-              locationLoading ? (
-                <div className="text-center py-8">
-                  <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-                </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">
-                    {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
+            {locationLoading ? (
+              <div className="text-center py-8">
+                <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">
+                  {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
+                </p>
+                {searchQuery && (
+                  <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
+                    Mostra tutti
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
+                    {searchQuery && ' trovate'} nelle vicinanze
                   </p>
                   {searchQuery && (
-                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
-                      Mostra tutti
-                    </Button>
+                    <Badge variant="secondary" className="text-xs">
+                      {searchQuery}
+                    </Badge>
                   )}
                 </div>
-              ) : (
-                <div className="h-[600px] relative">
-                  <SwipeInterface
-                    users={filteredUsers}
-                    onInvite={handleInvite}
-                    onPass={handlePass}
-                  />
+                
+                <div className="space-y-3 pb-20">
+                  {filteredUsers.map(user => (
+                    <UserListItem key={user.id} user={user} onFollow={handleFollow} />
+                  ))}
                 </div>
-              )
-            ) : (
-              // Grid Mode - Traditional List
-              <>
-                <FriendsSearchFilters 
-                  searchQuery={searchQuery} 
-                  onSearchChange={setSearchQuery} 
-                  selectedMood={selectedMood} 
-                  onMoodChange={setSelectedMood} 
-                  radiusKm={radiusKm} 
-                  onRadiusChange={setRadiusKm} 
-                  availabilityFilter={availabilityFilter} 
-                  onAvailabilityChange={setAvailabilityFilter} 
-                />
-
-                {locationLoading ? (
-                  <div className="text-center py-8">
-                    <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-                  </div>
-                ) : filteredUsers.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-muted-foreground">
-                      {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
-                    </p>
-                    {searchQuery && (
-                      <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
-                        Mostra tutti
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">
-                        {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
-                        {searchQuery && ' trovate'} nelle vicinanze
-                      </p>
-                      {searchQuery && (
-                        <Badge variant="secondary" className="text-xs">
-                          {searchQuery}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-3 pb-20">
-                      {filteredUsers.map(user => (
-                        <UserListItem key={user.id} user={user} onFollow={handleFollow} />
-                      ))}
-                    </div>
-                  </>
-                )}
               </>
             )}
           </TabsContent>
