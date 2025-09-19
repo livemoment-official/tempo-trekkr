@@ -18,6 +18,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useGroupChat } from "@/hooks/useGroupChat";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/contexts/AuthContext";
+import { ChatMediaPicker } from "@/components/chat/ChatMediaPicker";
+import { PollMessage } from "@/components/chat/PollMessage";
+import { MediaMessage } from "@/components/chat/MediaMessage";
+import { VoiceRecorder } from "@/components/chat/VoiceRecorder";
+import { useChatMedia } from "@/hooks/useChatMedia";
 
 export default function ChatFullscreen() {
   const { type, id } = useParams(); // type: 'moment', 'event', 'city', 'conversation'
@@ -25,6 +30,8 @@ export default function ChatFullscreen() {
   const { toast } = useToast();
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { uploadMediaFile, uploadAudioBlob, createPoll } = useChatMedia();
   
   const [message, setMessage] = useState("");
   
@@ -82,7 +89,7 @@ export default function ChatFullscreen() {
     }
   }, [isConversation, id, loadMessages]);
 
-  // Handle sending message
+  // Handle sending enhanced message
   const handleSendMessage = async () => {
     if (!message.trim() || isSending) return;
     
@@ -95,6 +102,62 @@ export default function ChatFullscreen() {
       setMessage("");
     } catch (error) {
       // Error is handled in the hooks
+    }
+  };
+
+  // Handle enhanced message sending (media, polls, audio)
+  const handleSendEnhancedMessage = async (content: string, type?: 'text' | 'image' | 'video' | 'audio' | 'poll', data?: any) => {
+    if (isSending) return;
+    
+    try {
+      if (type === 'text' || !type) {
+        // Regular text message
+        if (isGroupChat) {
+          await sendGroupMessage(content);
+        } else if (isConversation && id) {
+          await sendConversationMessage(content, id);
+        }
+      } else {
+        // Enhanced message types
+        let messageContent = content;
+        
+        if (type === 'poll' && data) {
+          const pollId = await createPoll(data.question, data.options);
+          if (pollId) {
+            messageContent = `Sondaggio: ${data.question}`;
+            // For now, send as text. Later we'll extend the hooks to handle poll_id
+            if (isGroupChat) {
+              await sendGroupMessage(messageContent);
+            } else if (isConversation && id) {
+              await sendConversationMessage(messageContent, id);
+            }
+          }
+        } else if ((type === 'image' || type === 'video' || type === 'audio') && data?.file) {
+          const uploadResult = await uploadMediaFile(data.file, type);
+          if (uploadResult) {
+            messageContent = `${type === 'image' ? 'Immagine' : type === 'video' ? 'Video' : 'Audio'}: ${uploadResult.fileName}`;
+            // For now, send as text. Later we'll extend the hooks to handle file URLs
+            if (isGroupChat) {
+              await sendGroupMessage(messageContent);
+            } else if (isConversation && id) {
+              await sendConversationMessage(messageContent, id);
+            }
+          }
+        } else if (type === 'audio' && data?.audioBlob) {
+          const uploadResult = await uploadAudioBlob(data.audioBlob, data.duration);
+          if (uploadResult) {
+            messageContent = uploadResult.fileName;
+            // For now, send as text. Later we'll extend the hooks to handle file URLs
+            if (isGroupChat) {
+              await sendGroupMessage(messageContent);
+            } else if (isConversation && id) {
+              await sendConversationMessage(messageContent, id);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sending enhanced message:', error);
     }
   };
 
@@ -233,9 +296,21 @@ export default function ChatFullscreen() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input */}
+      {/* Message Input with Enhanced Features */}
       <div className="border-t bg-background p-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-end">
+          <ChatMediaPicker 
+            onSendMessage={handleSendEnhancedMessage}
+            disabled={isSending}
+          />
+          
+          <VoiceRecorder 
+            onSendRecording={async (audioBlob, duration) => {
+              await handleSendEnhancedMessage('', 'audio', { audioBlob, duration });
+            }}
+            disabled={isSending}
+          />
+          
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -243,6 +318,7 @@ export default function ChatFullscreen() {
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             className="flex-1"
           />
+          
           <Button 
             size="icon" 
             onClick={handleSendMessage}
