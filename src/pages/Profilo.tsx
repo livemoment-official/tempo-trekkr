@@ -23,7 +23,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock } from "lucide-react";
+import { useProfileMetrics } from "@/hooks/useProfileMetrics";
+import { ProfileTypeSelector } from "@/components/profiles/ProfileTypeSelector";
+import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock, UserPlus, Calendar, UserCheck, Music, MapPin, Bell, Globe, HelpCircle, BookOpen, ChevronRight } from "lucide-react";
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export default function Profilo() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
+  const [showCreateProfile, setShowCreateProfile] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
   
@@ -41,6 +44,8 @@ export default function Profilo() {
     markOnboardingComplete,
     incrementRedirectCounter 
   } = useOnboardingState();
+
+  const { metrics } = useProfileMetrics();
 
   useEffect(() => {
     if (isAuthenticated && user && isOnboardingRequired === false) {
@@ -158,13 +163,14 @@ export default function Profilo() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Helmet>
         <title>LiveMoment · Profilo</title>
         <meta name="description" content="Gestisci identità, disponibilità, preferenze e notifiche del tuo profilo." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Profilo</h1>
         <Button 
@@ -178,215 +184,293 @@ export default function Profilo() {
         </Button>
       </div>
 
-      {/* Progress Indicator */}
-      <ProfileProgressIndicator profile={profile} />
-
-      {/* Galleria foto principale */}
-      <CollapsibleSection
-        title="Galleria Foto"
-        icon={<Camera className="h-4 w-4" />}
-        badge={profile?.gallery?.length ? `${profile.gallery.length} foto` : "Vuota"}
-        badgeVariant={profile?.gallery?.length ? "secondary" : "outline"}
-      >
-        <EnhancedPhotoGallery
-          photos={profile?.gallery || []}
-          isOwnProfile={true}
-          onPhotosUpdate={handlePhotosUpdate}
-        />
-      </CollapsibleSection>
-
-      {/* Informazioni profilo principali */}
-      <CollapsibleSection
-        title="Profilo"
-        icon={<User className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <div className="flex items-center gap-4 mb-4">
-          <Avatar className="h-16 w-16 avatar-ring">
-            <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-gradient-brand text-white">
-              {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="font-semibold text-lg">{profile?.name || 'LiveMoment User'}</div>
-            <div className="text-sm text-muted-foreground">
-              @{profile?.username || 'username'}
+      {/* Compact Profile Section */}
+      <Card className="shadow-card">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 avatar-ring">
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback className="bg-gradient-brand text-white">
+                {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="font-semibold text-lg">{profile?.name || 'LiveMoment User'}</div>
+              <div className="text-sm text-muted-foreground">
+                @{profile?.username || 'username'}
+              </div>
+              {profile?.bio && (
+                <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {profile.bio}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-              <span><strong className="text-foreground">{profile?.followers_count || 0}</strong> follower</span>
-              <span><strong className="text-foreground">{profile?.following_count || 0}</strong> seguiti</span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
             <Button 
               variant="secondary" 
               size="sm"
               onClick={() => setShowEditForm(true)}
             >
-              Modifica
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowChatSettings(true)}
-              className="flex items-center gap-2"
-            >
-              <MessageCircle className="h-3 w-3" />
-              Chat
+              Modifica profilo
             </Button>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Quick edit fields */}
-        <div className="space-y-4">
-          <QuickEditField
-            label="Bio"
-            value={profile?.bio || ''}
-            fieldKey="bio"
-            type="textarea"
-            placeholder="Racconta qualcosa di te..."
-            onUpdate={handleFieldUpdate}
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="shadow-card hover:shadow-elevated transition-smooth">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <div className="p-2 rounded-full bg-primary/10">
+                <UserPlus className="h-5 w-5 text-primary" />
+              </div>
+              <div className="font-bold text-2xl">
+                {metrics.loading ? '-' : metrics.friendsCount}
+              </div>
+              <div className="text-sm text-muted-foreground font-medium">Amici</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card hover:shadow-elevated transition-smooth">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <div className="p-2 rounded-full bg-secondary/10">
+                <Calendar className="h-5 w-5 text-secondary-foreground" />
+              </div>
+              <div className="font-bold text-2xl">
+                {metrics.loading ? '-' : metrics.eventsCount}
+              </div>
+              <div className="text-sm text-muted-foreground font-medium">Eventi</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card hover:shadow-elevated transition-smooth">
+          <CardContent className="p-4 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <div className="p-2 rounded-full bg-accent/10">
+                <UserCheck className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div className="font-bold text-2xl">
+                {metrics.loading ? '-' : metrics.peopleMet}
+              </div>
+              <div className="text-sm text-muted-foreground font-medium">Persone</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Preferenze Section */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Preferenze</h2>
+        
+        <div className="space-y-2">
+          {/* Impostazioni with Professional Profiles */}
+          <Card className="shadow-card hover:shadow-sm transition-smooth">
+            <CardContent className="p-0">
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-muted">
+                      <Settings className="h-4 w-4" />
+                    </div>
+                    <span className="font-medium">Impostazioni</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+              
+              {/* Professional Profile Options */}
+              <div className="p-4 space-y-3">
+                <div className="text-sm font-medium text-muted-foreground mb-3">Account Professionali</div>
+                
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Music className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Profilo Artista</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-secondary-foreground" />
+                    <span className="text-sm">Profilo Location</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-accent-foreground" />
+                    <span className="text-sm">Profilo Staff</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Other preferences */}
+          <Card 
+            className="shadow-card hover:shadow-sm transition-smooth cursor-pointer"
+            onClick={() => setShowChatSettings(true)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <MessageCircle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Chat e messaggi</span>
+                    <div className="text-xs text-muted-foreground">
+                      {profile?.chat_permission === 'everyone' ? 'Tutti possono scriverti' : 'Solo amici possono scriverti'}
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <span className="font-medium">Posizione</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <Globe className="h-4 w-4" />
+                  </div>
+                  <span className="font-medium">Lingua</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Notifiche</span>
+                    <div className="text-xs text-muted-foreground">Inviti, chat, conferme</div>
+                  </div>
+                </div>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Risorse Section */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Risorse</h2>
+        
+        <div className="space-y-2">
+          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <HelpCircle className="h-4 w-4" />
+                  </div>
+                  <span className="font-medium">Centro assistenza</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-muted">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  <span className="font-medium">Guida all'app</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Collapsible sections for advanced features */}
+      <div className="space-y-4">
+        <CollapsibleSection
+          title="Galleria Foto"
+          icon={<Camera className="h-4 w-4" />}
+          badge={profile?.gallery?.length ? `${profile.gallery.length} foto` : "Vuota"}
+          badgeVariant={profile?.gallery?.length ? "secondary" : "outline"}
+          defaultOpen={false}
+        >
+          <EnhancedPhotoGallery
+            photos={profile?.gallery || []}
+            isOwnProfile={true}
+            onPhotosUpdate={handlePhotosUpdate}
           />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <QuickEditField
-              label="Mood"
-              value={profile?.mood || ''}
-              fieldKey="mood"
-              placeholder="Es. Energico, Chill..."
-              onUpdate={handleFieldUpdate}
-            />
-            <QuickEditField
-              label="Lavoro"
-              value={profile?.job_title || ''}
-              fieldKey="job_title"
-              placeholder="La tua professione"
-              onUpdate={handleFieldUpdate}
-            />
-          </div>
-        </div>
-      </CollapsibleSection>
+        </CollapsibleSection>
 
-      {/* Disponibilità */}
-      <CollapsibleSection
-        title="Disponibilità"
-        icon={<Clock className="h-4 w-4" />}
-        badge={profile?.chat_permission === 'everyone' ? 'Pubblico' : 'Limitato'}
-        badgeVariant="outline"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Indica quando sei libero per uscire o partecipare a eventi.
-          </p>
-          <AvailabilityForm />
-          <div className="space-y-2">
-            <div className="text-sm font-medium">I tuoi slot</div>
-            <AvailabilityList />
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* Informazioni personali e interessi */}
-      <CollapsibleSection
-        title="Dettagli Personali"
-        icon={<Sparkles className="h-4 w-4" />}
-        badge={profile?.interests?.length ? `${profile.interests.length} interessi` : "Da completare"}
-        badgeVariant={profile?.interests?.length ? "secondary" : "outline"}
-      >
-        <div className="space-y-4">
-          {/* Status attuale */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {profile?.mood && (
-              <div>
-                <div className="text-sm font-medium">Mood</div>
-                <Badge variant="outline" className="mt-1">{profile.mood}</Badge>
-              </div>
-            )}
-            {profile?.job_title && (
-              <div>
-                <div className="text-sm font-medium">Lavoro</div>
-                <Badge variant="secondary" className="mt-1">{profile.job_title}</Badge>
-              </div>
-            )}
-            {profile?.relationship_status && (
-              <div>
-                <div className="text-sm font-medium">Relazione</div>
-                <Badge variant="outline" className="mt-1">{profile.relationship_status}</Badge>
-              </div>
-            )}
-          </div>
-
-          {/* Interessi */}
-          {profile?.interests && profile.interests.length > 0 && (
+        <CollapsibleSection
+          title="Disponibilità"
+          icon={<Clock className="h-4 w-4" />}
+          badge="Gestisci"
+          badgeVariant="outline"
+          defaultOpen={false}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Indica quando sei libero per uscire o partecipare a eventi.
+            </p>
+            <AvailabilityForm />
             <div className="space-y-2">
-              <div className="text-sm font-medium">Interessi</div>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest: string) => (
-                  <Badge key={interest} variant="outline" className="hover-scale">{interest}</Badge>
-                ))}
-              </div>
+              <div className="text-sm font-medium">I tuoi slot</div>
+              <AvailabilityList />
             </div>
-          )}
-
-          {/* Quick edit per relationship status */}
-          <QuickEditField
-            label="Stato Relazione"
-            value={profile?.relationship_status || ''}
-            fieldKey="relationship_status"
-            placeholder="Single, In coppia, È complicato..."
-            onUpdate={handleFieldUpdate}
-          />
-
-          {/* Notifiche */}
-          <div className="flex items-center justify-between pt-4 border-t border-border">
-            <div>
-              <div className="font-medium">Notifiche</div>
-              <div className="text-sm text-muted-foreground">Inviti, chat, conferme</div>
-            </div>
-            <Switch defaultChecked />
           </div>
-        </div>
-      </CollapsibleSection>
+        </CollapsibleSection>
 
-
-      {/* Social links */}
-      <CollapsibleSection
-        title="Social & Contatti"
-        icon={<Heart className="h-4 w-4" />}
-        badge={profile?.instagram_username ? "Collegato" : "Da collegare"}
-        badgeVariant={profile?.instagram_username ? "secondary" : "outline"}
-      >
-        <div className="space-y-4">
-          <QuickEditField
-            label="Instagram"
-            value={profile?.instagram_username || ''}
-            fieldKey="instagram_username"
-            placeholder="@il_tuo_username"
-            onUpdate={handleFieldUpdate}
-          />
-          
-          {profile?.instagram_username && (
-            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2 flex-1">
-                <span className="text-sm">Instagram collegato</span>
-                <Badge variant="secondary" className="text-xs">Attivo</Badge>
-              </div>
-            </div>
-          )}
-        </div>
-      </CollapsibleSection>
-
-
-      {/* Sistema Amicizie */}
-      <CollapsibleSection
-        title="Amicizie & Connessioni"
-        icon={<Users className="h-4 w-4" />}
-        badge="Gestisci"
-        badgeVariant="outline"
-      >
-        <FriendshipSystem />
-      </CollapsibleSection>
+        <CollapsibleSection
+          title="Amicizie & Connessioni"
+          icon={<Users className="h-4 w-4" />}
+          badge="Gestisci"
+          badgeVariant="outline"
+          defaultOpen={false}
+        >
+          <FriendshipSystem />
+        </CollapsibleSection>
+      </div>
 
       {/* Modals */}
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
