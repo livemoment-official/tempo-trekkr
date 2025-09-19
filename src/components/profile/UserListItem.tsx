@@ -54,7 +54,11 @@ export function UserListItem({
           </Badge>
         </div>
         
-        
+        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+          <MapPin className="h-3 w-3" />
+          <span className="truncate">{user.city}</span>
+          {user.distance_km && <span className="text-xs">• {user.distance_km}km</span>}
+        </div>
 
         <div className="space-y-1">
           <p className="text-xs text-orange-500 font-medium">
