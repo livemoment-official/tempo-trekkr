@@ -12,7 +12,7 @@ import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import mascotLogo from "@/assets/mascot-yellow.png";
+import liveMomentLogo from "@/assets/livemoment-logo.png";
 const Header = ({
   onOpenSearch,
   onOpenFriends
@@ -41,13 +41,8 @@ const Header = ({
       : "border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light"
   )}>
       <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
-        <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
-          <EnhancedImage src={mascotLogo} alt="LiveMoment Mascot" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-8 w-8 object-contain" />
-          
-        </button>
-        
         <div className="flex items-center gap-3">
-          {/* Aggiungi Amici Banner - moved to left */}
+          {/* Aggiungi Amici Banner */}
           <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 rounded-full text-sm font-medium text-black border border-gray-200 transition-colors hover-scale press-scale">
             <UserPlus className="h-4 w-4" />
             <span className="hidden sm:inline">Aggiungi Amici</span>
@@ -71,6 +66,11 @@ const Header = ({
             </Avatar>
           </NavLink>
         </div>
+        
+        {/* LiveMoment Logo - Top Right */}
+        <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
+          <EnhancedImage src={liveMomentLogo} alt="LiveMoment Logo" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-10 w-10 object-contain" />
+        </button>
       </div>
     </header>;
 };
