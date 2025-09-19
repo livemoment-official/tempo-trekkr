@@ -20,10 +20,17 @@ import {
   Send,
   UserPlus,
   Calendar,
-  Info
+  Info,
+  Settings,
+  Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModal";
+import { MomentEditModal } from "@/components/moments/MomentEditModal";
+import { MomentStories } from "@/components/moments/MomentStories";
+import { useMomentDetail } from "@/hooks/useMomentDetail";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
 export default function MomentDetail() {
   const { id } = useParams();
@@ -33,60 +40,51 @@ export default function MomentDetail() {
   const [chatMessage, setChatMessage] = useState("");
   const [showChat, setShowChat] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  // Mock moment data - in real app, fetch from database
-  const moment = {
-    id: id || '1',
-    title: 'Aperitivo al tramonto sui Navigli',
-    description: 'Unisciti a noi per un aperitivo rilassante mentre guardiamo il tramonto sui Navigli! Atmosfera chill, buona musica e drinks fantastici. Perfetto per conoscere nuove persone e godersi la serata milanese.',
-    image: '/api/placeholder/400/600',
-    category: 'aperitivo',
-    time: '18:30',
-    date: 'Oggi, 15 Dicembre',
-    location: 'Navigli, Milano',
-    detailedLocation: 'Darsena, Porta Ticinese, 20143 Milano MI',
-    organizer: {
-      id: 'org1',
-      name: 'Marco Rossi',
-      avatar: '',
-      bio: 'Amante degli aperitivi e della vita notturna milanese. Organizzo eventi da 3 anni!',
-      age: 28,
-      verified: true
-    },
-    participants: 12,
-    maxParticipants: 20,
-    reactions: {
-      hearts: 24,
-      likes: 18,
-      stars: 15,
-      fire: 8
-    },
-    mood: 'Rilassato',
-    tags: ['aperitivo', 'navigli', 'tramonto', 'musica', 'chill'],
-    whyCome: [
-      'Atmosfera unica sui Navigli',
-      'Drinks di qualità a prezzi onesti', 
-      'Gruppo di persone fantastiche',
-      'Vista tramonto mozzafiato',
-      'Musica selezionata dal vivo'
-    ],
-    chatMessages: [
-      {
-        id: '1',
-        user: 'Marco R.',
-        message: 'Chi porta la chitarra stasera? 🎸',
-        time: '2 min fa',
-        isOrganizer: true
-      },
-      {
-        id: '2', 
-        user: 'Sofia M.',
-        message: 'Io! Non vedo l\'ora 😊',
-        time: '1 min fa',
-        isOrganizer: false
-      }
-    ]
+  // Fetch real moment data
+  const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">Caricamento momento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !moment) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">{error || 'Momento non trovato'}</p>
+          <Button onClick={() => navigate('/')}>Torna alla home</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mock reactions for now - will be implemented later
+  const reactions = {
+    hearts: 24,
+    likes: 18,
+    stars: 15,
+    fire: 8
   };
+
+  // Mock chat messages for now - will be implemented later
+  const chatMessages = [
+    {
+      id: '1',
+      user: moment.host?.name?.split(' ')[0] + ' ' + (moment.host?.name?.split(' ')[1]?.charAt(0) || '') + '.',
+      message: 'Ciao a tutti! Non vedo l\'ora di incontrarvi 🎉',
+      time: '5 min fa',
+      isOrganizer: true
+    }
+  ];
 
   const [userReaction, setUserReaction] = useState<string | null>(null);
 
@@ -97,19 +95,24 @@ export default function MomentDetail() {
     fire: Flame
   };
 
-  const getCategoryEmoji = (cat: string) => {
+  const getCategoryEmoji = (tag: string) => {
     const categories: Record<string, string> = {
       'calcio': '⚽',
-      'aperitivo': '🍺',
+      'aperitivo': '🍺', 
       'feste': '🎉',
       'casa': '🏠',
       'sport': '🏃',
       'musica': '🎵',
       'arte': '🎨',
       'cibo': '🍕',
-      'natura': '🌿'
+      'natura': '🌿',
+      'spontaneo': '✨',
+      'relax': '😌',
+      'energia': '⚡',
+      'avventura': '🗺️',
+      'social': '👥'
     };
-    return categories[cat.toLowerCase()] || '✨';
+    return categories[tag.toLowerCase()] || '✨';
   };
 
   const handleParticipate = () => {
@@ -154,32 +157,56 @@ export default function MomentDetail() {
           {/* Organizer avatar - top left */}
           <div className="absolute top-4 left-4 z-10">
             <Avatar className="h-10 w-10 border-2 border-white shadow-lg">
-              <AvatarImage src={moment.organizer.avatar} />
-              <AvatarFallback className="bg-white text-foreground">{moment.organizer.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={moment.host?.avatar_url} />
+              <AvatarFallback className="bg-white text-foreground">
+                {moment.host?.name?.charAt(0) || 'U'}
+              </AvatarFallback>
             </Avatar>
           </div>
           
-          {/* Mood badge - top right */}
-          <div className="absolute top-4 right-4 z-10">
-            <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-lg">
-              {moment.mood}
-            </Badge>
-          </div>
-          {moment.image ? (
+          {/* Edit button - top right (for host only) */}
+          {moment.can_edit && (
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="bg-white/90 backdrop-blur-sm shadow-lg"
+                onClick={() => setShowEditModal(true)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
+          {/* Mood badge - top center */}
+          {moment.mood_tag && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+              <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-lg">
+                {moment.mood_tag}
+              </Badge>
+            </div>
+          )}
+          
+          {moment.photos && moment.photos.length > 0 ? (
             <img 
-              src={moment.image} 
+              src={moment.photos[0]} 
               alt={moment.title}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <span className="text-8xl">{getCategoryEmoji(moment.category)}</span>
+              <span className="text-8xl">
+                {moment.tags && moment.tags.length > 0 
+                  ? getCategoryEmoji(moment.tags[0])
+                  : '✨'
+                }
+              </span>
             </div>
           )}
           
           {/* Reactions Overlay */}
           <div className="absolute bottom-4 right-4 flex gap-2">
-            {Object.entries(moment.reactions).map(([type, count]) => {
+            {Object.entries(reactions).map(([type, count]) => {
               const Icon = reactionIcons[type as keyof typeof reactionIcons];
               return (
                 <Button
@@ -197,6 +224,12 @@ export default function MomentDetail() {
           </div>
         </div>
 
+        {/* Stories Section */}
+        <MomentStories 
+          momentId={moment.id} 
+          canContribute={isParticipating || moment.can_edit}
+        />
+
         {/* Main Info */}
         <Card>
           <CardHeader className="pb-4">
@@ -204,11 +237,13 @@ export default function MomentDetail() {
               <div className="flex-1">
                 <h1 className="text-2xl font-bold leading-tight">{moment.title}</h1>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="secondary">
-                    {getCategoryEmoji(moment.category)} {moment.category}
-                  </Badge>
-                  {moment.mood && (
-                    <Badge variant="outline">{moment.mood}</Badge>
+                  {moment.tags && moment.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {getCategoryEmoji(tag)} {tag}
+                    </Badge>
+                  ))}
+                  {moment.mood_tag && (
+                    <Badge variant="outline">{moment.mood_tag}</Badge>
                   )}
                 </div>
               </div>
@@ -218,31 +253,41 @@ export default function MomentDetail() {
           <CardContent className="space-y-4">
             {/* Time & Location */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">{moment.date}</p>
-                  <p className="text-sm text-muted-foreground">{moment.time}</p>
+              {moment.when_at && (
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">
+                      {format(new Date(moment.when_at), "EEEE d MMMM", { locale: it })}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(moment.when_at), "HH:mm")}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="font-medium">{moment.location}</p>
-                  <p className="text-sm text-muted-foreground">{moment.detailedLocation}</p>
+              {moment.place && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">{moment.place.name}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">
-                    {moment.participants}/{moment.maxParticipants} partecipanti
+                    {moment.participant_count}
+                    {moment.max_participants && `/${moment.max_participants}`} partecipanti
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {moment.maxParticipants - moment.participants} posti disponibili
-                  </p>
+                  {moment.max_participants && (
+                    <p className="text-sm text-muted-foreground">
+                      {moment.max_participants - moment.participant_count} posti disponibili
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -256,7 +301,7 @@ export default function MomentDetail() {
             </div>
 
             {/* Tags */}
-            {moment.tags.length > 0 && (
+            {moment.tags && moment.tags.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Tags</h3>
                 <div className="flex flex-wrap gap-2">
@@ -268,22 +313,6 @@ export default function MomentDetail() {
                 </div>
               </div>
             )}
-
-            {/* Why Come */}
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Info className="h-4 w-4" />
-                Perché Venire?
-              </h3>
-              <div className="space-y-2">
-                {moment.whyCome.map((reason, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">{reason}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -295,18 +324,19 @@ export default function MomentDetail() {
           <CardContent>
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={moment.organizer.avatar} />
-                <AvatarFallback>{moment.organizer.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={moment.host?.avatar_url} />
+                <AvatarFallback>{moment.host?.name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium">{moment.organizer.name}</h4>
-                  {moment.organizer.verified && (
+                  <h4 className="font-medium">{moment.host?.name || 'Utente'}</h4>
+                  {moment.host?.verified && (
                     <Badge variant="secondary" className="text-xs">Verificato</Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{moment.organizer.age} anni</p>
-                <p className="text-sm text-muted-foreground mt-2">{moment.organizer.bio}</p>
+                {moment.host?.bio && (
+                  <p className="text-sm text-muted-foreground mt-2">{moment.host.bio}</p>
+                )}
               </div>
             </div>
             <div className="flex gap-2 mt-4">
@@ -330,7 +360,7 @@ export default function MomentDetail() {
             <CardContent className="space-y-4">
               {/* Messages */}
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {moment.chatMessages.map((msg) => (
+                {chatMessages.map((msg) => (
                   <div key={msg.id} className="flex gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs">{msg.user.charAt(0)}</AvatarFallback>
@@ -383,7 +413,7 @@ export default function MomentDetail() {
                 variant="outline"
                 size="lg"
                 className="bg-white p-3"
-                onClick={() => navigate(`/chat/organizer/${moment.organizer.id}`)}
+                onClick={() => navigate(`/chat/organizer/${moment.host_id}`)}
               >
                 <MessageCircle className="h-5 w-5" />
               </Button>
@@ -401,6 +431,16 @@ export default function MomentDetail() {
           momentTitle={moment.title}
           momentId={moment.id}
         />
+
+        {/* Edit Modal */}
+        {moment.can_edit && (
+          <MomentEditModal
+            open={showEditModal}
+            onOpenChange={setShowEditModal}
+            moment={moment}
+            onSuccess={refreshMoment}
+          />
+        )}
       </div>
     </div>
   );

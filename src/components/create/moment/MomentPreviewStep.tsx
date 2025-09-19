@@ -5,6 +5,7 @@ import { Calendar, MapPin, User, Heart } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MomentPreviewStepProps {
   data: any;
@@ -17,15 +18,96 @@ export default function MomentPreviewStep({ data }: MomentPreviewStepProps) {
 
   const handlePublish = async () => {
     try {
-      // TODO: Implement moment creation API call
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per creare un momento",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Combine date and time if provided
+      let when_at = null;
+      if (data.date) {
+        when_at = data.date;
+        if (data.time) {
+          const [hours, minutes] = data.time.split(':');
+          when_at.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        }
+      }
+
+      // Upload photos if they are new blobs
+      let photoUrls = data.photos || [];
+      if (data.photos && data.photos.length > 0) {
+        const uploadPromises = data.photos.map(async (photo: string) => {
+          if (photo.startsWith('blob:')) {
+            // Convert blob URL to file and upload
+            const response = await fetch(photo);
+            const blob = await response.blob();
+            const file = new File([blob], `moment-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            const fileName = `${user.id}/moment-photos/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('galleries')
+              .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+            
+            const { data: { publicUrl } } = supabase.storage
+              .from('galleries')
+              .getPublicUrl(fileName);
+              
+            return publicUrl;
+          }
+          return photo; // Return existing URL
+        });
+        
+        photoUrls = await Promise.all(uploadPromises);
+      }
+
+      // Prepare moment data
+      const momentData = {
+        title: data.title,
+        description: data.description || '',
+        photos: photoUrls,
+        when_at: when_at?.toISOString(),
+        place: data.location?.name ? {
+          name: data.location.name,
+          coordinates: data.location.coordinates
+        } : null,
+        host_id: user.id,
+        participants: [],
+        max_participants: data.capacity,
+        capacity: data.capacity,
+        mood_tag: data.moodTag,
+        tags: data.tags || [],
+        is_public: true,
+        age_range_min: data.ageRange?.min || 18,
+        age_range_max: data.ageRange?.max || 65,
+        ticketing: data.ticketing
+      };
+
+      // Insert moment into database
+      const { data: createdMoment, error } = await supabase
+        .from('moments')
+        .insert([momentData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
-        title: "Momento creato!",
+        title: "Momento creato! 🎉",
         description: "Il tuo momento è stato pubblicato con successo"
       });
       
-      // Navigate to moments page or specific moment
-      window.location.href = "/momenti";
+      // Navigate to the created moment
+      window.location.href = `/momento/${createdMoment.id}`;
     } catch (error) {
+      console.error('Error creating moment:', error);
       toast({
         title: "Errore",
         description: "Non è stato possibile creare il momento",
