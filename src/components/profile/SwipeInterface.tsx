@@ -74,18 +74,13 @@ export function SwipeInterface({
           {passedUsers.size > 0 ? "Hai invitato tutti!" : "Nessuno da invitare"}
         </h3>
         <p className="text-muted-foreground mb-6 max-w-sm">
-          {passedUsers.size > 0 
-            ? "Hai guardato tutte le persone disponibili per eventi. Perfetto!"
-            : "Non ci sono persone disponibili per eventi nella tua zona al momento."
-          }
+          {passedUsers.size > 0 ? "Hai guardato tutte le persone disponibili per eventi. Perfetto!" : "Non ci sono persone disponibili per eventi nella tua zona al momento."}
         </p>
         <div className="space-y-3 w-full max-w-xs">
-          {passedUsers.size > 0 && (
-            <Button onClick={resetStack} variant="outline" className="w-full">
+          {passedUsers.size > 0 && <Button onClick={resetStack} variant="outline" className="w-full">
               <RotateCcw className="w-4 h-4 mr-2" />
               Rivedi Persone
-            </Button>
-          )}
+            </Button>}
           <Button onClick={() => navigate('/trova-amici')} className="w-full">
             <Search className="w-4 h-4 mr-2" />
             Trova Altri Amici
@@ -100,27 +95,12 @@ export function SwipeInterface({
   }
   return <div className="relative h-full min-h-[600px] max-h-[calc(100vh-200px)] overflow-hidden">
       {/* Simplified Header */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/70 to-transparent p-4 pb-6">
-        <div className="flex items-center justify-center gap-2">
-          <Calendar className="w-4 h-4 text-primary" />
-          <h2 className="text-white text-base font-semibold">Invita Nuovi Amici</h2>
-        </div>
-      </div>
+      
 
       {/* Mobile Search Bar - Repositioned */}
-      {isMobile && onSearchChange && (
-        <div className="absolute top-14 left-4 right-4 z-40">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Cerca persone..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-white/90 backdrop-blur-sm border-white/20 text-sm"
-            />
-          </div>
-        </div>
-      )}
+      {isMobile && onSearchChange && <div className="absolute top-14 left-4 right-4 z-40">
+          
+        </div>}
 
       {/* Progress Indicator - Smaller and repositioned */}
       <div className="absolute top-20 right-4 z-30">
@@ -141,8 +121,7 @@ export function SwipeInterface({
       </div>
 
       {/* Achievement Badge */}
-      {passedUsers.size > 2 && (
-        <div className="absolute top-36 right-4 z-40">
+      {passedUsers.size > 2 && <div className="absolute top-36 right-4 z-40">
           <div className="bg-yellow-500/20 backdrop-blur-sm rounded-full px-3 py-1 border border-yellow-400/30">
             <div className="flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-yellow-400" />
@@ -151,7 +130,6 @@ export function SwipeInterface({
               </span>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
     </div>;
 }
