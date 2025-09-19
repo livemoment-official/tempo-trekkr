@@ -12,6 +12,7 @@ import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
+import { SwipeInterface } from "@/components/profile/SwipeInterface";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
@@ -28,6 +29,7 @@ export default function Inviti() {
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [inviteViewMode, setInviteViewMode] = useState<"swipe" | "list">("list");
+  const [friendsViewMode, setFriendsViewMode] = useState<"swipe" | "list">("list");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -207,25 +209,65 @@ export default function Inviti() {
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
-            <p className="text-muted-foreground text-sm mb-4">
-              Trova persone interessanti vicino a te per nuove amicizie
-            </p>
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
+              <p className="text-muted-foreground text-sm">
+                Trova persone interessanti vicino a te per nuove amicizie
+              </p>
+            </div>
+            <div className="flex items-center bg-muted/60 rounded-xl p-1 shadow-card">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFriendsViewMode("list")}
+                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
+                  friendsViewMode === "list" 
+                    ? "bg-primary text-primary-foreground shadow-brand hover:bg-primary/90" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Lista
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFriendsViewMode("swipe")}
+                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
+                  friendsViewMode === "swipe" 
+                    ? "gradient-brand text-white shadow-brand hover:opacity-90" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Swipe
+              </Button>
+            </div>
           </div>
 
-          <FriendsSearchFilters 
-            searchQuery={searchQuery} 
-            onSearchChange={setSearchQuery} 
-            selectedMood={selectedMood} 
-            onMoodChange={setSelectedMood} 
-            radiusKm={radiusKm} 
-            onRadiusChange={setRadiusKm} 
-            availabilityFilter={availabilityFilter} 
-            onAvailabilityChange={setAvailabilityFilter} 
-          />
+          {friendsViewMode === "list" && (
+            <FriendsSearchFilters 
+              searchQuery={searchQuery} 
+              onSearchChange={setSearchQuery} 
+              selectedMood={selectedMood} 
+              onMoodChange={setSelectedMood} 
+              radiusKm={radiusKm} 
+              onRadiusChange={setRadiusKm} 
+              availabilityFilter={availabilityFilter} 
+              onAvailabilityChange={setAvailabilityFilter} 
+            />
+          )}
           
-          {locationLoading ? (
+          {friendsViewMode === "swipe" ? (
+            <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+              <SwipeInterface
+                users={filteredUsers}
+                onInvite={handleInvite}
+                onPass={handlePass}
+              />
+            </div>
+          ) : locationLoading ? (
             <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
