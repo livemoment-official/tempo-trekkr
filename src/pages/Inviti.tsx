@@ -119,7 +119,7 @@ export default function Inviti() {
             Inviti Ricevuti
           </TabsTrigger>
           <TabsTrigger value="amici" className="text-sm font-medium">
-            Trova Amici
+            Invita
           </TabsTrigger>
         </TabsList>
         
