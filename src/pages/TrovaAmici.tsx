@@ -44,15 +44,13 @@ export default function TrovaAmici() {
       toast.success(`Ora segui ${user.name}!`);
     }
   };
-
   const handleInvite = (userId: string, userName: string) => {
     toast.success(`Invito inviato a ${userName}!`);
   };
-
   const handlePass = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
-      toast(`Hai saltato ${user.name}`, { 
+      toast(`Hai saltato ${user.name}`, {
         description: "Non vedrai più questo profilo"
       });
     }
@@ -82,76 +80,38 @@ export default function TrovaAmici() {
 
           {/* Gamification Banner */}
           <Card className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-orange-200/50 cursor-pointer hover:shadow-md transition-all duration-200" onClick={() => navigate('/premi')}>
-            <div className="p-4 flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <Trophy className="h-8 w-8 text-orange-500" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">
-                  Guadagna Premi Invitando Amici!
-                </h3>
-                <p className="text-sm text-muted-foreground">Invita 3 amici = +30 punti
-Segui 10 Persone = +50 punti
-Crea 1 Momento = +100 punti
-Crea 1 Gruppo con almeno 15 Persone = +150 punti</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                <Gift className="h-4 w-4 text-orange-500" />
-              </div>
-            </div>
+            
           </Card>
 
           <TabsContent value="vicinanze" className="space-y-4 mt-4">
-            <FriendsSearchFilters 
-              searchQuery={searchQuery} 
-              onSearchChange={setSearchQuery} 
-              selectedMood={selectedMood} 
-              onMoodChange={setSelectedMood} 
-              radiusKm={radiusKm} 
-              onRadiusChange={setRadiusKm} 
-              availabilityFilter={availabilityFilter} 
-              onAvailabilityChange={setAvailabilityFilter} 
-            />
+            <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
 
-            {locationLoading ? (
-              <div className="text-center py-8">
+            {locationLoading ? <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
+              </div> : filteredUsers.length === 0 ? <div className="text-center py-8">
                 <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">
                   {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
                 </p>
-                {searchQuery && (
-                  <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
+                {searchQuery && <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
                     Mostra tutti
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
+                  </Button>}
+              </div> : <>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
                     {searchQuery && ' trovate'} nelle vicinanze
                   </p>
-                  {searchQuery && (
-                    <Badge variant="secondary" className="text-xs">
+                  {searchQuery && <Badge variant="secondary" className="text-xs">
                       {searchQuery}
-                    </Badge>
-                  )}
+                    </Badge>}
                 </div>
                 
                 <div className="space-y-3 pb-20">
-                  {filteredUsers.map(user => (
-                    <UserListItem key={user.id} user={user} onFollow={handleFollow} />
-                  ))}
+                  {filteredUsers.map(user => <UserListItem key={user.id} user={user} onFollow={handleFollow} />)}
                 </div>
-              </>
-            )}
+              </>}
           </TabsContent>
 
           <TabsContent value="contatti" className="space-y-4 mt-4">
