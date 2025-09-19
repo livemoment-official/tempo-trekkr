@@ -99,76 +99,46 @@ export function SwipeInterface({
       </div>;
   }
   return <div className="relative h-full min-h-[600px] max-h-[calc(100vh-200px)] overflow-hidden">
-      {/* Header with Clear Purpose */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-6 pb-12">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="bg-primary/20 p-2 rounded-full">
-            <Calendar className="w-5 h-5 text-primary" />
-          </div>
-          <h2 className="text-white text-lg font-semibold">Invita Nuovi Amici</h2>
+      {/* Simplified Header */}
+      <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/70 to-transparent p-4 pb-6">
+        <div className="flex items-center justify-center gap-2">
+          <Calendar className="w-4 h-4 text-primary" />
+          <h2 className="text-white text-base font-semibold">Invita Nuovi Amici</h2>
         </div>
-        <p className="text-white/80 text-center text-sm">
-          Trova persone interessanti da invitare ai tuoi eventi
-        </p>
       </div>
 
-      {/* Mobile Search Bar */}
+      {/* Mobile Search Bar - Repositioned */}
       {isMobile && onSearchChange && (
-        <div className="absolute top-20 left-4 right-4 z-40">
+        <div className="absolute top-14 left-4 right-4 z-40">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Cerca persone..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-white/90 backdrop-blur-sm border-white/20"
+              className="pl-10 bg-white/90 backdrop-blur-sm border-white/20 text-sm"
             />
           </div>
         </div>
       )}
 
-      {/* Cards Stack */}
-      <div className="relative h-full w-full pt-24">
+      {/* Progress Indicator - Smaller and repositioned */}
+      <div className="absolute top-20 right-4 z-30">
+        <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
+          <span className="text-white text-xs font-medium">
+            {Math.min(currentIndex + 1, availableUsers.length)}/{availableUsers.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Cards Stack - More space */}
+      <div className="relative h-full w-full pt-16">
         {displayUsers.map((user, index) => <SwipeUserCard key={user.id} user={user} onSwipeLeft={handleSwipeLeft} onSwipeRight={handleSwipeRight} isTop={index === 0} className={animatingCard === user.id ? "animate-fade-out" : ""} style={{
         zIndex: displayUsers.length - index,
         scale: index === 0 ? 1 : 0.95 - index * 0.03,
         opacity: index === 0 ? 1 : 0.7 - index * 0.2
       }} />)}
       </div>
-
-      {/* Progress Indicator */}
-      <div className="absolute top-28 left-1/2 transform -translate-x-1/2 z-40">
-        <div className="bg-black/60 backdrop-blur-sm rounded-full px-4 py-2">
-          <span className="text-white text-sm font-medium">
-            {Math.min(currentIndex + 1, availableUsers.length)} di {availableUsers.length} persone
-          </span>
-        </div>
-      </div>
-
-      {/* Enhanced Instructions */}
-      {currentIndex === 0 && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none px-4">
-          <div className="bg-black/80 backdrop-blur-sm rounded-xl px-6 py-4 text-center animate-pulse max-w-sm border border-white/10">
-            <div className="flex items-center justify-center gap-6 mb-3">
-              <div className="flex items-center gap-2 text-red-400">
-                <span className="text-xl">←</span>
-                <span className="text-sm font-medium">SALTA</span>
-              </div>
-              <div className="flex items-center gap-2 text-green-400">
-                <span className="text-sm font-medium">INVITA</span>
-                <span className="text-xl">→</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Calendar className="w-4 h-4 text-blue-400" />
-              <p className="text-white text-sm font-medium">
-                Scorri per invitare a un evento
-              </p>
-            </div>
-            <p className="text-white/70 text-xs">
-              Invitare ti porterà alla creazione di un momento insieme
-            </p>
-          </div>
-        </div>}
 
       {/* Achievement Badge */}
       {passedUsers.size > 2 && (

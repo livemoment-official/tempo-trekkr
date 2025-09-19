@@ -206,98 +206,75 @@ export function SwipeUserCard({
         )}
       </div>
 
-      {/* Enhanced Bottom Info */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-6 pt-16 text-white z-20">
-        {/* Availability Badge - More Prominent */}
+      {/* Enhanced Bottom Info - More compact for mobile */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 pt-12 text-white z-20 pb-20">
+        {/* Availability Badge */}
         {user.is_available && (
-          <div className="inline-flex items-center gap-2 bg-green-500/30 backdrop-blur-sm px-4 py-2 rounded-full mb-4 border border-green-400/50 shadow-lg">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-sm" />
-            <span className="text-green-400 text-sm font-semibold">
-              Disponibile ora per eventi
+          <div className="inline-flex items-center gap-1 bg-green-500/30 backdrop-blur-sm px-3 py-1 rounded-full mb-3 border border-green-400/50">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-green-400 text-xs font-semibold">
+              Disponibile ora
             </span>
           </div>
         )}
 
-        {/* Distance - Better visibility */}
-        {user.distance_km && (
-          <div className="text-white/80 text-sm mb-3 font-medium">
-            📍 A {user.distance_km.toFixed(1)} km da te
-          </div>
-        )}
-
-        {/* Name and Age - Larger and more prominent */}
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="text-white text-2xl font-bold leading-tight">
+        {/* Name and Age */}
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-white text-xl font-bold leading-tight">
             {user.name}
           </h3>
           {user.age && (
-            <span className="text-white/90 text-xl font-medium">
+            <span className="text-white/90 text-lg font-medium">
               {user.age}
             </span>
           )}
         </div>
 
-        {/* City */}
-        {user.city && (
-          <div className="text-white/80 text-sm mb-4 font-medium">
-            🏙️ {user.city}
-          </div>
-        )}
+        {/* City and Distance */}
+        <div className="flex items-center gap-3 mb-3 text-white/80 text-sm">
+          {user.city && <span>🏙️ {user.city}</span>}
+          {user.distance_km && <span>📍 {user.distance_km.toFixed(1)} km</span>}
+        </div>
 
-        {/* Preferred Moments - Better layout */}
+        {/* Preferred Moments - Compact */}
         {user.preferred_moments && user.preferred_moments.length > 0 && (
-          <div className="mb-4">
-            <div className="text-white/70 text-xs mb-2 font-medium uppercase tracking-wide">
-              Interessi
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {user.preferred_moments.slice(0, 3).map((moment, index) => (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1">
+              {user.preferred_moments.slice(0, 2).map((moment, index) => (
                 <span
                   key={index}
-                  className="bg-white/25 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-medium border border-white/10"
+                  className="bg-white/25 backdrop-blur-sm px-2 py-1 rounded-full text-white text-xs font-medium"
                 >
                   {moment}
                 </span>
               ))}
-              {user.preferred_moments.length > 3 && (
-                <span className="text-white/60 text-sm py-1.5 font-medium">
-                  +{user.preferred_moments.length - 3} altri
+              {user.preferred_moments.length > 2 && (
+                <span className="text-white/60 text-xs py-1 font-medium">
+                  +{user.preferred_moments.length - 2}
                 </span>
               )}
             </div>
           </div>
         )}
-
-        {/* Call to Action Footer */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 mt-2">
-          <div className="flex items-center justify-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-400" />
-            <span className="text-white text-sm font-medium">
-              Swipe per invitare a un evento
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* Action Buttons for Mobile - Updated with clearer messaging */}
+      {/* Action Buttons for Mobile - Fixed dimensions */}
       {isMobile && isTop && !isDragging && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-6 z-30">
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4 z-30">
           <button
             onClick={() => onSwipeLeft(user.id)}
-            className="w-18 h-18 bg-red-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-red-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
+            className="w-16 h-16 bg-red-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-red-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
           >
             <div className="text-center">
-              <div className="text-2xl font-bold mb-1">✕</div>
-              <div className="text-xs font-semibold">SALTA</div>
+              <div className="text-xl font-bold">✕</div>
             </div>
           </button>
           <button
             onClick={() => onSwipeRight(user.id)}
-            className="w-18 h-18 bg-green-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-green-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
+            className="w-16 h-16 bg-green-500/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white border-2 border-green-400 shadow-lg hover:scale-110 active:scale-95 transition-transform"
           >
             <div className="text-center">
-              <Calendar className="w-6 h-6 mx-auto mb-1" />
-              <div className="text-xs font-semibold">INVITA</div>
+              <Calendar className="w-5 h-5" />
             </div>
           </button>
         </div>
