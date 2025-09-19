@@ -72,20 +72,8 @@ export function UserListItem({
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <Button 
-          onClick={handleInvite}
-          size="sm" 
-          className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-black font-medium h-8 px-3 text-xs"
-        >
-          <MessageCircle className="h-3 w-3 mr-1" />
-          Invita
-        </Button>
-        <Button 
-          onClick={handleFollow} 
-          size="sm" 
-          variant="outline" 
-          className="h-8 w-8 p-0 border-border/50"
-        >
+        
+        <Button onClick={handleFollow} size="sm" variant="outline" className="h-8 w-8 p-0 border-border/50">
           <UserPlus className="h-3 w-3" />
         </Button>
       </div>
