@@ -1,42 +1,29 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
+import { AvailabilityList } from "@/components/availability/AvailabilityList";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { OnboardingModal } from "@/components/profile/OnboardingModal";
+import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
+import { EnhancedPhotoGallery } from "@/components/profile/EnhancedPhotoGallery";
 import { ChatPermissionSettings } from "@/components/profile/ChatPermissionSettings";
+import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
+import { ProfileProgressIndicator } from "@/components/profile/ProfileProgressIndicator";
+import { QuickEditField } from "@/components/profile/QuickEditField";
+import { CollapsibleSection } from "@/components/profile/CollapsibleSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { 
-  Crown, 
-  Settings, 
-  MessageCircle, 
-  User, 
-  Camera, 
-  Heart, 
-  Users, 
-  Sparkles, 
-  Clock,
-  ChefHat,
-  UserCheck,
-  Link2,
-  MapPin,
-  Globe,
-  HelpCircle,
-  BookOpen,
-  Briefcase,
-  Building2,
-  Mic,
-  ChevronRight,
-  Bell
-} from "lucide-react";
+import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock } from "lucide-react";
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -170,258 +157,236 @@ export default function Profilo() {
     );
   }
 
-  // Mock data for metrics - in a real app, these would come from the database
-  const userMetrics = {
-    events: 12, // Eventi creati/partecipati
-    connections: 47, // Persone incontrate
-    meetings: 8 // Appuntamenti/incontri
-  };
-
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Profilo</title>
         <meta name="description" content="Gestisci identità, disponibilità, preferenze e notifiche del tuo profilo." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profilo</h1>
+        <h1 className="text-lg font-semibold">Profilo</h1>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/abbonamento')}
+          className="flex items-center gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+        >
+          <Crown className="h-4 w-4" />
+          Upgrade Profilo
+        </Button>
       </div>
 
-      {/* Profilo compatto */}
-      <Card className="shadow-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-lg">
-                {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="text-xl font-semibold">{profile?.name || 'Gabriele'}</h2>
-              <Button 
-                variant="ghost" 
-                className="h-auto p-0 text-muted-foreground hover:text-foreground text-left"
-                onClick={() => setShowEditForm(true)}
-              >
-                Modifica profilo <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+      {/* Progress Indicator */}
+      <ProfileProgressIndicator profile={profile} />
+
+      {/* Galleria foto principale */}
+      <CollapsibleSection
+        title="Galleria Foto"
+        icon={<Camera className="h-4 w-4" />}
+        badge={profile?.gallery?.length ? `${profile.gallery.length} foto` : "Vuota"}
+        badgeVariant={profile?.gallery?.length ? "secondary" : "outline"}
+      >
+        <EnhancedPhotoGallery
+          photos={profile?.gallery || []}
+          isOwnProfile={true}
+          onPhotosUpdate={handlePhotosUpdate}
+        />
+      </CollapsibleSection>
+
+      {/* Informazioni profilo principali */}
+      <CollapsibleSection
+        title="Profilo"
+        icon={<User className="h-4 w-4" />}
+        defaultOpen={true}
+      >
+        <div className="flex items-center gap-4 mb-4">
+          <Avatar className="h-16 w-16 avatar-ring">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback className="bg-gradient-brand text-white">
+              {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="font-semibold text-lg">{profile?.name || 'LiveMoment User'}</div>
+            <div className="text-sm text-muted-foreground">
+              @{profile?.username || 'username'}
+            </div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+              <span><strong className="text-foreground">{profile?.followers_count || 0}</strong> follower</span>
+              <span><strong className="text-foreground">{profile?.following_count || 0}</strong> seguiti</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Metriche in evidenza */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 bg-orange-100 rounded-full flex items-center justify-center">
-              <ChefHat className="h-6 w-6 text-orange-600" />
-            </div>
-            <div className="text-2xl font-bold">{userMetrics.events}</div>
-            <div className="text-sm text-muted-foreground">Eventi</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
-              <Users className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="text-2xl font-bold">{userMetrics.connections}</div>
-            <div className="text-sm text-muted-foreground">Persone incontrate</div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 bg-pink-100 rounded-full flex items-center justify-center">
-              <Link2 className="h-6 w-6 text-pink-600" />
-            </div>
-            <div className="text-2xl font-bold">{userMetrics.meetings}</div>
-            <div className="text-sm text-muted-foreground">Connessioni</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Account Professionali */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Account Professionali</h3>
-        
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
-              onClick={() => navigate('/profili')}
+          <div className="flex flex-col gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => setShowEditForm(true)}
             >
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <Mic className="h-5 w-5 text-purple-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium">Account Artista</div>
-                <div className="text-sm text-muted-foreground">Crea il tuo profilo artista</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              Modifica
             </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
-              onClick={() => navigate('/profili')}
-            >
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium">Account Location</div>
-                <div className="text-sm text-muted-foreground">Gestisci la tua venue</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
-              onClick={() => navigate('/profili')}
-            >
-              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                <Briefcase className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium">Account Staff</div>
-                <div className="text-sm text-muted-foreground">Profilo professionale</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Preferenze */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Preferenze</h3>
-        
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
+            <Button 
+              variant="outline" 
+              size="sm"
               onClick={() => setShowChatSettings(true)}
+              className="flex items-center gap-2"
             >
-              <Settings className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1 text-left">
-                <div className="font-medium">Impostazioni</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <MessageCircle className="h-3 w-3" />
+              Chat
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <MapPin className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1">
-                <div className="font-medium">Posizione</div>
-                <div className="text-sm text-muted-foreground">
-                  Milano, Italia 🇮🇹
-                </div>
+        {/* Quick edit fields */}
+        <div className="space-y-4">
+          <QuickEditField
+            label="Bio"
+            value={profile?.bio || ''}
+            fieldKey="bio"
+            type="textarea"
+            placeholder="Racconta qualcosa di te..."
+            onUpdate={handleFieldUpdate}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <QuickEditField
+              label="Mood"
+              value={profile?.mood || ''}
+              fieldKey="mood"
+              placeholder="Es. Energico, Chill..."
+              onUpdate={handleFieldUpdate}
+            />
+            <QuickEditField
+              label="Lavoro"
+              value={profile?.job_title || ''}
+              fieldKey="job_title"
+              placeholder="La tua professione"
+              onUpdate={handleFieldUpdate}
+            />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Disponibilità */}
+      <CollapsibleSection
+        title="Disponibilità"
+        icon={<Clock className="h-4 w-4" />}
+        badge={profile?.chat_permission === 'everyone' ? 'Pubblico' : 'Limitato'}
+        badgeVariant="outline"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Indica quando sei libero per uscire o partecipare a eventi.
+          </p>
+          <AvailabilityForm />
+          <div className="space-y-2">
+            <div className="text-sm font-medium">I tuoi slot</div>
+            <AvailabilityList />
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Informazioni personali e interessi */}
+      <CollapsibleSection
+        title="Dettagli Personali"
+        icon={<Sparkles className="h-4 w-4" />}
+        badge={profile?.interests?.length ? `${profile.interests.length} interessi` : "Da completare"}
+        badgeVariant={profile?.interests?.length ? "secondary" : "outline"}
+      >
+        <div className="space-y-4">
+          {/* Status attuale */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {profile?.mood && (
+              <div>
+                <div className="text-sm font-medium">Mood</div>
+                <Badge variant="outline" className="mt-1">{profile.mood}</Badge>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            )}
+            {profile?.job_title && (
+              <div>
+                <div className="text-sm font-medium">Lavoro</div>
+                <Badge variant="secondary" className="mt-1">{profile.job_title}</Badge>
+              </div>
+            )}
+            {profile?.relationship_status && (
+              <div>
+                <div className="text-sm font-medium">Relazione</div>
+                <Badge variant="outline" className="mt-1">{profile.relationship_status}</Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Interessi */}
+          {profile?.interests && profile.interests.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Interessi</div>
+              <div className="flex flex-wrap gap-2">
+                {profile.interests.map((interest: string) => (
+                  <Badge key={interest} variant="outline" className="hover-scale">{interest}</Badge>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <Globe className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1">
-                <div className="font-medium">Lingua dell'applicazione</div>
-                <div className="text-sm text-muted-foreground">
-                  Italiano 🇮🇹
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          {/* Quick edit per relationship status */}
+          <QuickEditField
+            label="Stato Relazione"
+            value={profile?.relationship_status || ''}
+            fieldKey="relationship_status"
+            placeholder="Single, In coppia, È complicato..."
+            onUpdate={handleFieldUpdate}
+          />
+
+          {/* Notifiche */}
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div>
+              <div className="font-medium">Notifiche</div>
+              <div className="text-sm text-muted-foreground">Inviti, chat, conferme</div>
             </div>
-          </CardContent>
-        </Card>
+            <Switch defaultChecked />
+          </div>
+        </div>
+      </CollapsibleSection>
 
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <div className="font-medium">Notifiche</div>
+
+      {/* Social links */}
+      <CollapsibleSection
+        title="Social & Contatti"
+        icon={<Heart className="h-4 w-4" />}
+        badge={profile?.instagram_username ? "Collegato" : "Da collegare"}
+        badgeVariant={profile?.instagram_username ? "secondary" : "outline"}
+      >
+        <div className="space-y-4">
+          <QuickEditField
+            label="Instagram"
+            value={profile?.instagram_username || ''}
+            fieldKey="instagram_username"
+            placeholder="@il_tuo_username"
+            onUpdate={handleFieldUpdate}
+          />
+          
+          {profile?.instagram_username && (
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm">Instagram collegato</span>
+                <Badge variant="secondary" className="text-xs">Attivo</Badge>
               </div>
-              <Switch defaultChecked />
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
+      </CollapsibleSection>
 
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-              onClick={() => navigate('/abbonamento')}
-            >
-              <Crown className="h-5 w-5" />
-              <div className="flex-1 text-left">
-                <div className="font-medium">Upgrade Profilo</div>
-              </div>
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Risorse */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Risorse</h3>
-        
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
-            >
-              <HelpCircle className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1 text-left">
-                <div className="font-medium">Centro assistenza</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Button
-              variant="ghost"
-              className="w-full h-auto p-4 flex items-center gap-4 justify-start rounded-lg"
-            >
-              <BookOpen className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1 text-left">
-                <div className="font-medium">Guida</div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Sistema Amicizie */}
+      <CollapsibleSection
+        title="Amicizie & Connessioni"
+        icon={<Users className="h-4 w-4" />}
+        badge="Gestisci"
+        badgeVariant="outline"
+      >
+        <FriendshipSystem />
+      </CollapsibleSection>
 
       {/* Modals */}
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
@@ -445,6 +410,11 @@ export default function Profilo() {
           />
         </DialogContent>
       </Dialog>
+
+      <FriendSuggestionsModal
+        open={showFriendSuggestions}
+        onOpenChange={setShowFriendSuggestions}
+      />
 
     </div>
   );
