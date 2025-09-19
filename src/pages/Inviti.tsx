@@ -12,6 +12,7 @@ import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
+import { SwipeInterface } from "@/components/profile/SwipeInterface";
 import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
@@ -28,6 +29,7 @@ export default function Inviti() {
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [inviteViewMode, setInviteViewMode] = useState<"swipe" | "list">("list");
+  const [friendsViewMode, setFriendsViewMode] = useState<"swipe" | "list">("list");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -71,6 +73,18 @@ export default function Inviti() {
     const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
     return matchesSearch && matchesAvailability && matchesDistance;
   });
+
+  // Transform users for SwipeInterface (matches SwipeUser interface)
+  const swipeUsers = filteredUsers.map(user => ({
+    id: user.id,
+    name: user.name,
+    avatar_url: user.avatar_url,
+    city: user.city,
+    is_available: user.is_available,
+    preferred_moments: user.preferred_moments,
+    age: user.age,
+    distance_km: user.distance_km
+  }));
   const handleInvite = (userId: string, userName?: string) => {
     const user = transformedUsers.find(u => u.id === userId);
     const name = userName || user?.name;
@@ -158,11 +172,43 @@ export default function Inviti() {
         </TabsContent>
 
         <TabsContent value="amici" className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
-            <p className="text-muted-foreground text-sm mb-4">
-              Trova persone interessanti vicino a te per nuove amicizie
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Scopri nuovi amici</h2>
+              <p className="text-muted-foreground text-sm mb-4">
+                Trova persone interessanti vicino a te per nuove amicizie
+              </p>
+            </div>
+            
+            {/* Toggle between list and swipe view for friends */}
+            <div className="bg-muted/50 backdrop-blur-sm p-1 rounded-lg border border-muted-foreground/20 shadow-sm">
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant={friendsViewMode === "list" ? "default" : "ghost"}
+                  onClick={() => setFriendsViewMode("list")}
+                  className={`h-8 w-8 p-0 transition-all duration-200 ${
+                    friendsViewMode === "list" 
+                      ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <LayoutGrid size={16} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant={friendsViewMode === "swipe" ? "default" : "ghost"}
+                  onClick={() => setFriendsViewMode("swipe")}
+                  className={`h-8 w-8 p-0 transition-all duration-200 ${
+                    friendsViewMode === "swipe" 
+                      ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Heart size={16} />
+                </Button>
+              </div>
+            </div>
           </div>
 
           <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
@@ -170,21 +216,35 @@ export default function Inviti() {
           {locationLoading ? <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
-            </div> : filteredUsers.length > 0 ? <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
-              </div>
-              {filteredUsers.length > 6 && <div className="text-center pt-4">
-                  <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
-                    Vedi altri {filteredUsers.length - 6} amici
-                  </Button>
-                </div>}
-            </div> : <div className="text-center py-12">
+            </div> : filteredUsers.length > 0 ? <>
+              {/* Swipe Interface for Friends */}
+              {friendsViewMode === "swipe" ? (
+                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <SwipeInterface 
+                    users={swipeUsers} 
+                    onInvite={handleInvite} 
+                    onPass={handlePass} 
+                  />
+                </div>
+              ) : (
+                /* List View for Friends */
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {filteredUsers.slice(0, 6).map(user => <UserDiscoveryCard key={user.id} user={user} onInvite={handleInvite} />)}
+                  </div>
+                  {filteredUsers.length > 6 && <div className="text-center pt-4">
+                      <Button onClick={() => navigate("/trova-amici")} variant="outline" className="w-full">
+                        Vedi altri {filteredUsers.length - 6} amici
+                      </Button>
+                    </div>}
+                </div>
+              )}
+            </> : <div className="text-center py-12">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
