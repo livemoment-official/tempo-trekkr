@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { SwipeUserCard } from './SwipeUserCard';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Users, Heart } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { RotateCcw, Users, Heart, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 interface SwipeUser {
   id: string;
   name: string;
@@ -17,13 +19,18 @@ interface SwipeInterfaceProps {
   users: SwipeUser[];
   onInvite: (userId: string, userName: string) => void;
   onPass: (userId: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 export function SwipeInterface({
   users,
   onInvite,
-  onPass
+  onPass,
+  searchQuery = "",
+  onSearchChange
 }: SwipeInterfaceProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [passedUsers, setPassedUsers] = useState<Set<string>>(new Set());
   const [animatingCard, setAnimatingCard] = useState<string | null>(null);
@@ -81,8 +88,23 @@ export function SwipeInterface({
       </div>;
   }
   return <div className="relative h-full min-h-[500px] max-h-[calc(100vh-200px)] overflow-hidden">
+      {/* Mobile Search Bar */}
+      {isMobile && onSearchChange && (
+        <div className="absolute top-4 left-4 right-4 z-50">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cerca per nome, città, interessi..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9 bg-background/95 backdrop-blur-sm border-border/50 shadow-lg"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Cards Stack */}
-      <div className="relative h-full w-full">
+      <div className={`relative h-full w-full ${isMobile && onSearchChange ? 'pt-16' : ''}`}>
         {displayUsers.map((user, index) => <SwipeUserCard key={user.id} user={user} onSwipeLeft={handleSwipeLeft} onSwipeRight={handleSwipeRight} isTop={index === 0} className={animatingCard === user.id ? "animate-fade-out" : ""} style={{
         zIndex: displayUsers.length - index,
         scale: index === 0 ? 1 : 0.95 - index * 0.05,
@@ -91,7 +113,7 @@ export function SwipeInterface({
       </div>
 
       {/* Progress Indicator - Mobile optimized */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40">
+      <div className={`absolute ${isMobile && onSearchChange ? 'top-20' : 'top-4'} left-1/2 transform -translate-x-1/2 z-40`}>
         <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
           <span className="text-white text-xs font-medium">
             {Math.min(currentIndex + 1, availableUsers.length)} / {availableUsers.length}

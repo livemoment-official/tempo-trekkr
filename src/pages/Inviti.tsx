@@ -19,6 +19,7 @@ import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters"
 import { useNavigate } from "react-router-dom";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 export default function Inviti() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -188,7 +189,19 @@ export default function Inviti() {
             </div>
           </div>
 
-          <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
+          {/* Only show filters when not in swipe mode on mobile */}
+          {!(isMobile && friendsViewMode === "swipe") && (
+            <FriendsSearchFilters 
+              searchQuery={searchQuery} 
+              onSearchChange={setSearchQuery} 
+              selectedMood={selectedMood} 
+              onMoodChange={setSelectedMood} 
+              radiusKm={radiusKm} 
+              onRadiusChange={setRadiusKm} 
+              availabilityFilter={availabilityFilter} 
+              onAvailabilityChange={setAvailabilityFilter} 
+            />
+          )}
           
           {locationLoading ? <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
@@ -196,7 +209,13 @@ export default function Inviti() {
             </div> : filteredUsers.length > 0 ? <>
               {/* Swipe Interface for Friends */}
               {friendsViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <SwipeInterface users={swipeUsers} onInvite={handleInvite} onPass={handlePass} />
+                  <SwipeInterface 
+                    users={swipeUsers} 
+                    onInvite={handleInvite} 
+                    onPass={handlePass}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                  />
                 </div> : (/* List View for Friends */
           <div className="space-y-4">
                   <div className="flex items-center justify-between">
