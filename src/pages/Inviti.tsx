@@ -125,25 +125,33 @@ export default function Inviti() {
         
         <TabsContent value="ricevuti" className="space-y-6">
           {/* Toggle between swipe and list view for invites */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">I tuoi inviti</h2>
-            <div className="flex items-center gap-2 bg-secondary/50 rounded-lg p-1">
+            <div className="flex items-center bg-muted/60 rounded-xl p-1 shadow-card">
               <Button
-                variant={inviteViewMode === "list" ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
                 onClick={() => setInviteViewMode("list")}
-                className="h-8 px-3 text-xs"
+                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
+                  inviteViewMode === "list" 
+                    ? "bg-primary text-primary-foreground shadow-brand hover:bg-primary/90" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
               >
-                <LayoutGrid className="h-3 w-3 mr-1" />
+                <LayoutGrid className="h-4 w-4 mr-2" />
                 Lista
               </Button>
               <Button
-                variant={inviteViewMode === "swipe" ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
                 onClick={() => setInviteViewMode("swipe")}
-                className="h-8 px-3 text-xs"
+                className={`h-9 px-4 text-sm font-medium transition-all duration-300 rounded-lg ${
+                  inviteViewMode === "swipe" 
+                    ? "gradient-brand text-white shadow-brand hover:opacity-90" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
               >
-                <Heart className="h-3 w-3 mr-1" />
+                <Heart className="h-4 w-4 mr-2" />
                 Swipe
               </Button>
             </div>
