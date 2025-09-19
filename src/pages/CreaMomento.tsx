@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Camera, ChevronLeft, Sparkles } from "lucide-react";
+import { Camera, ChevronLeft, Sparkles, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -16,7 +16,13 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 export default function CreaMomento() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/momento";
+  
+  // Get invite parameters from URL
+  const inviteUserId = searchParams.get('inviteUserId');
+  const inviteUserName = searchParams.get('inviteUserName');
+  const isInviteFlow = Boolean(inviteUserId && inviteUserName);
   const { toast } = useToast();
   const { uploadGalleryImage, isUploading } = useImageUpload();
   const { titleSuggestions, categorySuggestions, generateSuggestions } = useAISuggestions();
@@ -170,10 +176,41 @@ export default function CreaMomento() {
         console.error('Database error:', error);
         throw error;
       }
+
+      // If this is an invite flow, create the invite
+      if (isInviteFlow && inviteUserId && data?.id) {
+        try {
+          // Create invitation using the correct table structure
+          const inviteData = {
+            host_id: user.id,
+            title: `Invito per: ${momentData.title}`,
+            description: `${inviteUserName} sei invitato/a a questo momento!`,
+            participants: [inviteUserId],
+            invite_count: 1,
+            status: 'pending',
+            when_at: when_at.toISOString(),
+            place: momentData.location ? {
+              name: momentData.location,
+              coordinates: locationCoordinates
+            } : null
+          };
+
+          const { error: inviteError } = await supabase.from('invites').insert([inviteData]);
+          if (inviteError) {
+            console.error('Invite creation error:', inviteError);
+            // Don't throw - moment was created successfully
+          }
+        } catch (inviteErr) {
+          console.error('Failed to create invite:', inviteErr);
+          // Don't throw - moment was created successfully  
+        }
+      }
       
       toast({
         title: "Momento creato! 🎉",
-        description: "Il tuo momento è stato pubblicato in 30 secondi",
+        description: isInviteFlow 
+          ? `Momento creato e invito inviato a ${inviteUserName}!`
+          : "Il tuo momento è stato pubblicato in 30 secondi",
         duration: 4000
       });
       navigate("/");
@@ -263,9 +300,27 @@ export default function CreaMomento() {
               <Button variant="ghost" size="sm" onClick={() => setStep('camera')}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <CardTitle className="text-center flex-1">Completa i dettagli</CardTitle>
+              <CardTitle className="text-center flex-1">
+                {isInviteFlow ? "Invita a un Momento" : "Completa i dettagli"}
+              </CardTitle>
               <div className="w-8" />
             </div>
+            {/* Invite Flow Info */}
+            {isInviteFlow && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Stai invitando {inviteUserName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Crea un momento insieme a questa persona
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Photo Preview */}
