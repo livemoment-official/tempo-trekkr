@@ -290,31 +290,7 @@ export default function CreaMomento() {
 
       {/* Step 2: Form */}
       {step === 'form' && <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="sm" onClick={() => setStep('camera')}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="text-center flex-1">
-                {isInviteFlow ? "Invita a un Momento" : "Completa i dettagli"}
-              </CardTitle>
-              <div className="w-8" />
-            </div>
-            {/* Invite Flow Info */}
-            {isInviteFlow && <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mt-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Stai invitando {inviteUserName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Crea un momento insieme a questa persona
-                    </p>
-                  </div>
-                </div>
-              </div>}
-          </CardHeader>
+          
           <CardContent className="space-y-4">
             {/* Photo Preview */}
             {photoPreview && <div className="relative h-32 rounded-lg overflow-hidden">
