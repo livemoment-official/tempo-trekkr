@@ -49,13 +49,10 @@ export function useMomentDetail(momentId: string) {
     setError(null);
 
     try {
-      // Fetch moment data with participant count
+      // Fetch moment data
       const { data: momentData, error: momentError } = await supabase
         .from('moments')
-        .select(`
-          *,
-          participant_count:moment_participants(count)
-        `)
+        .select('*')
         .eq('id', momentId)
         .single();
 
@@ -77,6 +74,13 @@ export function useMomentDetail(momentId: string) {
       if (hostError) {
         console.warn('Could not fetch host profile:', hostError);
       }
+
+      // Get participant count from relational table
+      const { count: participantCount } = await supabase
+        .from('moment_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('moment_id', momentId)
+        .eq('status', 'confirmed');
 
       // Get current user to check edit permissions
       const { data: { user } } = await supabase.auth.getUser();
@@ -109,7 +113,7 @@ export function useMomentDetail(momentId: string) {
         ticketing: momentData.ticketing,
         created_at: momentData.created_at,
         updated_at: momentData.updated_at,
-        participant_count: Array.isArray(momentData.participant_count) ? momentData.participant_count.length : 0,
+        participant_count: participantCount || 0,
         can_edit: canEdit
       };
 

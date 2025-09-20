@@ -120,7 +120,7 @@ export function useMoments() {
         .from('moments')
         .select(`
           *,
-          participant_count:moment_participants(count)
+          moment_participants!inner(user_id, status)
         `)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
@@ -260,10 +260,18 @@ export function useMoments() {
         });
       }
 
-      // Add participant count from relational table
-      processedMoments = processedMoments.map(moment => ({
-        ...moment,
-        participant_count: Array.isArray(moment.participant_count) ? moment.participant_count.length : 0
+      // Calculate participant count from relational table data
+      processedMoments = await Promise.all(processedMoments.map(async moment => {
+        const { count } = await supabase
+          .from('moment_participants')
+          .select('*', { count: 'exact', head: true })
+          .eq('moment_id', moment.id)
+          .eq('status', 'confirmed');
+        
+        return {
+          ...moment,
+          participant_count: count || 0
+        };
       }));
 
       if (resetPage) {
@@ -287,25 +295,43 @@ export function useMoments() {
     }
   }, [filters, page, location, getUserLocation, toast]);
 
+  // Helper function to get moment IDs for a user
+  const getUserMomentIds = async (userId: string): Promise<string[]> => {
+    const { data } = await supabase
+      .from('moment_participants')
+      .select('moment_id')
+      .eq('user_id', userId)
+      .eq('status', 'confirmed');
+    
+    return data?.map(p => p.moment_id) || [];
+  };
+
   // Load user's joined moments
   const loadUserMoments = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Get moment IDs where user participates
+      const participantMomentIds = await getUserMomentIds(user.id);
+      
+      let query = supabase
         .from('moments')
-        .select(`
-          *,
-          participant_count:moment_participants(count),
-          user_participation:moment_participants!inner(user_id)
-        `)
-        .or(`host_id.eq.${user.id},user_participation.user_id.eq.${user.id}`)
+        .select('*')
         .order('created_at', { ascending: false });
+      
+      // Filter for moments where user is host OR participant
+      if (participantMomentIds.length > 0) {
+        query = query.or(`host_id.eq.${user.id},id.in.(${participantMomentIds.join(',')})`);
+      } else {
+        query = query.eq('host_id', user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
-      const processedMoments = (data || []).map(moment => {
+      const processedMoments = await Promise.all((data || []).map(async moment => {
         // Cast place to proper type
         const place = moment.place as any;
         const validPlace = place && typeof place === 'object' && place.lat && place.lng 
@@ -317,13 +343,20 @@ export function useMoments() {
             }
           : undefined;
 
+        // Get participant count from relational table
+        const { count } = await supabase
+          .from('moment_participants')
+          .select('*', { count: 'exact', head: true })
+          .eq('moment_id', moment.id)
+          .eq('status', 'confirmed');
+
         return {
           ...moment,
           place: validPlace,
           host: undefined, // Will be populated separately if needed
-          participant_count: Array.isArray(moment.participant_count) ? moment.participant_count.length : 0
+          participant_count: count || 0
         };
-      }) as unknown as Moment[];
+      })) as unknown as Moment[];
 
       setMoments(processedMoments);
     } catch (error) {
