@@ -16,33 +16,7 @@ import { useProfileMetrics } from '@/hooks/useProfileMetrics';
 import { QuickAvatarUpload } from '@/components/profile/QuickAvatarUpload';
 import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
 import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
-import { 
-  Edit, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Camera,
-  Settings, 
-  Bell, 
-  Globe, 
-  MessageCircle,
-  Heart,
-  Award,
-  HelpCircle,
-  BookOpen,
-  Gift,
-  Music,
-  Briefcase,
-  User,
-  Shield,
-  Smartphone,
-  ChevronRight,
-  Crown,
-  UserPlus,
-  UserCheck,
-  Clock,
-  Trophy
-} from 'lucide-react';
+import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy } from 'lucide-react';
 import { CollapsibleSection } from '@/components/profile/CollapsibleSection';
 import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
 import { AvailabilityToggle } from '@/components/profile/AvailabilityToggle';
@@ -61,7 +35,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const {
+    user,
+    isAuthenticated
+  } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
@@ -207,11 +184,7 @@ export default function Profilo() {
       <Card className="shadow-card">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <QuickAvatarUpload 
-              currentAvatarUrl={profile?.avatar_url}
-              fallbackText={profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
-              onAvatarUpdate={() => fetchProfile()}
-            />
+            <QuickAvatarUpload currentAvatarUrl={profile?.avatar_url} fallbackText={profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'} onAvatarUpdate={() => fetchProfile()} />
             
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
@@ -307,10 +280,7 @@ export default function Profilo() {
           
           {/* Lista disponibilità programmate */}
           <div className="space-y-3">
-            <CollapsibleSection 
-              title="Le tue disponibilità programmate"
-              defaultOpen={false}
-            >
+            <CollapsibleSection title="Le tue disponibilità programmate" defaultOpen={false}>
               <AvailabilityList />
             </CollapsibleSection>
           </div>
@@ -319,14 +289,12 @@ export default function Profilo() {
 
       {/* Account Professionali */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Account Professionali</h2>
+        <h2 className="text-lg font-semibold">Account Pro</h2>
         
         <Card className="shadow-card hover:shadow-sm transition-smooth">
           <CardContent className="p-4">
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                Espandi il tuo profilo con account professionali per artisti, location e staff
-              </div>
+              <div className="text-sm text-muted-foreground">Espandi il tuo profilo con account professionali per artisti, location e staff.  Compari come suggerimento per quando si devono organizzare eventi e ricevi richieste.</div>
               
               <div className="grid grid-cols-1 gap-3">
                 <button onClick={() => setShowArtistWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
@@ -508,28 +476,17 @@ export default function Profilo() {
       </div>
 
       {/* Artist Registration Wizard */}
-      {showArtistWizard && (
-        <div className="fixed inset-0 bg-background z-50 overflow-auto">
-          <ArtistRegistrationWizard
-            onComplete={() => setShowArtistWizard(false)}
-            onCancel={() => setShowArtistWizard(false)}
-          />
-        </div>
-      )}
+      {showArtistWizard && <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <ArtistRegistrationWizard onComplete={() => setShowArtistWizard(false)} onCancel={() => setShowArtistWizard(false)} />
+        </div>}
 
       {/* Location Registration Wizard */}
-      {showVenueWizard && (
-        <div className="fixed inset-0 bg-background z-50 overflow-auto">
-          <LocationRegistrationWizard
-            onComplete={() => setShowVenueWizard(false)}
-            onCancel={() => setShowVenueWizard(false)}
-          />
-        </div>
-      )}
+      {showVenueWizard && <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <LocationRegistrationWizard onComplete={() => setShowVenueWizard(false)} onCancel={() => setShowVenueWizard(false)} />
+        </div>}
 
       {/* Staff Registration Wizard - Placeholder */}
-      {showStaffWizard && (
-        <div className="fixed inset-0 bg-background z-50 overflow-auto p-6">
+      {showStaffWizard && <div className="fixed inset-0 bg-background z-50 overflow-auto p-6">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold mb-4">Registrazione Staff</h2>
             <p className="text-muted-foreground mb-4">
@@ -537,37 +494,19 @@ export default function Profilo() {
             </p>
             <Button onClick={() => setShowStaffWizard(false)}>Chiudi</Button>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Profile Edit Form */}
-      {showEditForm && (
-        <ProfileEditForm
-          profile={profile}
-          onClose={() => setShowEditForm(false)}
-        />
-      )}
+      {showEditForm && <ProfileEditForm profile={profile} onClose={() => setShowEditForm(false)} />}
 
       {/* Chat Permission Settings */}
-      {showChatSettings && (
-        <ChatPermissionSettings
-          currentPermission={profile?.chat_permission}
-          onUpdate={handleChatPermissionUpdate}
-          onClose={() => setShowChatSettings(false)}
-        />
-      )}
+      {showChatSettings && <ChatPermissionSettings currentPermission={profile?.chat_permission} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />}
 
       {/* Friend Requests Modal */}
-      <FriendRequestsModal
-        open={showFriendRequests}
-        onOpenChange={(open) => setShowFriendRequests(open)}
-      />
+      <FriendRequestsModal open={showFriendRequests} onOpenChange={open => setShowFriendRequests(open)} />
 
       {/* Friend Suggestions Modal */}
-      <FriendSuggestionsModal
-        open={showFriendSuggestions}
-        onOpenChange={(open) => setShowFriendSuggestions(open)}
-      />
+      <FriendSuggestionsModal open={showFriendSuggestions} onOpenChange={open => setShowFriendSuggestions(open)} />
 
     </div>;
 }
