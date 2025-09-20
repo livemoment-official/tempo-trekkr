@@ -51,7 +51,10 @@ import { FriendRequestsModal } from '@/components/profile/FriendRequestsModal';
 import { FriendSuggestionsModal } from '@/components/profile/FriendSuggestionsModal';
 import { OnboardingModal } from '@/components/profile/OnboardingModal';
 import { AvailabilityList } from '@/components/availability/AvailabilityList';
+import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
+import { FriendshipSystem } from '@/components/friendship/FriendshipSystem';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useFriendship } from '@/hooks/useFriendship';
 import { useLocation, useNavigate } from 'react-router-dom';
 export default function Profilo() {
@@ -503,25 +506,70 @@ export default function Profilo() {
         </CollapsibleSection>
       </div>
 
-      {/* Modals */}
-      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <ProfileEditForm onClose={() => {
-          setShowEditForm(false);
-          fetchProfile();
-        }} profile={profile} />
-        </DialogContent>
-      </Dialog>
+      {/* Artist Registration Wizard */}
+      {showArtistWizard && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <ArtistRegistrationWizard
+            onComplete={() => setShowArtistWizard(false)}
+            onCancel={() => setShowArtistWizard(false)}
+          />
+        </div>
+      )}
 
-      <Dialog open={showChatSettings} onOpenChange={setShowChatSettings}>
-        <DialogContent className="max-w-md">
-          <ChatPermissionSettings currentPermission={profile?.chat_permission || 'everyone'} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />
-        </DialogContent>
-      </Dialog>
+      {/* Venue Registration Wizard - Placeholder */}
+      {showVenueWizard && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto p-6">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-4">Registrazione Location</h2>
+            <p className="text-muted-foreground mb-4">
+              Il wizard per le location sarà disponibile presto.
+            </p>
+            <Button onClick={() => setShowVenueWizard(false)}>Chiudi</Button>
+          </div>
+        </div>
+      )}
 
-      <FriendSuggestionsModal open={showFriendSuggestions} onOpenChange={setShowFriendSuggestions} />
+      {/* Staff Registration Wizard - Placeholder */}
+      {showStaffWizard && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto p-6">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-4">Registrazione Staff</h2>
+            <p className="text-muted-foreground mb-4">
+              Il wizard per lo staff sarà disponibile presto.
+            </p>
+            <Button onClick={() => setShowStaffWizard(false)}>Chiudi</Button>
+          </div>
+        </div>
+      )}
 
-      <FriendRequestsModal open={showFriendRequests} onOpenChange={setShowFriendRequests} />
+      {/* Profile Edit Form */}
+      {showEditForm && (
+        <ProfileEditForm
+          profile={profile}
+          onClose={() => setShowEditForm(false)}
+        />
+      )}
+
+      {/* Chat Permission Settings */}
+      {showChatSettings && (
+        <ChatPermissionSettings
+          currentPermission={profile?.chat_permission}
+          onUpdate={handleChatPermissionUpdate}
+          onClose={() => setShowChatSettings(false)}
+        />
+      )}
+
+      {/* Friend Requests Modal */}
+      <FriendRequestsModal
+        open={showFriendRequests}
+        onOpenChange={(open) => setShowFriendRequests(open)}
+      />
+
+      {/* Friend Suggestions Modal */}
+      <FriendSuggestionsModal
+        open={showFriendSuggestions}
+        onOpenChange={(open) => setShowFriendSuggestions(open)}
+      />
 
     </div>;
 }
