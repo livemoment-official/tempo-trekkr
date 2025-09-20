@@ -16,7 +16,7 @@ import { useProfileMetrics } from '@/hooks/useProfileMetrics';
 import { QuickAvatarUpload } from '@/components/profile/QuickAvatarUpload';
 import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
 import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
-import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy } from 'lucide-react';
+import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy, LogOut } from 'lucide-react';
 import { CollapsibleSection } from '@/components/profile/CollapsibleSection';
 import { ProfileEditDialog } from '@/components/profile/ProfileEditDialog';
 import { ProfilePhotoPreview } from '@/components/profile/ProfilePhotoPreview';
@@ -26,7 +26,7 @@ import { EnhancedPhotoGallery } from '@/components/profile/EnhancedPhotoGallery'
 import { FriendRequestsModal } from '@/components/profile/FriendRequestsModal';
 import { FriendSuggestionsModal } from '@/components/profile/FriendSuggestionsModal';
 import { OnboardingModal } from '@/components/profile/OnboardingModal';
-import { AvailabilityList } from '@/components/availability/AvailabilityList';
+import { EnhancedAvailabilityList } from '@/components/availability/EnhancedAvailabilityList';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
 import { FriendshipSystem } from '@/components/friendship/FriendshipSystem';
 import { Switch } from '@/components/ui/switch';
@@ -36,10 +36,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    user,
-    isAuthenticated
-  } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
@@ -122,11 +119,13 @@ export default function Profilo() {
       chat_permission: newPermission
     });
   };
-  const handleFieldUpdate = (fieldKey: string, value: string) => {
-    setProfile({
-      ...profile,
-      [fieldKey]: value
-    });
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
   if (!isAuthenticated) {
     return <AuthGuard title="Accedi per vedere il profilo" description="Accedi per gestire il tuo profilo e le tue preferenze">
@@ -281,7 +280,7 @@ export default function Profilo() {
       {/* Photo Preview Section */}
       <ProfilePhotoPreview profile={profile} onProfileUpdate={fetchProfile} />
 
-      {/* Disponibilità & Connessioni - Priorità Alta */}
+      {/* Enhanced Availability Section - More Prominent */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Clock className="h-5 w-5" />
@@ -289,10 +288,10 @@ export default function Profilo() {
         </h2>
         
         <div className="grid grid-cols-1 gap-3">
-          {/* Gestione Disponibilità */}
+          {/* Quick availability toggle */}
           <AvailabilityToggle />
           
-          {/* Lista disponibilità programmate - più prominente */}
+          {/* Enhanced scheduled availability */}
           <Card className="shadow-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
@@ -305,17 +304,17 @@ export default function Profilo() {
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground mb-3">
-                Le persone possono invitarti durante questi orari
+                Altri utenti possono vedere quando sei libero e invitarti a eventi
               </div>
-              <AvailabilityList />
+              <EnhancedAvailabilityList />
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Account Professionali */}
+      {/* Sezione Premi - Moved Up */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Account Pro</h2>
+        <h2 className="text-lg font-semibold">Premi</h2>
         
         <Card className="shadow-card hover:shadow-sm transition-smooth">
           <CardContent className="p-4">
@@ -458,16 +457,16 @@ export default function Profilo() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-card hover:shadow-sm transition-smooth cursor-pointer" onClick={() => navigate('/premi')}>
+          <Card className="shadow-card hover:shadow-elevated transition-smooth cursor-pointer" onClick={() => navigate('/premi')}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500">
-                    <Trophy className="h-4 w-4 text-white" />
+                  <div className="p-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500">
+                    <Trophy className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <span className="font-medium">🏆 Premi</span>
-                    <div className="text-xs text-muted-foreground">Guadagna punti e sblocca ricompense</div>
+                    <span className="font-medium text-lg">🏆 Premi e Ricompense</span>
+                    <div className="text-sm text-muted-foreground">Guadagna punti e sblocca ricompense speciali</div>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -475,6 +474,22 @@ export default function Profilo() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Logout Section */}
+      <div className="space-y-4">
+        <Card className="shadow-card hover:shadow-sm transition-smooth">
+          <CardContent className="p-4">
+            <Button 
+              variant="ghost" 
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+              Esci dall'account
+            </Button>
+           </CardContent>
+        </Card>
       </div>
 
       {/* Collapsible sections for advanced features */}
@@ -491,7 +506,7 @@ export default function Profilo() {
             <AvailabilityForm />
             <div className="space-y-2">
               <div className="text-sm font-medium">I tuoi slot</div>
-              <AvailabilityList />
+              <EnhancedAvailabilityList />
             </div>
           </div>
         </CollapsibleSection>
@@ -521,6 +536,13 @@ export default function Profilo() {
             <Button onClick={() => setShowStaffWizard(false)}>Chiudi</Button>
           </div>
         </div>}
+
+      {/* Profile Edit Dialog */}
+      <ProfileEditDialog 
+        open={showEditForm} 
+        onClose={() => setShowEditForm(false)} 
+        profile={profile} 
+      />
 
       {/* Chat Permission Settings */}
       {showChatSettings && <ChatPermissionSettings currentPermission={profile?.chat_permission} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />}
