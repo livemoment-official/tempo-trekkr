@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCreateAvailability } from "@/hooks/useAvailability";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,13 +24,38 @@ export function AvailabilityForm() {
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("22:00");
   const [shareable, setShareable] = useState(true);
+  const [isQuickMode, setIsQuickMode] = useState(true);
   const createMutation = useCreateAvailability();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id));
   }, []);
 
-  const onSubmit = async () => {
+  const onSubmitQuick = async () => {
+    if (!userId) {
+      toast({ title: "Accedi per continuare", description: "Devi effettuare l'accesso per salvare le disponibilità." });
+      return;
+    }
+
+    const now = new Date();
+    const autoExpiry = new Date();
+    autoExpiry.setHours(autoExpiry.getHours() + 4); // Auto-expire in 4 hours
+
+    try {
+      await createMutation.mutateAsync({
+        user_id: userId,
+        start_at: now.toISOString(),
+        end_at: autoExpiry.toISOString(),
+        is_on: true,
+        shareable: true,
+      });
+      toast({ title: "Disponibile a uscire!", description: "Sarai visibile per le prossime 4 ore." });
+    } catch (e: any) {
+      toast({ title: "Errore", description: e.message || "Impossibile salvare" });
+    }
+  };
+
+  const onSubmitScheduled = async () => {
     if (!userId) {
       toast({ title: "Accedi per continuare", description: "Devi effettuare l'accesso per salvare le disponibilità." });
       return;
@@ -49,38 +76,94 @@ export function AvailabilityForm() {
         is_on: true,
         shareable,
       });
-      toast({ title: "Disponibilità aggiunta", description: "Lo slot è stato salvato." });
+      toast({ title: "Disponibilità programmata", description: "Lo slot è stato salvato." });
     } catch (e: any) {
       toast({ title: "Errore", description: e.message || "Impossibile salvare" });
     }
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <div>
-        <Label className="mb-2 block">Giorno</Label>
-        <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+    <div className="space-y-6">
+      {/* Mode Selector */}
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          variant={isQuickMode ? "default" : "outline"}
+          onClick={() => setIsQuickMode(true)}
+          className="h-auto py-3"
+        >
+          <Clock className="w-4 h-4 mr-2" />
+          <div className="text-left">
+            <div className="font-medium">Disponibile ora</div>
+            <div className="text-xs opacity-70">Per le prossime 4 ore</div>
+          </div>
+        </Button>
+        <Button
+          variant={!isQuickMode ? "default" : "outline"}
+          onClick={() => setIsQuickMode(false)}
+          className="h-auto py-3"
+        >
+          <CalendarIcon className="w-4 h-4 mr-2" />
+          <div className="text-left">
+            <div className="font-medium">Programma</div>
+            <div className="text-xs opacity-70">Scegli data e ora</div>
+          </div>
+        </Button>
       </div>
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label htmlFor="startTime">Inizio</Label>
-            <Input id="startTime" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="endTime">Fine</Label>
-            <Input id="endTime" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium">Rendi visibile a tutti</div>
-            <div className="text-xs text-muted-foreground">Se attivo, gli altri potranno vederti disponibile.</div>
-          </div>
-          <Switch checked={shareable} onCheckedChange={setShareable} />
-        </div>
-        <Button onClick={onSubmit} className="w-full">Aggiungi disponibilità</Button>
-      </div>
+
+      {isQuickMode ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Disponibile a uscire ora</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <div className="text-sm">
+                <strong>Sarai visibile per 4 ore</strong> agli altri utenti vicini che cercano qualcuno con cui uscire.
+              </div>
+            </div>
+            <Button onClick={onSubmitQuick} className="w-full" size="lg">
+              <Clock className="w-4 h-4 mr-2" />
+              Diventa disponibile ora!
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Programma disponibilità</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label className="mb-2 block">Giorno</Label>
+                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+              </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="startTime">Inizio</Label>
+                    <Input id="startTime" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="endTime">Fine</Label>
+                    <Input id="endTime" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">Visibile ad altri</div>
+                    <div className="text-xs text-muted-foreground">Altri utenti potranno trovarti</div>
+                  </div>
+                  <Switch checked={shareable} onCheckedChange={setShareable} />
+                </div>
+                <Button onClick={onSubmitScheduled} className="w-full">
+                  Programma disponibilità
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
