@@ -239,9 +239,7 @@ export function AvailabilityToggle() {
                 <Zap className="w-3 h-3 mr-1" />
                 Disponibile ora
               </Button>
-              <Button onClick={setOnlineOnly} disabled={isLoading} variant={status === 'online' ? 'default' : 'outline'} size="sm" className="h-8 text-xs">
-                Solo online
-              </Button>
+              
             </div>
             
             {/* Programmazione disponibilità */}
