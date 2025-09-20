@@ -12,6 +12,7 @@ import { UnconfirmedUserBanner } from "@/components/auth/UnconfirmedUserBanner";
 import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 import liveMomentLogo from "@/assets/livemoment-logo.png";
 const Header = ({
   onOpenSearch,
@@ -27,6 +28,7 @@ const Header = ({
     isLoading,
     user
   } = useAuth();
+  const { avatarUrl } = useProfileAvatar();
 
   // Check if we're on inviti page for transparent header
   const isInvitiPage = location.pathname === '/inviti';
@@ -64,7 +66,7 @@ const Header = ({
           {/* Profile Avatar */}
           <NavLink to="/profilo" className="relative hover-scale press-scale">
             <Avatar className="h-9 w-9 border-2 border-primary/20">
-              <AvatarImage src={user?.user_metadata?.avatar_url} alt="Profile" />
+              <AvatarImage src={avatarUrl || user?.user_metadata?.avatar_url} alt="Profile" />
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                 {user?.email?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

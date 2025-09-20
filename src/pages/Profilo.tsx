@@ -22,6 +22,7 @@ import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsMo
 import { ProfileProgressIndicator } from "@/components/profile/ProfileProgressIndicator";
 import { QuickEditField } from "@/components/profile/QuickEditField";
 import { CollapsibleSection } from "@/components/profile/CollapsibleSection";
+import { QuickAvatarUpload } from "@/components/profile/QuickAvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -178,18 +179,11 @@ export default function Profilo() {
       <Card className="shadow-card">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <div className="relative">
-              <Avatar className="h-20 w-20 avatar-ring">
-                <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="bg-gradient-brand text-white text-lg">
-                  {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
-                </AvatarFallback>
-              </Avatar>
-              {/* Status indicator */}
-              <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 border-2 border-background rounded-full flex items-center justify-center">
-                <div className="h-2 w-2 bg-white rounded-full" />
-              </div>
-            </div>
+            <QuickAvatarUpload 
+              currentAvatarUrl={profile?.avatar_url}
+              fallbackText={profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
+              onAvatarUpdate={() => fetchProfile()}
+            />
             
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
