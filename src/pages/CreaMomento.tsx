@@ -12,21 +12,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useGeolocation } from "@/hooks/useGeolocation";
-
 export default function CreaMomento() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/momento";
-  
+
   // Get invite parameters from URL
   const inviteUserId = searchParams.get('inviteUserId');
   const inviteUserName = searchParams.get('inviteUserName');
   const isInviteFlow = Boolean(inviteUserId && inviteUserName);
-  const { toast } = useToast();
-  const { uploadGalleryImage, isUploading } = useImageUpload();
-  const { titleSuggestions, categorySuggestions, generateSuggestions } = useAISuggestions();
-  const { location: userLocation, requestLocation } = useGeolocation();
+  const {
+    toast
+  } = useToast();
+  const {
+    uploadGalleryImage,
+    isUploading
+  } = useImageUpload();
+  const {
+    titleSuggestions,
+    categorySuggestions,
+    generateSuggestions
+  } = useAISuggestions();
+  const {
+    location: userLocation,
+    requestLocation
+  } = useGeolocation();
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Unified Flow States
@@ -48,17 +59,15 @@ export default function CreaMomento() {
   useEffect(() => {
     // Auto-detect location
     requestLocation().catch(() => console.log('Geolocation not available'));
-    
+
     // Auto-trigger camera
     setTimeout(() => {
       cameraInputRef.current?.click();
     }, 500);
   }, [requestLocation]);
-
   const handlePhotoCapture = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
     setPhoto(file);
     const preview = URL.createObjectURL(file);
     setPhotoPreview(preview);
@@ -80,7 +89,6 @@ export default function CreaMomento() {
     // Move to form step
     setStep('form');
   }, [userLocation, momentData.location, generateSuggestions]);
-
   const getDateTime = useCallback((timeOption: string, customDateTime?: string): Date => {
     const now = new Date();
     switch (timeOption) {
@@ -104,7 +112,6 @@ export default function CreaMomento() {
         return now;
     }
   }, []);
-
   const handleCreateMoment = useCallback(async () => {
     if (!photo || !momentData.title.trim()) {
       toast({
@@ -114,10 +121,13 @@ export default function CreaMomento() {
       });
       return;
     }
-    
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: "Errore",
@@ -162,8 +172,10 @@ export default function CreaMomento() {
           enabled: true,
           price: 0,
           currency: "EUR",
-          platform_fee_percentage: 5, // Fixed 5% Live Moment fee
-          organizer_fee_percentage: 0, // No organizer fee for moments
+          platform_fee_percentage: 5,
+          // Fixed 5% Live Moment fee
+          organizer_fee_percentage: 0,
+          // No organizer fee for moments
           ticketType: "standard"
         },
         host_id: user.id,
@@ -171,7 +183,10 @@ export default function CreaMomento() {
       };
 
       // Create moment in database
-      const { data, error } = await supabase.from('moments').insert([momentToCreate]).select().single();
+      const {
+        data,
+        error
+      } = await supabase.from('moments').insert([momentToCreate]).select().single();
       if (error) {
         console.error('Database error:', error);
         throw error;
@@ -194,8 +209,9 @@ export default function CreaMomento() {
               coordinates: locationCoordinates
             } : null
           };
-
-          const { error: inviteError } = await supabase.from('invites').insert([inviteData]);
+          const {
+            error: inviteError
+          } = await supabase.from('invites').insert([inviteData]);
           if (inviteError) {
             console.error('Invite creation error:', inviteError);
             // Don't throw - moment was created successfully
@@ -205,12 +221,9 @@ export default function CreaMomento() {
           // Don't throw - moment was created successfully  
         }
       }
-      
       toast({
         title: "Momento creato! 🎉",
-        description: isInviteFlow 
-          ? `Momento creato e invito inviato a ${inviteUserName}!`
-          : "Il tuo momento è stato pubblicato in 30 secondi",
+        description: isInviteFlow ? `Momento creato e invito inviato a ${inviteUserName}!` : "Il tuo momento è stato pubblicato in 30 secondi",
         duration: 4000
       });
       navigate("/");
@@ -223,7 +236,6 @@ export default function CreaMomento() {
       });
     }
   }, [photo, momentData, userLocation, uploadGalleryImage, getDateTime, toast, navigate]);
-
   const resetFlow = useCallback(() => {
     setStep('camera');
     setPhoto(null);
@@ -237,9 +249,7 @@ export default function CreaMomento() {
       moodTag: "Spontaneo"
     });
   }, []);
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Crea Momento</title>
         <meta name="description" content="Crea un nuovo momento condiviso su LiveMoment." />
@@ -247,8 +257,7 @@ export default function CreaMomento() {
       </Helmet>
 
       {/* Step 1: Camera */}
-      {step === 'camera' && (
-        <Card>
+      {step === 'camera' && <Card>
           <CardHeader className="text-center pb-4">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Camera className="h-8 w-8 text-primary" />
@@ -257,24 +266,20 @@ export default function CreaMomento() {
             <p className="text-sm text-muted-foreground">Cattura il momento che vuoi condividere</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {photoPreview ? (
-              <div className="relative">
+            {photoPreview ? <div className="relative">
                 <img src={photoPreview} alt="Preview" className="w-full h-64 object-cover rounded-lg" />
                 <Button variant="outline" size="sm" className="absolute top-2 right-2" onClick={() => cameraInputRef.current?.click()}>
                   <Camera className="h-4 w-4 mr-2" />
                   Cambia foto
                 </Button>
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-primary/25 rounded-lg p-8 text-center">
+              </div> : <div className="border-2 border-dashed border-primary/25 rounded-lg p-8 text-center">
                 <Camera className="mx-auto h-12 w-12 text-primary/50 mb-4" />
                 <Button onClick={() => cameraInputRef.current?.click()} className="mb-2">
                   <Camera className="mr-2 h-4 w-4" />
                   Scatta foto
                 </Button>
                 <p className="text-xs text-muted-foreground">o seleziona dalla galleria</p>
-              </div>
-            )}
+              </div>}
             
             <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoCapture} />
             
@@ -282,19 +287,15 @@ export default function CreaMomento() {
               <Button variant="outline" onClick={() => navigate("/crea")} className="flex-1">
                 Annulla
               </Button>
-              {photo && (
-                <Button onClick={() => setStep('form')} className="flex-1">
+              {photo && <Button onClick={() => setStep('form')} className="flex-1">
                   Continua
-                </Button>
-              )}
+                </Button>}
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Step 2: Form */}
-      {step === 'form' && (
-        <Card>
+      {step === 'form' && <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={() => setStep('camera')}>
@@ -306,8 +307,7 @@ export default function CreaMomento() {
               <div className="w-8" />
             </div>
             {/* Invite Flow Info */}
-            {isInviteFlow && (
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mt-2">
+            {isInviteFlow && <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mt-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                     <Heart className="w-4 h-4 text-primary" />
@@ -319,188 +319,115 @@ export default function CreaMomento() {
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Photo Preview */}
-            {photoPreview && (
-              <div className="relative h-32 rounded-lg overflow-hidden">
+            {photoPreview && <div className="relative h-32 rounded-lg overflow-hidden">
                 <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-              </div>
-            )}
+              </div>}
 
             {/* Title with AI Suggestions */}
             <div>
               <Label htmlFor="title">Titolo *</Label>
-              <Input 
-                id="title" 
-                value={momentData.title} 
-                onChange={e => setMomentData(prev => ({
-                  ...prev,
-                  title: e.target.value
-                }))} 
-                placeholder="Dai un titolo al momento..." 
-                className="mt-2" 
-              />
-              {titleSuggestions.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+              <Input id="title" value={momentData.title} onChange={e => setMomentData(prev => ({
+            ...prev,
+            title: e.target.value
+          }))} placeholder="Dai un titolo al momento..." className="mt-2" />
+              {titleSuggestions.length > 0 && <div className="flex flex-wrap gap-2 mt-2">
                   <span className="text-xs text-muted-foreground flex items-center">
                     <Sparkles className="h-3 w-3 mr-1" />
                     Suggerimenti AI:
                   </span>
-                  {titleSuggestions.slice(0, 3).map((suggestion, index) => (
-                    <Button 
-                      key={index} 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs h-6" 
-                      onClick={() => setMomentData(prev => ({
-                        ...prev,
-                        title: suggestion
-                      }))}
-                    >
+                  {titleSuggestions.slice(0, 3).map((suggestion, index) => <Button key={index} variant="outline" size="sm" className="text-xs h-6" onClick={() => setMomentData(prev => ({
+              ...prev,
+              title: suggestion
+            }))}>
                       {suggestion}
-                    </Button>
-                  ))}
-                </div>
-              )}
+                    </Button>)}
+                </div>}
             </div>
 
             {/* Quick Time Selection */}
             <div>
               <Label>Quando?</Label>
               <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button 
-                  variant={momentData.selectedTime === "now" ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => setMomentData(prev => ({
-                    ...prev,
-                    selectedTime: "now"
-                  }))}
-                >
+                <Button variant={momentData.selectedTime === "now" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
+              ...prev,
+              selectedTime: "now"
+            }))}>
                   Ora
                 </Button>
-                <Button 
-                  variant={momentData.selectedTime === "tonight" ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => setMomentData(prev => ({
-                    ...prev,
-                    selectedTime: "tonight"
-                  }))}
-                >
+                <Button variant={momentData.selectedTime === "tonight" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
+              ...prev,
+              selectedTime: "tonight"
+            }))}>
                   Stasera
                 </Button>
-                <Button 
-                  variant={momentData.selectedTime === "tomorrow" ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => setMomentData(prev => ({
-                    ...prev,
-                    selectedTime: "tomorrow"
-                  }))}
-                >
+                <Button variant={momentData.selectedTime === "tomorrow" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
+              ...prev,
+              selectedTime: "tomorrow"
+            }))}>
                   Domani
                 </Button>
               </div>
-              {momentData.selectedTime === "custom" && (
-                <Input 
-                  type="datetime-local" 
-                  value={momentData.customDateTime} 
-                  onChange={e => setMomentData(prev => ({
-                    ...prev,
-                    customDateTime: e.target.value
-                  }))} 
-                  className="mt-2" 
-                />
-              )}
+              {momentData.selectedTime === "custom" && <Input type="datetime-local" value={momentData.customDateTime} onChange={e => setMomentData(prev => ({
+            ...prev,
+            customDateTime: e.target.value
+          }))} className="mt-2" />}
             </div>
 
             {/* Location */}
             <div>
               <Label>Dove?</Label>
-              <Input 
-                value={momentData.location} 
-                onChange={e => setMomentData(prev => ({
-                  ...prev,
-                  location: e.target.value
-                }))} 
-                placeholder={userLocation ? "Posizione attuale" : "Aggiungi luogo..."} 
-                className="mt-2" 
-              />
+              <Input value={momentData.location} onChange={e => setMomentData(prev => ({
+            ...prev,
+            location: e.target.value
+          }))} placeholder={userLocation ? "Posizione attuale" : "Aggiungi luogo..."} className="mt-2" />
             </div>
 
             {/* Mood Tags */}
             <div>
               <Label>Mood</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {["Spontaneo", "Relax", "Energia", "Avventura", "Social"].map(mood => (
-                  <Badge 
-                    key={mood} 
-                    variant={momentData.moodTag === mood ? "default" : "outline"} 
-                    className="cursor-pointer" 
-                    onClick={() => setMomentData(prev => ({
-                      ...prev,
-                      moodTag: mood
-                    }))}
-                  >
+                {["Spontaneo", "Relax", "Energia", "Avventura", "Social"].map(mood => <Badge key={mood} variant={momentData.moodTag === mood ? "default" : "outline"} className="cursor-pointer" onClick={() => setMomentData(prev => ({
+              ...prev,
+              moodTag: mood
+            }))}>
                     {mood}
-                  </Badge>
-                ))}
+                  </Badge>)}
               </div>
             </div>
 
             {/* Category Suggestions */}
-            {categorySuggestions.length > 0 && (
-              <div>
+            {categorySuggestions.length > 0 && <div>
                 <Label className="flex items-center">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Categorie suggerite
                 </Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {categorySuggestions.slice(0, 5).map((category, index) => (
-                    <Badge 
-                      key={index} 
-                      variant={momentData.selectedCategory === category ? "default" : "outline"} 
-                      className="cursor-pointer" 
-                      onClick={() => setMomentData(prev => ({
-                        ...prev,
-                        selectedCategory: category
-                      }))}
-                    >
+                  {categorySuggestions.slice(0, 5).map((category, index) => <Badge key={index} variant={momentData.selectedCategory === category ? "default" : "outline"} className="cursor-pointer" onClick={() => setMomentData(prev => ({
+              ...prev,
+              selectedCategory: category
+            }))}>
                       {category}
-                    </Badge>
-                  ))}
+                    </Badge>)}
                 </div>
-              </div>
-            )}
+              </div>}
 
             {/* Fee Info */}
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="flex items-center justify-between text-sm">
-                <span>Fee Live Moment</span>
-                <span className="font-medium">5%</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Fee fissa per tutti i momenti (non modificabile)
-              </p>
-            </div>
+            
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
               <Button variant="outline" onClick={resetFlow} className="flex-1">
                 Annulla
               </Button>
-              <Button 
-                onClick={handleCreateMoment} 
-                disabled={!momentData.title.trim() || isUploading} 
-                className="flex-1"
-              >
+              <Button onClick={handleCreateMoment} disabled={!momentData.title.trim() || isUploading} className="flex-1">
                 {isUploading ? "Creando..." : "Crea in 30sec"}
               </Button>
             </div>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 }
