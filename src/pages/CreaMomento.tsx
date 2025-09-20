@@ -6,17 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Camera, ChevronLeft, Sparkles, Heart } from "lucide-react";
+import { Camera, ChevronLeft, Sparkles, Heart, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useAuth } from "@/contexts/AuthContext";
+import MomentPreviewModal from "@/components/create/moment/MomentPreviewModal";
 export default function CreaMomento() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/momento";
+  const { user } = useAuth();
 
   // Get invite parameters from URL
   const inviteUserId = searchParams.get('inviteUserId');
@@ -44,15 +47,18 @@ export default function CreaMomento() {
   const [step, setStep] = useState<'camera' | 'form'>('camera');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Moment Data
   const [momentData, setMomentData] = useState({
     title: "",
+    description: "",
     selectedTime: "now" as "now" | "tonight" | "tomorrow" | "custom",
     customDateTime: "",
     location: "",
     selectedCategory: "",
-    moodTag: "Spontaneo"
+    moodTag: "Spontaneo",
+    maxParticipants: 10
   });
 
   // Auto-start camera and location on mount
@@ -156,7 +162,7 @@ export default function CreaMomento() {
       const when_at = getDateTime(momentData.selectedTime, momentData.customDateTime);
       const momentToCreate = {
         title: momentData.title,
-        description: `Creato velocemente${momentData.selectedCategory ? ` • ${momentData.selectedCategory}` : ''}`,
+        description: momentData.description || `Creato velocemente${momentData.selectedCategory ? ` • ${momentData.selectedCategory}` : ''}`,
         photos: [photoUrl],
         when_at: when_at.toISOString(),
         place: momentData.location ? {
@@ -165,7 +171,7 @@ export default function CreaMomento() {
         } : null,
         age_range_min: 18,
         age_range_max: 65,
-        max_participants: null,
+        max_participants: momentData.maxParticipants || null,
         mood_tag: momentData.moodTag,
         tags: momentData.selectedCategory ? [momentData.selectedCategory] : ["Spontaneo"],
         ticketing: {
@@ -242,11 +248,13 @@ export default function CreaMomento() {
     setPhotoPreview(null);
     setMomentData({
       title: "",
+      description: "",
       selectedTime: "now",
       customDateTime: "",
       location: "",
       selectedCategory: "",
-      moodTag: "Spontaneo"
+      moodTag: "Spontaneo",
+      maxParticipants: 10
     });
   }, []);
   return <div className="space-y-4">
@@ -300,51 +308,68 @@ export default function CreaMomento() {
             {/* Title with AI Suggestions */}
             <div>
               <Label htmlFor="title">Titolo *</Label>
-              <Input id="title" value={momentData.title} onChange={e => setMomentData(prev => ({
-            ...prev,
-            title: e.target.value
-          }))} placeholder="Dai un titolo al momento..." className="mt-2" />
+              <Input 
+                id="title" 
+                value={momentData.title} 
+                onChange={e => setMomentData(prev => ({...prev, title: e.target.value}))} 
+                placeholder="Dai un titolo al momento..." 
+                className="mt-2" 
+              />
               {titleSuggestions.length > 0 && <div className="flex flex-wrap gap-2 mt-2">
                   <span className="text-xs text-muted-foreground flex items-center">
                     <Sparkles className="h-3 w-3 mr-1" />
                     Suggerimenti AI:
                   </span>
-                  {titleSuggestions.slice(0, 3).map((suggestion, index) => <Button key={index} variant="outline" size="sm" className="text-xs h-6" onClick={() => setMomentData(prev => ({
-              ...prev,
-              title: suggestion
-            }))}>
+                  {titleSuggestions.slice(0, 3).map((suggestion, index) => <Button key={index} variant="outline" size="sm" className="text-xs h-6" onClick={() => setMomentData(prev => ({...prev, title: suggestion}))}>
                       {suggestion}
                     </Button>)}
                 </div>}
             </div>
 
+            {/* Description */}
+            <div>
+              <Label htmlFor="description">Descrizione</Label>
+              <Input 
+                id="description" 
+                value={momentData.description} 
+                onChange={e => setMomentData(prev => ({...prev, description: e.target.value}))} 
+                placeholder="Racconta qualcosa in più..." 
+                className="mt-2" 
+              />
+            </div>
+
+            {/* Max Participants */}
+            <div>
+              <Label htmlFor="maxParticipants">Max Partecipanti</Label>
+              <Input 
+                id="maxParticipants" 
+                type="number" 
+                min="2" 
+                max="50" 
+                value={momentData.maxParticipants} 
+                onChange={e => setMomentData(prev => ({...prev, maxParticipants: parseInt(e.target.value) || 10}))} 
+                className="mt-2" 
+              />
+            </div>
+
             {/* Quick Time Selection */}
             <div>
               <Label>Quando?</Label>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button variant={momentData.selectedTime === "now" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
-              ...prev,
-              selectedTime: "now"
-            }))}>
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                <Button variant={momentData.selectedTime === "now" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({...prev, selectedTime: "now"}))}>
                   Ora
                 </Button>
-                <Button variant={momentData.selectedTime === "tonight" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
-              ...prev,
-              selectedTime: "tonight"
-            }))}>
+                <Button variant={momentData.selectedTime === "tonight" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({...prev, selectedTime: "tonight"}))}>
                   Stasera
                 </Button>
-                <Button variant={momentData.selectedTime === "tomorrow" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({
-              ...prev,
-              selectedTime: "tomorrow"
-            }))}>
+                <Button variant={momentData.selectedTime === "tomorrow" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({...prev, selectedTime: "tomorrow"}))}>
                   Domani
                 </Button>
+                <Button variant={momentData.selectedTime === "custom" ? "default" : "outline"} size="sm" onClick={() => setMomentData(prev => ({...prev, selectedTime: "custom"}))}>
+                  Altro
+                </Button>
               </div>
-              {momentData.selectedTime === "custom" && <Input type="datetime-local" value={momentData.customDateTime} onChange={e => setMomentData(prev => ({
-            ...prev,
-            customDateTime: e.target.value
-          }))} className="mt-2" />}
+              {momentData.selectedTime === "custom" && <Input type="datetime-local" value={momentData.customDateTime} onChange={e => setMomentData(prev => ({...prev, customDateTime: e.target.value}))} className="mt-2" />}
             </div>
 
             {/* Location */}
@@ -393,11 +418,27 @@ export default function CreaMomento() {
               <Button variant="outline" onClick={resetFlow} className="flex-1">
                 Annulla
               </Button>
+              <Button variant="outline" onClick={() => setShowPreview(true)} disabled={!momentData.title.trim()}>
+                <Eye className="mr-2 h-4 w-4" />
+                Anteprima
+              </Button>
               <Button onClick={handleCreateMoment} disabled={!momentData.title.trim() || isUploading} className="flex-1">
                 {isUploading ? "Creando..." : "Crea in 30sec"}
               </Button>
             </div>
           </CardContent>
         </Card>}
+
+      {/* Preview Modal */}
+      <MomentPreviewModal 
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        momentData={momentData}
+        photoPreview={photoPreview}
+        userProfile={user ? {
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'Utente',
+          avatar_url: user.user_metadata?.avatar_url
+        } : undefined}
+      />
     </div>;
 }
