@@ -16,46 +16,97 @@ export type Database = {
     Tables: {
       artists: {
         Row: {
+          age: number | null
+          artist_type: string | null
+          audience_size: string | null
           availability: Json | null
           avatar_url: string | null
           bio: string | null
+          cachet_info: Json | null
           contact_info: Json | null
           created_at: string
+          event_types: string[] | null
+          exhibition_description: string | null
+          experience_years: number | null
           genres: string[] | null
           id: string
+          ideal_situations: string[] | null
+          instruments: string[] | null
           location: Json | null
           name: string
+          performance_duration: string | null
+          phone: string | null
           pricing: Json | null
+          profile_video_url: string | null
+          province: string | null
+          social_media: Json | null
+          specialization: string | null
+          stage_name: string | null
+          target_provinces: string[] | null
           updated_at: string
           user_id: string | null
           verified: boolean
         }
         Insert: {
+          age?: number | null
+          artist_type?: string | null
+          audience_size?: string | null
           availability?: Json | null
           avatar_url?: string | null
           bio?: string | null
+          cachet_info?: Json | null
           contact_info?: Json | null
           created_at?: string
+          event_types?: string[] | null
+          exhibition_description?: string | null
+          experience_years?: number | null
           genres?: string[] | null
           id?: string
+          ideal_situations?: string[] | null
+          instruments?: string[] | null
           location?: Json | null
           name: string
+          performance_duration?: string | null
+          phone?: string | null
           pricing?: Json | null
+          profile_video_url?: string | null
+          province?: string | null
+          social_media?: Json | null
+          specialization?: string | null
+          stage_name?: string | null
+          target_provinces?: string[] | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
         }
         Update: {
+          age?: number | null
+          artist_type?: string | null
+          audience_size?: string | null
           availability?: Json | null
           avatar_url?: string | null
           bio?: string | null
+          cachet_info?: Json | null
           contact_info?: Json | null
           created_at?: string
+          event_types?: string[] | null
+          exhibition_description?: string | null
+          experience_years?: number | null
           genres?: string[] | null
           id?: string
+          ideal_situations?: string[] | null
+          instruments?: string[] | null
           location?: Json | null
           name?: string
+          performance_duration?: string | null
+          phone?: string | null
           pricing?: Json | null
+          profile_video_url?: string | null
+          province?: string | null
+          social_media?: Json | null
+          specialization?: string | null
+          stage_name?: string | null
+          target_provinces?: string[] | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
@@ -999,43 +1050,58 @@ export type Database = {
       }
       staff_profiles: {
         Row: {
+          availability_info: Json | null
           avatar_url: string | null
           bio: string | null
+          certifications: string[] | null
           contact_info: Json | null
           created_at: string
           experience_years: number | null
           id: string
           name: string
+          portfolio_urls: string[] | null
+          rates: Json | null
           role: string
           skills: string[] | null
+          specializations: string[] | null
           updated_at: string
           user_id: string
           verified: boolean
         }
         Insert: {
+          availability_info?: Json | null
           avatar_url?: string | null
           bio?: string | null
+          certifications?: string[] | null
           contact_info?: Json | null
           created_at?: string
           experience_years?: number | null
           id?: string
           name: string
+          portfolio_urls?: string[] | null
+          rates?: Json | null
           role: string
           skills?: string[] | null
+          specializations?: string[] | null
           updated_at?: string
           user_id: string
           verified?: boolean
         }
         Update: {
+          availability_info?: Json | null
           avatar_url?: string | null
           bio?: string | null
+          certifications?: string[] | null
           contact_info?: Json | null
           created_at?: string
           experience_years?: number | null
           id?: string
           name?: string
+          portfolio_urls?: string[] | null
+          rates?: Json | null
           role?: string
           skills?: string[] | null
+          specializations?: string[] | null
           updated_at?: string
           user_id?: string
           verified?: boolean
@@ -1232,49 +1298,67 @@ export type Database = {
         Row: {
           amenities: string[] | null
           availability: Json | null
+          booking_info: Json | null
           capacity: number | null
           contact_info: Json | null
           created_at: string
           description: string | null
+          equipment: Json | null
           id: string
           images: Json | null
           location: Json
           name: string
+          opening_hours: Json | null
           pricing: Json | null
+          services: string[] | null
+          space_photos: string[] | null
           updated_at: string
           user_id: string | null
+          venue_type: string | null
           verified: boolean
         }
         Insert: {
           amenities?: string[] | null
           availability?: Json | null
+          booking_info?: Json | null
           capacity?: number | null
           contact_info?: Json | null
           created_at?: string
           description?: string | null
+          equipment?: Json | null
           id?: string
           images?: Json | null
           location: Json
           name: string
+          opening_hours?: Json | null
           pricing?: Json | null
+          services?: string[] | null
+          space_photos?: string[] | null
           updated_at?: string
           user_id?: string | null
+          venue_type?: string | null
           verified?: boolean
         }
         Update: {
           amenities?: string[] | null
           availability?: Json | null
+          booking_info?: Json | null
           capacity?: number | null
           contact_info?: Json | null
           created_at?: string
           description?: string | null
+          equipment?: Json | null
           id?: string
           images?: Json | null
           location?: Json
           name?: string
+          opening_hours?: Json | null
           pricing?: Json | null
+          services?: string[] | null
+          space_photos?: string[] | null
           updated_at?: string
           user_id?: string | null
+          venue_type?: string | null
           verified?: boolean
         }
         Relationships: []

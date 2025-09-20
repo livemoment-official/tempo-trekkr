@@ -1,48 +1,72 @@
-import { Helmet } from "react-helmet-async";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
-import { AvailabilityList } from "@/components/availability/AvailabilityList";
-import { AvailabilityToggle } from "@/components/profile/AvailabilityToggle";
-import { FriendRequestsModal } from "@/components/profile/FriendRequestsModal";
-import { useFriendship } from "@/hooks/useFriendship";
-import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
-import { OnboardingModal } from "@/components/profile/OnboardingModal";
-import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
-import { EnhancedPhotoGallery } from "@/components/profile/EnhancedPhotoGallery";
-import { ChatPermissionSettings } from "@/components/profile/ChatPermissionSettings";
-import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsModal";
-import { ProfileProgressIndicator } from "@/components/profile/ProfileProgressIndicator";
-import { QuickEditField } from "@/components/profile/QuickEditField";
-import { CollapsibleSection } from "@/components/profile/CollapsibleSection";
-import { QuickAvatarUpload } from "@/components/profile/QuickAvatarUpload";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { useProfileMetrics } from "@/hooks/useProfileMetrics";
-import { ProfileTypeSelector } from "@/components/profiles/ProfileTypeSelector";
-import { Crown, Settings, MessageCircle, User, Camera, Heart, Users, Sparkles, Clock, UserPlus, Calendar, UserCheck, Music, MapPin, Bell, Globe, HelpCircle, BookOpen, ChevronRight, Trophy } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useOnboardingState } from '@/hooks/useOnboardingState';
+import { useProfileMetrics } from '@/hooks/useProfileMetrics';
+import { QuickAvatarUpload } from '@/components/profile/QuickAvatarUpload';
+import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
+import { 
+  Edit, 
+  MapPin, 
+  Calendar, 
+  Users, 
+  Camera,
+  Settings, 
+  Bell, 
+  Globe, 
+  MessageCircle,
+  Heart,
+  Award,
+  HelpCircle,
+  BookOpen,
+  Gift,
+  Music,
+  Briefcase,
+  User,
+  Shield,
+  Smartphone,
+  ChevronRight,
+  Crown,
+  UserPlus,
+  UserCheck,
+  Clock,
+  Trophy
+} from 'lucide-react';
+import { CollapsibleSection } from '@/components/profile/CollapsibleSection';
+import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
+import { AvailabilityToggle } from '@/components/profile/AvailabilityToggle';
+import { ChatPermissionSettings } from '@/components/profile/ChatPermissionSettings';
+import { EnhancedPhotoGallery } from '@/components/profile/EnhancedPhotoGallery';
+import { FriendRequestsModal } from '@/components/profile/FriendRequestsModal';
+import { FriendSuggestionsModal } from '@/components/profile/FriendSuggestionsModal';
+import { OnboardingModal } from '@/components/profile/OnboardingModal';
+import { AvailabilityList } from '@/components/availability/AvailabilityList';
+import { Switch } from '@/components/ui/switch';
+import { useFriendship } from '@/hooks/useFriendship';
+import { useLocation, useNavigate } from 'react-router-dom';
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    user,
-    isAuthenticated
-  } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
   const [showCreateProfile, setShowCreateProfile] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
+  const [showArtistWizard, setShowArtistWizard] = useState(false);
+  const [showVenueWizard, setShowVenueWizard] = useState(false);
+  const [showStaffWizard, setShowStaffWizard] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
   const {
@@ -301,7 +325,7 @@ export default function Profilo() {
               </div>
               
               <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => navigate('/profili')} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <button onClick={() => setShowArtistWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <Music className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium">Profilo Artista</span>
@@ -309,7 +333,7 @@ export default function Profilo() {
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => navigate('/profili')} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <button onClick={() => setShowVenueWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-secondary-foreground" />
                     <span className="text-sm font-medium">Profilo Location</span>
@@ -317,7 +341,7 @@ export default function Profilo() {
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => navigate('/profili')} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <button onClick={() => setShowStaffWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <Users className="h-4 w-4 text-accent-foreground" />
                     <span className="text-sm font-medium">Profilo Staff</span>
