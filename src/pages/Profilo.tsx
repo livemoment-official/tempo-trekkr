@@ -18,7 +18,8 @@ import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistReg
 import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
 import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy } from 'lucide-react';
 import { CollapsibleSection } from '@/components/profile/CollapsibleSection';
-import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
+import { ProfileEditDialog } from '@/components/profile/ProfileEditDialog';
+import { ProfilePhotoPreview } from '@/components/profile/ProfilePhotoPreview';
 import { AvailabilityToggle } from '@/components/profile/AvailabilityToggle';
 import { ChatPermissionSettings } from '@/components/profile/ChatPermissionSettings';
 import { EnhancedPhotoGallery } from '@/components/profile/EnhancedPhotoGallery';
@@ -195,16 +196,23 @@ export default function Profilo() {
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)} className="shrink-0">
+                  <Edit className="h-3 w-3 mr-1" />
                   Modifica
                 </Button>
               </div>
               
-              {/* Status badges - integrato con sistema disponibilità */}
+              {/* Status badges - mood multi-select */}
               <div className="flex items-center gap-2 mb-3">
-                {/* Badge dinamico basato su stato disponibilità - da implementare */}
-                {profile?.mood && <Badge variant="outline">
-                    {profile.mood}
-                  </Badge>}
+                {profile?.mood && profile.mood.split(', ').filter(m => m.length > 0).map((moodItem: string) => (
+                  <Badge key={moodItem} variant="outline">
+                    {moodItem}
+                  </Badge>
+                ))}
+                {profile?.gender && (
+                  <Badge variant="secondary">
+                    {profile.gender}
+                  </Badge>
+                )}
               </div>
               
               {profile?.bio && <div className="text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -270,20 +278,38 @@ export default function Profilo() {
         </Card>
       </div>
 
+      {/* Photo Preview Section */}
+      <ProfilePhotoPreview profile={profile} onProfileUpdate={fetchProfile} />
+
       {/* Disponibilità & Connessioni - Priorità Alta */}
       <div className="space-y-4">
-        
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Disponibilità
+        </h2>
         
         <div className="grid grid-cols-1 gap-3">
           {/* Gestione Disponibilità */}
           <AvailabilityToggle />
           
-          {/* Lista disponibilità programmate */}
-          <div className="space-y-3">
-            <CollapsibleSection title="Le tue disponibilità programmate" defaultOpen={false}>
+          {/* Lista disponibilità programmate - più prominente */}
+          <Card className="shadow-card">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Disponibilità Programmate</span>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  Invitabile
+                </Badge>
+              </div>
+              <div className="text-xs text-muted-foreground mb-3">
+                Le persone possono invitarti durante questi orari
+              </div>
               <AvailabilityList />
-            </CollapsibleSection>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -495,9 +521,6 @@ export default function Profilo() {
             <Button onClick={() => setShowStaffWizard(false)}>Chiudi</Button>
           </div>
         </div>}
-
-      {/* Profile Edit Form */}
-      {showEditForm && <ProfileEditForm profile={profile} onClose={() => setShowEditForm(false)} />}
 
       {/* Chat Permission Settings */}
       {showChatSettings && <ChatPermissionSettings currentPermission={profile?.chat_permission} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />}

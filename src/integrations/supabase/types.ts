@@ -954,6 +954,7 @@ export type Database = {
           followers_count: number | null
           following_count: number | null
           gallery: string[] | null
+          gender: string | null
           id: string
           instagram_username: string | null
           interests: string[] | null
@@ -989,6 +990,7 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           gallery?: string[] | null
+          gender?: string | null
           id: string
           instagram_username?: string | null
           interests?: string[] | null
@@ -1024,6 +1026,7 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           gallery?: string[] | null
+          gender?: string | null
           id?: string
           instagram_username?: string | null
           interests?: string[] | null
