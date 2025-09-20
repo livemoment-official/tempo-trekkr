@@ -204,12 +204,9 @@ export default function Profilo() {
                 </Button>
               </div>
               
-              {/* Status badges */}
+              {/* Status badges - integrato con sistema disponibilità */}
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  <div className="h-2 w-2 bg-green-500 rounded-full mr-1" />
-                  Online
-                </Badge>
+                {/* Badge dinamico basato su stato disponibilità - da implementare */}
                 {profile?.mood && <Badge variant="outline">
                     {profile.mood}
                   </Badge>}
@@ -285,6 +282,16 @@ export default function Profilo() {
         <div className="grid grid-cols-1 gap-3">
           {/* Gestione Disponibilità */}
           <AvailabilityToggle />
+          
+          {/* Lista disponibilità programmate */}
+          <div className="space-y-3">
+            <CollapsibleSection 
+              title="Le tue disponibilità programmate"
+              defaultOpen={false}
+            >
+              <AvailabilityList />
+            </CollapsibleSection>
+          </div>
         </div>
       </div>
 
