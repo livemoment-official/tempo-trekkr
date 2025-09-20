@@ -10,7 +10,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRealTimePresence } from '@/hooks/useRealTimePresence';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
 import { toast } from 'sonner';
-
 interface Availability {
   id: string;
   is_on: boolean;
@@ -18,45 +17,43 @@ interface Availability {
   start_at?: string;
   end_at?: string;
 }
-
 type AvailabilityStatus = 'offline' | 'online' | 'available' | 'busy';
-
 export function AvailabilityToggle() {
-  const { user } = useAuth();
-  const { isOnline, updatePresence, setOffline } = useRealTimePresence();
+  const {
+    user
+  } = useAuth();
+  const {
+    isOnline,
+    updatePresence,
+    setOffline
+  } = useRealTimePresence();
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<AvailabilityStatus>('offline');
-
   const fetchAvailability = async () => {
     if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('availability')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
+      const {
+        data,
+        error
+      } = await supabase.from('availability').select('*').eq('user_id', user.id).maybeSingle();
       if (error) throw error;
       setAvailability(data);
     } catch (error) {
       console.error('Error fetching availability:', error);
     }
   };
-
   const setAvailableToGoOut = async () => {
     if (!user) return;
-
     try {
       setIsLoading(true);
-      
+
       // Set auto-expiry to 4 hours from now
       const autoExpiry = new Date();
       autoExpiry.setHours(autoExpiry.getHours() + 4);
-      
+
       // Update or create availability
       const availabilityData = {
         user_id: user.id,
@@ -66,19 +63,16 @@ export function AvailabilityToggle() {
         end_at: autoExpiry.toISOString(),
         updated_at: new Date().toISOString()
       };
-
       if (availability) {
-        const { error } = await supabase
-          .from('availability')
-          .update(availabilityData)
-          .eq('id', availability.id);
+        const {
+          error
+        } = await supabase.from('availability').update(availabilityData).eq('id', availability.id);
         if (error) throw error;
       } else {
-        const { data, error } = await supabase
-          .from('availability')
-          .insert(availabilityData)
-          .select()
-          .single();
+        const {
+          data,
+          error
+        } = await supabase.from('availability').insert(availabilityData).select().single();
         if (error) throw error;
         setAvailability(data);
       }
@@ -86,7 +80,6 @@ export function AvailabilityToggle() {
       // Update presence status
       await updatePresence('Disponibile a uscire');
       setStatus('available');
-      
       toast.success('Sei ora disponibile a uscire! Altri utenti vicini possono trovarti.');
     } catch (error) {
       console.error('Error setting availability:', error);
@@ -95,24 +88,18 @@ export function AvailabilityToggle() {
       setIsLoading(false);
     }
   };
-
   const setOnlineOnly = async () => {
     if (!user) return;
-
     try {
       setIsLoading(true);
-      
+
       // Disable availability but keep online
       if (availability) {
-        await supabase
-          .from('availability')
-          .update({ 
-            is_on: false,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', availability.id);
+        await supabase.from('availability').update({
+          is_on: false,
+          updated_at: new Date().toISOString()
+        }).eq('id', availability.id);
       }
-
       await updatePresence('Online');
       setStatus('online');
       toast.success('Sei online ma non disponibile a uscire');
@@ -123,24 +110,18 @@ export function AvailabilityToggle() {
       setIsLoading(false);
     }
   };
-
   const setOfflineStatus = async () => {
     if (!user) return;
-
     try {
       setIsLoading(true);
-      
+
       // Disable availability
       if (availability) {
-        await supabase
-          .from('availability')
-          .update({ 
-            is_on: false,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', availability.id);
+        await supabase.from('availability').update({
+          is_on: false,
+          updated_at: new Date().toISOString()
+        }).eq('id', availability.id);
       }
-
       await setOffline();
       setStatus('offline');
       toast.success('Sei ora offline');
@@ -151,33 +132,29 @@ export function AvailabilityToggle() {
       setIsLoading(false);
     }
   };
-
   const updateShareable = async (shareable: boolean) => {
     if (!availability || !user) return;
-
     try {
-      const { error } = await supabase
-        .from('availability')
-        .update({ 
-          shareable,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', availability.id);
-
+      const {
+        error
+      } = await supabase.from('availability').update({
+        shareable,
+        updated_at: new Date().toISOString()
+      }).eq('id', availability.id);
       if (error) throw error;
-      
-      setAvailability({ ...availability, shareable });
+      setAvailability({
+        ...availability,
+        shareable
+      });
       toast.success(shareable ? 'Disponibilità ora visibile ad altri' : 'Disponibilità ora privata');
     } catch (error) {
       console.error('Error updating shareability:', error);
       toast.error('Errore nell\'aggiornamento');
     }
   };
-
   useEffect(() => {
     fetchAvailability();
   }, [user]);
-
   useEffect(() => {
     // Determine status based on availability and presence
     if (!isOnline) {
@@ -188,7 +165,6 @@ export function AvailabilityToggle() {
       setStatus('online');
     }
   }, [isOnline, availability]);
-
   const getStatusInfo = () => {
     switch (status) {
       case 'available':
@@ -230,11 +206,8 @@ export function AvailabilityToggle() {
         };
     }
   };
-
   const statusInfo = getStatusInfo();
-
-  return (
-    <>
+  return <>
       <Card className="shadow-card hover:shadow-sm transition-smooth">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -246,79 +219,44 @@ export function AvailabilityToggle() {
               <div>
                <div className="font-medium flex items-center gap-2">
                  {statusInfo.label}
-                 {status === 'available' && (
-                   <Badge variant="secondary" className={statusInfo.badgeClass}>
+                 {status === 'available' && <Badge variant="secondary" className={statusInfo.badgeClass}>
                      <div className="h-2 w-2 bg-disponibile-uscire rounded-full mr-1.5 animate-pulse" />
                      Visibile
-                   </Badge>
-                 )}
+                   </Badge>}
                </div>
                 <div className="text-xs text-muted-foreground">
                   {statusInfo.description}
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(true)}
-              className="text-xs"
-            >
-              Cambia
-            </Button>
+            
           </div>
           
           {/* Quick Actions */}
           <div className="mt-4 space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={setAvailableToGoOut}
-                disabled={isLoading}
-                variant={status === 'available' ? 'default' : 'outline'}
-                size="sm"
-                className={`h-8 text-xs ${status === 'available' ? 'bg-disponibile-uscire hover:bg-disponibile-uscire/90 text-disponibile-uscire-foreground' : ''}`}
-              >
+              <Button onClick={setAvailableToGoOut} disabled={isLoading} variant={status === 'available' ? 'default' : 'outline'} size="sm" className={`h-8 text-xs ${status === 'available' ? 'bg-disponibile-uscire hover:bg-disponibile-uscire/90 text-disponibile-uscire-foreground' : ''}`}>
                 <Zap className="w-3 h-3 mr-1" />
                 Disponibile ora
               </Button>
-              <Button
-                onClick={setOnlineOnly}
-                disabled={isLoading}
-                variant={status === 'online' ? 'default' : 'outline'}
-                size="sm"
-                className="h-8 text-xs"
-              >
+              <Button onClick={setOnlineOnly} disabled={isLoading} variant={status === 'online' ? 'default' : 'outline'} size="sm" className="h-8 text-xs">
                 Solo online
               </Button>
             </div>
             
             {/* Programmazione disponibilità */}
-            {!showScheduleForm ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowScheduleForm(true)}
-                className="w-full text-sm text-muted-foreground hover:text-foreground h-8"
-              >
+            {!showScheduleForm ? <Button variant="ghost" size="sm" onClick={() => setShowScheduleForm(true)} className="w-full text-sm text-muted-foreground hover:text-foreground h-8">
                 <Plus className="h-3 w-3 mr-1" />
                 Programma disponibilità
-              </Button>
-            ) : (
-              <div className="border-t pt-3">
+              </Button> : <div className="border-t pt-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Programma disponibilità</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowScheduleForm(false)}
-                    className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setShowScheduleForm(false)} className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground">
                     Chiudi
                   </Button>
                 </div>
                 <AvailabilityForm />
-              </div>
-            )}
+              </div>}
           </div>
         </CardContent>
       </Card>
@@ -334,15 +272,7 @@ export function AvailabilityToggle() {
             <div className="space-y-3">
               <div className="text-sm font-medium">Scegli il tuo stato</div>
               
-              <button
-                onClick={setAvailableToGoOut}
-                disabled={isLoading}
-                className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
-                  status === 'available'
-                    ? 'border-disponibile-uscire bg-disponibile-uscire/10'
-                    : 'border-gray-200 hover:border-disponibile-uscire/50'
-                }`}
-              >
+              <button onClick={setAvailableToGoOut} disabled={isLoading} className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${status === 'available' ? 'border-disponibile-uscire bg-disponibile-uscire/10' : 'border-gray-200 hover:border-disponibile-uscire/50'}`}>
                 <div className="flex items-center gap-3">
                   <CircleDot className="h-4 w-4 text-disponibile-uscire" />
                   <div>
@@ -352,15 +282,7 @@ export function AvailabilityToggle() {
                 </div>
               </button>
 
-              <button
-                onClick={setOnlineOnly}
-                disabled={isLoading}
-                className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
-                  status === 'online'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
-                }`}
-              >
+              <button onClick={setOnlineOnly} disabled={isLoading} className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${status === 'online' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
                 <div className="flex items-center gap-3">
                   <CircleDot className="h-4 w-4 text-blue-600" />
                   <div>
@@ -370,15 +292,7 @@ export function AvailabilityToggle() {
                 </div>
               </button>
 
-              <button
-                onClick={setOfflineStatus}
-                disabled={isLoading}
-                className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
-                  status === 'offline'
-                    ? 'border-gray-500 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
+              <button onClick={setOfflineStatus} disabled={isLoading} className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${status === 'offline' ? 'border-gray-500 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                 <div className="flex items-center gap-3">
                   <CircleDot className="h-4 w-4 text-gray-600" />
                   <div>
@@ -396,16 +310,11 @@ export function AvailabilityToggle() {
               </div>
             </div>
 
-            <Button
-              onClick={() => setShowSettings(false)}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={() => setShowSettings(false)} variant="outline" className="w-full">
               Chiudi
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>;
 }
