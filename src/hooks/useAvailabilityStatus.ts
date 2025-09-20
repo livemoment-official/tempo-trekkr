@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealTimePresence } from './useRealTimePresence';
 
-export type AvailabilityStatus = 'offline' | 'online' | 'available';
+export type AvailabilityStatus = 'offline' | 'online' | 'available' | 'busy';
 
 interface Availability {
   id: string;
@@ -71,7 +71,7 @@ export function useAvailabilityStatus() {
   }, [availability]);
 
   useEffect(() => {
-    // Simplified status determination
+    // Determine status based on availability and presence
     if (!isOnline) {
       setStatus('offline');
     } else if (availability?.is_on && availability?.shareable) {
@@ -87,7 +87,7 @@ export function useAvailabilityStatus() {
       } else {
         setStatus('available');
       }
-    } else {
+    } else if (isOnline) {
       setStatus('online');
     }
   }, [isOnline, availability]);
