@@ -169,7 +169,7 @@ export function AvailabilityToggle() {
     switch (status) {
       case 'available':
         return {
-          label: 'Disponibile a uscire',
+          label: 'Disponibilità a Uscire',
           description: 'Altri possono trovarti e invitarti',
           color: 'bg-disponibile-uscire',
           textColor: 'text-disponibile-uscire',
