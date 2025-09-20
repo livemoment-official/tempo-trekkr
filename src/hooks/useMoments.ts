@@ -118,7 +118,10 @@ export function useMoments() {
     try {
       let query = supabase
         .from('moments')
-        .select('*')
+        .select(`
+          *,
+          participant_count:moment_participants(count)
+        `)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
@@ -257,10 +260,10 @@ export function useMoments() {
         });
       }
 
-      // Add participant count
+      // Add participant count from relational table
       processedMoments = processedMoments.map(moment => ({
         ...moment,
-        participant_count: moment.participants?.length || 0
+        participant_count: Array.isArray(moment.participant_count) ? moment.participant_count.length : 0
       }));
 
       if (resetPage) {
@@ -292,8 +295,12 @@ export function useMoments() {
     try {
       const { data, error } = await supabase
         .from('moments')
-        .select('*')
-        .or(`host_id.eq.${user.id},participants.cs.{${user.id}}`)
+        .select(`
+          *,
+          participant_count:moment_participants(count),
+          user_participation:moment_participants!inner(user_id)
+        `)
+        .or(`host_id.eq.${user.id},user_participation.user_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -314,7 +321,7 @@ export function useMoments() {
           ...moment,
           place: validPlace,
           host: undefined, // Will be populated separately if needed
-          participant_count: moment.participants?.length || 0
+          participant_count: Array.isArray(moment.participant_count) ? moment.participant_count.length : 0
         };
       }) as unknown as Moment[];
 
@@ -363,17 +370,16 @@ export function useMoments() {
     if (!user) return false;
 
     try {
-      // Get current moment
-      const { data: moment, error: fetchError } = await supabase
-        .from('moments')
-        .select('participants, max_participants')
-        .eq('id', momentId)
-        .single();
+      // Check if user is already a participant
+      const { data: existingParticipation } = await supabase
+        .from('moment_participants')
+        .select('id')
+        .eq('moment_id', momentId)
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+        .maybeSingle();
 
-      if (fetchError) throw fetchError;
-
-      const currentParticipants = moment.participants || [];
-      if (currentParticipants.includes(user.id)) {
+      if (existingParticipation) {
         toast({
           title: "Già partecipante",
           description: "Sei già registrato a questo momento"
@@ -381,7 +387,23 @@ export function useMoments() {
         return false;
       }
 
-      if (moment.max_participants && currentParticipants.length >= moment.max_participants) {
+      // Check capacity
+      const { data: moment, error: fetchError } = await supabase
+        .from('moments')
+        .select('max_participants')
+        .eq('id', momentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Get current participant count
+      const { count: currentCount } = await supabase
+        .from('moment_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('moment_id', momentId)
+        .eq('status', 'confirmed');
+
+      if (moment.max_participants && currentCount && currentCount >= moment.max_participants) {
         toast({
           title: "Momento completo",
           description: "Questo momento ha raggiunto il numero massimo di partecipanti",
@@ -390,23 +412,25 @@ export function useMoments() {
         return false;
       }
 
-      // Add user to participants
+      // Add user as participant
       const { error } = await supabase
-        .from('moments')
-        .update({
-          participants: [...currentParticipants, user.id]
-        })
-        .eq('id', momentId);
+        .from('moment_participants')
+        .insert({
+          moment_id: momentId,
+          user_id: user.id,
+          status: 'confirmed',
+          payment_status: 'free'
+        });
 
       if (error) throw error;
 
-      // Update local state
+      // Update local state - the trigger will sync the participants array
       setMoments(prev => prev.map(m => 
         m.id === momentId 
           ? { 
               ...m, 
-              participants: [...currentParticipants, user.id],
-              participant_count: currentParticipants.length + 1
+              participants: [...m.participants, user.id],
+              participant_count: m.participant_count + 1
             }
           : m
       ));
@@ -433,33 +457,22 @@ export function useMoments() {
     if (!user) return false;
 
     try {
-      const { data: moment, error: fetchError } = await supabase
-        .from('moments')
-        .select('participants')
-        .eq('id', momentId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const currentParticipants = moment.participants || [];
-      const newParticipants = currentParticipants.filter(id => id !== user.id);
-
+      // Remove user from moment_participants
       const { error } = await supabase
-        .from('moments')
-        .update({
-          participants: newParticipants
-        })
-        .eq('id', momentId);
+        .from('moment_participants')
+        .delete()
+        .eq('moment_id', momentId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
-      // Update local state
+      // Update local state - the trigger will sync the participants array
       setMoments(prev => prev.map(m => 
         m.id === momentId 
           ? { 
               ...m, 
-              participants: newParticipants,
-              participant_count: newParticipants.length
+              participants: m.participants.filter(id => id !== user.id),
+              participant_count: Math.max(0, m.participant_count - 1)
             }
           : m
       ));

@@ -1481,6 +1481,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_moment_participant_count: {
+        Args: { moment_id_param: string }
+        Returns: number
+      }
       get_nearby_available_users: {
         Args: {
           radius_km?: number
@@ -1509,6 +1513,10 @@ export type Database = {
       }
       initialize_user_achievements: {
         Args: { target_user_id: string }
+        Returns: undefined
+      }
+      migrate_existing_moment_participants: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       unlock_achievement: {

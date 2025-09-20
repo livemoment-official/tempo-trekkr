@@ -49,10 +49,13 @@ export function useMomentDetail(momentId: string) {
     setError(null);
 
     try {
-      // Fetch moment data
+      // Fetch moment data with participant count
       const { data: momentData, error: momentError } = await supabase
         .from('moments')
-        .select('*')
+        .select(`
+          *,
+          participant_count:moment_participants(count)
+        `)
         .eq('id', momentId)
         .single();
 
@@ -106,7 +109,7 @@ export function useMomentDetail(momentId: string) {
         ticketing: momentData.ticketing,
         created_at: momentData.created_at,
         updated_at: momentData.updated_at,
-        participant_count: (momentData.participants || []).length,
+        participant_count: Array.isArray(momentData.participant_count) ? momentData.participant_count.length : 0,
         can_edit: canEdit
       };
 
