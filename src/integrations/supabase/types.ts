@@ -1296,68 +1296,140 @@ export type Database = {
       }
       venues: {
         Row: {
+          additional_equipment: string[] | null
+          agreement_types: string[] | null
           amenities: string[] | null
+          artist_benefits: string[] | null
+          artist_welcome_message: string | null
+          audio_setup: string[] | null
           availability: Json | null
+          availability_schedule: Json | null
           booking_info: Json | null
           capacity: number | null
+          community_advantages: string[] | null
+          contact_email: string | null
           contact_info: Json | null
+          contact_person_name: string | null
+          contact_person_surname: string | null
+          contact_phone: string | null
           created_at: string
           description: string | null
           equipment: Json | null
+          how_discovered: string | null
           id: string
           images: Json | null
           location: Json
+          max_capacity_seated: number | null
+          max_capacity_standing: number | null
+          music_genres: string[] | null
           name: string
           opening_hours: Json | null
+          preferred_event_types: string[] | null
           pricing: Json | null
+          recommended_hours: string | null
+          rental_cost_info: string | null
+          rewards_10_people: string | null
+          rewards_30_people: string | null
+          service_details: string[] | null
           services: string[] | null
+          social_media_profiles: Json | null
           space_photos: string[] | null
+          special_offer: string | null
           updated_at: string
           user_id: string | null
+          venue_photos: string[] | null
           venue_type: string | null
           verified: boolean
         }
         Insert: {
+          additional_equipment?: string[] | null
+          agreement_types?: string[] | null
           amenities?: string[] | null
+          artist_benefits?: string[] | null
+          artist_welcome_message?: string | null
+          audio_setup?: string[] | null
           availability?: Json | null
+          availability_schedule?: Json | null
           booking_info?: Json | null
           capacity?: number | null
+          community_advantages?: string[] | null
+          contact_email?: string | null
           contact_info?: Json | null
+          contact_person_name?: string | null
+          contact_person_surname?: string | null
+          contact_phone?: string | null
           created_at?: string
           description?: string | null
           equipment?: Json | null
+          how_discovered?: string | null
           id?: string
           images?: Json | null
           location: Json
+          max_capacity_seated?: number | null
+          max_capacity_standing?: number | null
+          music_genres?: string[] | null
           name: string
           opening_hours?: Json | null
+          preferred_event_types?: string[] | null
           pricing?: Json | null
+          recommended_hours?: string | null
+          rental_cost_info?: string | null
+          rewards_10_people?: string | null
+          rewards_30_people?: string | null
+          service_details?: string[] | null
           services?: string[] | null
+          social_media_profiles?: Json | null
           space_photos?: string[] | null
+          special_offer?: string | null
           updated_at?: string
           user_id?: string | null
+          venue_photos?: string[] | null
           venue_type?: string | null
           verified?: boolean
         }
         Update: {
+          additional_equipment?: string[] | null
+          agreement_types?: string[] | null
           amenities?: string[] | null
+          artist_benefits?: string[] | null
+          artist_welcome_message?: string | null
+          audio_setup?: string[] | null
           availability?: Json | null
+          availability_schedule?: Json | null
           booking_info?: Json | null
           capacity?: number | null
+          community_advantages?: string[] | null
+          contact_email?: string | null
           contact_info?: Json | null
+          contact_person_name?: string | null
+          contact_person_surname?: string | null
+          contact_phone?: string | null
           created_at?: string
           description?: string | null
           equipment?: Json | null
+          how_discovered?: string | null
           id?: string
           images?: Json | null
           location?: Json
+          max_capacity_seated?: number | null
+          max_capacity_standing?: number | null
+          music_genres?: string[] | null
           name?: string
           opening_hours?: Json | null
+          preferred_event_types?: string[] | null
           pricing?: Json | null
+          recommended_hours?: string | null
+          rental_cost_info?: string | null
+          rewards_10_people?: string | null
+          rewards_30_people?: string | null
+          service_details?: string[] | null
           services?: string[] | null
+          social_media_profiles?: Json | null
           space_photos?: string[] | null
+          special_offer?: string | null
           updated_at?: string
           user_id?: string | null
+          venue_photos?: string[] | null
           venue_type?: string | null
           verified?: boolean
         }

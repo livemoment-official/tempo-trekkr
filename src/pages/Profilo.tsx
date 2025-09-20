@@ -15,6 +15,7 @@ import { useOnboardingState } from '@/hooks/useOnboardingState';
 import { useProfileMetrics } from '@/hooks/useProfileMetrics';
 import { QuickAvatarUpload } from '@/components/profile/QuickAvatarUpload';
 import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
+import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
 import { 
   Edit, 
   MapPin, 
@@ -516,16 +517,13 @@ export default function Profilo() {
         </div>
       )}
 
-      {/* Venue Registration Wizard - Placeholder */}
+      {/* Location Registration Wizard */}
       {showVenueWizard && (
-        <div className="fixed inset-0 bg-background z-50 overflow-auto p-6">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4">Registrazione Location</h2>
-            <p className="text-muted-foreground mb-4">
-              Il wizard per le location sarà disponibile presto.
-            </p>
-            <Button onClick={() => setShowVenueWizard(false)}>Chiudi</Button>
-          </div>
+        <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <LocationRegistrationWizard
+            onComplete={() => setShowVenueWizard(false)}
+            onCancel={() => setShowVenueWizard(false)}
+          />
         </div>
       )}
 
