@@ -258,13 +258,7 @@ export default function CreaMomento() {
 
       {/* Step 1: Camera */}
       {step === 'camera' && <Card>
-          <CardHeader className="text-center pb-4">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Camera className="h-8 w-8 text-primary" />
-            </div>
-            <CardTitle>Scatta una foto</CardTitle>
-            <p className="text-sm text-muted-foreground">Cattura il momento che vuoi condividere</p>
-          </CardHeader>
+          
           <CardContent className="space-y-4">
             {photoPreview ? <div className="relative">
                 <img src={photoPreview} alt="Preview" className="w-full h-64 object-cover rounded-lg" />
