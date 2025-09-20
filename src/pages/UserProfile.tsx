@@ -10,7 +10,10 @@ import { PhotoGalleryCarousel } from "@/components/profile/PhotoGalleryCarousel"
 import { MessageCircle, UserPlus, CheckCircle, Instagram, MapPin, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFriendship } from "@/hooks/useFriendship";
+import { toast } from 'sonner';
 
 const fetchUserProfile = async (username: string) => {
   const { data, error } = await supabase
@@ -25,7 +28,10 @@ const fetchUserProfile = async (username: string) => {
 
 export default function UserProfile() {
   const { username } = useParams<{ username: string }>();
+  const { user } = useAuth();
+  const { sendFriendRequest, friends } = useFriendship();
   const [isFollowing, setIsFollowing] = useState(false);
+  const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'friends'>('none');
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user-profile', username],
@@ -33,14 +39,68 @@ export default function UserProfile() {
     enabled: !!username,
   });
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    // TODO: Implement follow API call
+  // Check friendship status
+  useEffect(() => {
+    if (profile && user && friends) {
+      const isFriend = friends.some(f => 
+        f.friend?.id === profile.id
+      );
+      setFriendshipStatus(isFriend ? 'friends' : 'none');
+    }
+  }, [profile, user, friends]);
+
+  const handleAddFriend = async () => {
+    if (!profile || !user) return;
+    
+    if (friendshipStatus === 'friends') {
+      toast.info('Sei già amico di questa persona');
+      return;
+    }
+    
+    if (friendshipStatus === 'pending') {
+      toast.info('Richiesta di amicizia già inviata');
+      return;
+    }
+    
+    const success = await sendFriendRequest(profile.id);
+    if (success) {
+      setFriendshipStatus('pending');
+    }
   };
 
-  const handleMessage = () => {
-    // TODO: Implement message functionality
-    console.log('Opening chat with', profile?.username);
+  const handleMessage = async () => {
+    if (!profile || !user) return;
+    
+    try {
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(participant_1.eq.${user.id},participant_2.eq.${profile.id}),and(participant_1.eq.${profile.id},participant_2.eq.${user.id})`)
+        .single();
+      
+      if (existingConversation) {
+        // Navigate to existing conversation
+        window.location.href = `/chat/${existingConversation.id}`;
+      } else {
+        // Create new conversation
+        const { data: newConversation, error } = await supabase
+          .from('conversations')
+          .insert({
+            participant_1: user.id,
+            participant_2: profile.id
+          })
+          .select('id')
+          .single();
+        
+        if (error) throw error;
+        
+        // Navigate to new conversation
+        window.location.href = `/chat/${newConversation.id}`;
+      }
+    } catch (error) {
+      console.error('Error creating/opening conversation:', error);
+    }
   };
 
   if (isLoading) {
@@ -78,7 +138,7 @@ export default function UserProfile() {
   }
 
   const canMessage = profile.chat_permission === 'everyone' || 
-    (profile.chat_permission === 'followers_only' && isFollowing);
+    (profile.chat_permission === 'friends_only' && friendshipStatus === 'friends');
 
   return (
     <>
@@ -105,12 +165,18 @@ export default function UserProfile() {
         <Card>
           <CardHeader>
             <div className="flex items-start gap-6">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="bg-gradient-brand text-white text-xl font-medium">
-                  {profile.name?.charAt(0) || profile.username?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-brand text-white text-xl font-medium">
+                    {profile.name?.charAt(0) || profile.username?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Status indicator */}
+                <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 border-2 border-background rounded-full flex items-center justify-center">
+                  <div className="h-2 w-2 bg-white rounded-full" />
+                </div>
+              </div>
               
               <div className="flex-1 space-y-3">
                 <div>
@@ -127,13 +193,27 @@ export default function UserProfile() {
                   )}
                 </div>
                 
+                {/* Status badges */}
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <div className="h-2 w-2 bg-green-500 rounded-full mr-1" />
+                    Online
+                  </Badge>
+                  {profile.mood && (
+                    <Badge variant="outline">
+                      <Heart className="h-3 w-3 mr-1" />
+                      {profile.mood}
+                    </Badge>
+                  )}
+                </div>
+                
                 {profile.job_title && (
                   <p className="text-foreground font-medium">{profile.job_title}</p>
                 )}
                 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span><strong className="text-foreground">{profile.followers_count}</strong> follower</span>
-                  <span><strong className="text-foreground">{profile.following_count}</strong> seguiti</span>
+                  <span><strong className="text-foreground">{profile.followers_count || 0}</strong> follower</span>
+                  <span><strong className="text-foreground">{profile.following_count || 0}</strong> seguiti</span>
                 </div>
                 
                 <div className="flex gap-2">
@@ -145,12 +225,15 @@ export default function UserProfile() {
                   )}
                   <Button 
                     size="sm" 
-                    variant={isFollowing ? "outline" : "default"} 
+                    variant={friendshipStatus === 'friends' ? "outline" : "default"} 
                     className="flex-1"
-                    onClick={handleFollow}
+                    onClick={handleAddFriend}
+                    disabled={friendshipStatus === 'pending'}
                   >
                     <UserPlus className="h-4 w-4 mr-2" />
-                    {isFollowing ? 'Seguendo' : 'Segui'}
+                    {friendshipStatus === 'friends' ? 'Amici' : 
+                     friendshipStatus === 'pending' ? 'Richiesta inviata' : 
+                     'Aggiungi amico'}
                   </Button>
                 </div>
               </div>

@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
 import { AvailabilityList } from "@/components/availability/AvailabilityList";
+import { AvailabilityToggle } from "@/components/profile/AvailabilityToggle";
+import { FriendRequestsCard } from "@/components/profile/FriendRequestsCard";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { OnboardingModal } from "@/components/profile/OnboardingModal";
 import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
@@ -184,34 +186,66 @@ export default function Profilo() {
         </Button>
       </div>
 
-      {/* Compact Profile Section */}
+      {/* Enhanced Profile Header */}
       <Card className="shadow-card">
         <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 avatar-ring">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-brand text-white">
-                {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="font-semibold text-lg">{profile?.name || 'LiveMoment User'}</div>
-              <div className="text-sm text-muted-foreground">
-                @{profile?.username || 'username'}
+          <div className="flex items-start gap-4">
+            <div className="relative">
+              <Avatar className="h-20 w-20 avatar-ring">
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback className="bg-gradient-brand text-white text-lg">
+                  {profile?.name?.slice(0, 2)?.toUpperCase() || 'LM'}
+                </AvatarFallback>
+              </Avatar>
+              {/* Status indicator */}
+              <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 border-2 border-background rounded-full flex items-center justify-center">
+                <div className="h-2 w-2 bg-white rounded-full" />
               </div>
+            </div>
+            
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <div className="font-bold text-xl">{profile?.name || 'LiveMoment User'}</div>
+                  <div className="text-sm text-muted-foreground">
+                    @{profile?.username || 'username'}
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowEditForm(true)}
+                  className="shrink-0"
+                >
+                  Modifica
+                </Button>
+              </div>
+              
+              {/* Status badges */}
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mr-1" />
+                  Online
+                </Badge>
+                {profile?.mood && (
+                  <Badge variant="outline">
+                    {profile.mood}
+                  </Badge>
+                )}
+              </div>
+              
               {profile?.bio && (
-                <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                <div className="text-sm text-muted-foreground mb-3 line-clamp-2">
                   {profile.bio}
                 </div>
               )}
+              
+              {profile?.job_title && (
+                <div className="text-sm font-medium mb-2">
+                  {profile.job_title}
+                </div>
+              )}
             </div>
-            <Button 
-              variant="secondary" 
-              size="sm"
-              onClick={() => setShowEditForm(true)}
-            >
-              Modifica profilo
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -261,65 +295,74 @@ export default function Profilo() {
         </Card>
       </div>
 
-      {/* Preferenze Section */}
+      {/* Disponibilità & Connessioni - Priorità Alta */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Disponibilità & Connessioni</h2>
+        
+        <div className="grid grid-cols-1 gap-3">
+          {/* Gestione Disponibilità */}
+          <AvailabilityToggle />
+
+          {/* Sistema Amicizie */}
+          <FriendRequestsCard />
+        </div>
+      </div>
+
+      {/* Account Professionali */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Account Professionali</h2>
+        
+        <Card className="shadow-card hover:shadow-sm transition-smooth">
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Espandi il tuo profilo con account professionali per artisti, location e staff
+              </div>
+              
+              <div className="grid grid-cols-1 gap-3">
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Music className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Profilo Artista</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-secondary-foreground" />
+                    <span className="text-sm font-medium">Profilo Location</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+
+                <button 
+                  onClick={() => navigate('/profili')}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-accent-foreground" />
+                    <span className="text-sm font-medium">Profilo Staff</span>
+                  </div>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Preferenze & Impostazioni */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Preferenze</h2>
         
         <div className="space-y-2">
-          {/* Impostazioni with Professional Profiles */}
-          <Card className="shadow-card hover:shadow-sm transition-smooth">
-            <CardContent className="p-0">
-              <div className="p-4 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-muted">
-                      <Settings className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium">Impostazioni</span>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </div>
-              
-              {/* Professional Profile Options */}
-              <div className="p-4 space-y-3">
-                <div className="text-sm font-medium text-muted-foreground mb-3">Account Professionali</div>
-                
-                <button 
-                  onClick={() => navigate('/profili')}
-                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Music className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Profilo Artista</span>
-                  </div>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-
-                <button 
-                  onClick={() => navigate('/profili')}
-                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-secondary-foreground" />
-                    <span className="text-sm">Profilo Location</span>
-                  </div>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-
-                <button 
-                  onClick={() => navigate('/profili')}
-                  className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-accent-foreground" />
-                    <span className="text-sm">Profilo Staff</span>
-                  </div>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                </button>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Other preferences */}
           <Card 
