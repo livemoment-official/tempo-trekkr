@@ -15,6 +15,10 @@ All colors MUST be HSL.
     --brand-white: 0 0% 100%; /* #FFFFFF - Bianco */
     --brand-cream: 50 80% 98%; /* #FFFEF5 - Bianca panna */
     --brand-gray: 0 0% 96%; /* #F5F5F5 - Grigio chiaro */
+    
+    /* Disponibile a uscire - Orange */
+    --disponibile-uscire: 24 95% 53%; /* #f97316 - Arancione disponibile */
+    --disponibile-uscire-foreground: 0 0% 100%; /* Bianco per contrasto */
 
     /* Surface Colors - Warm Cream Palette */
     --background: 48 86% 97%; /* #FFFCEF */

@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, Calendar, MapPin, CircleDot } from 'lucide-react';
+import { Clock, Users, Calendar, MapPin, CircleDot, Zap, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRealTimePresence } from '@/hooks/useRealTimePresence';
+import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
 import { toast } from 'sonner';
 
 interface Availability {
@@ -25,6 +26,7 @@ export function AvailabilityToggle() {
   const { isOnline, updatePresence, setOffline } = useRealTimePresence();
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<AvailabilityStatus>('offline');
 
@@ -193,9 +195,10 @@ export function AvailabilityToggle() {
         return {
           label: 'Disponibile a uscire',
           description: 'Altri possono trovarti e invitarti',
-          color: 'bg-green-500',
-          textColor: 'text-green-600',
-          bgColor: 'bg-green-50',
+          color: 'bg-disponibile-uscire',
+          textColor: 'text-disponibile-uscire',
+          bgColor: 'bg-disponibile-uscire/10',
+          badgeClass: 'bg-disponibile-uscire/10 text-disponibile-uscire border-disponibile-uscire/20',
           icon: CircleDot
         };
       case 'online':
@@ -241,14 +244,15 @@ export function AvailabilityToggle() {
                 <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${statusInfo.color} border-2 border-white`} />
               </div>
               <div>
-                <div className="font-medium flex items-center gap-2">
-                  {statusInfo.label}
-                  {status === 'available' && (
-                    <Badge variant="secondary" className="text-xs">
-                      Visibile
-                    </Badge>
-                  )}
-                </div>
+               <div className="font-medium flex items-center gap-2">
+                 {statusInfo.label}
+                 {status === 'available' && (
+                   <Badge variant="secondary" className={statusInfo.badgeClass}>
+                     <div className="h-2 w-2 bg-disponibile-uscire rounded-full mr-1.5 animate-pulse" />
+                     Visibile
+                   </Badge>
+                 )}
+               </div>
                 <div className="text-xs text-muted-foreground">
                   {statusInfo.description}
                 </div>
@@ -265,26 +269,56 @@ export function AvailabilityToggle() {
           </div>
           
           {/* Quick Actions */}
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <Button
-              onClick={setAvailableToGoOut}
-              disabled={isLoading}
-              variant={status === 'available' ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-            >
-              <CircleDot className="w-3 h-3 mr-1" />
-              Disponibile ora
-            </Button>
-            <Button
-              onClick={setOnlineOnly}
-              disabled={isLoading}
-              variant={status === 'online' ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-            >
-              Solo online
-            </Button>
+          <div className="mt-4 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={setAvailableToGoOut}
+                disabled={isLoading}
+                variant={status === 'available' ? 'default' : 'outline'}
+                size="sm"
+                className={`h-8 text-xs ${status === 'available' ? 'bg-disponibile-uscire hover:bg-disponibile-uscire/90 text-disponibile-uscire-foreground' : ''}`}
+              >
+                <Zap className="w-3 h-3 mr-1" />
+                Disponibile ora
+              </Button>
+              <Button
+                onClick={setOnlineOnly}
+                disabled={isLoading}
+                variant={status === 'online' ? 'default' : 'outline'}
+                size="sm"
+                className="h-8 text-xs"
+              >
+                Solo online
+              </Button>
+            </div>
+            
+            {/* Programmazione disponibilità */}
+            {!showScheduleForm ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowScheduleForm(true)}
+                className="w-full text-sm text-muted-foreground hover:text-foreground h-8"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Programma disponibilità
+              </Button>
+            ) : (
+              <div className="border-t pt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Programma disponibilità</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowScheduleForm(false)}
+                    className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Chiudi
+                  </Button>
+                </div>
+                <AvailabilityForm />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -305,15 +339,15 @@ export function AvailabilityToggle() {
                 disabled={isLoading}
                 className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
                   status === 'available'
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-200 hover:border-green-300'
+                    ? 'border-disponibile-uscire bg-disponibile-uscire/10'
+                    : 'border-gray-200 hover:border-disponibile-uscire/50'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <CircleDot className="h-4 w-4 text-green-600" />
+                  <CircleDot className="h-4 w-4 text-disponibile-uscire" />
                   <div>
-                    <div className="font-medium text-green-700">Disponibile a uscire</div>
-                    <div className="text-xs text-green-600">Altri possono trovarti e invitarti (scade in 4h)</div>
+                    <div className="font-medium text-disponibile-uscire">Disponibile a uscire</div>
+                    <div className="text-xs text-disponibile-uscire/70">Altri possono trovarti e invitarti (scade in 4h)</div>
                   </div>
                 </div>
               </button>

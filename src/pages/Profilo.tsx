@@ -11,7 +11,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AvailabilityForm } from "@/components/availability/AvailabilityForm";
 import { AvailabilityList } from "@/components/availability/AvailabilityList";
 import { AvailabilityToggle } from "@/components/profile/AvailabilityToggle";
-import { FriendRequestsCard } from "@/components/profile/FriendRequestsCard";
+import { FriendRequestsModal } from "@/components/profile/FriendRequestsModal";
+import { useFriendship } from "@/hooks/useFriendship";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { OnboardingModal } from "@/components/profile/OnboardingModal";
 import { FriendshipSystem } from "@/components/friendship/FriendshipSystem";
@@ -37,6 +38,7 @@ export default function Profilo() {
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [showFriendSuggestions, setShowFriendSuggestions] = useState(false);
   const [showCreateProfile, setShowCreateProfile] = useState(false);
+  const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/profilo";
   
@@ -48,6 +50,7 @@ export default function Profilo() {
   } = useOnboardingState();
 
   const { metrics } = useProfileMetrics();
+  const { pendingRequests } = useFriendship();
 
   useEffect(() => {
     if (isAuthenticated && user && isOnboardingRequired === false) {
@@ -252,16 +255,29 @@ export default function Profilo() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="shadow-card hover:shadow-elevated transition-smooth">
+        <Card 
+          className="shadow-card hover:shadow-elevated transition-smooth cursor-pointer"
+          onClick={() => setShowFriendRequests(true)}
+        >
           <CardContent className="p-4 text-center">
             <div className="flex flex-col items-center gap-2">
-              <div className="p-2 rounded-full bg-primary/10">
+              <div className="p-2 rounded-full bg-primary/10 relative">
                 <UserPlus className="h-5 w-5 text-primary" />
+                {pendingRequests.length > 0 && (
+                  <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {pendingRequests.length}
+                  </div>
+                )}
               </div>
               <div className="font-bold text-2xl">
                 {metrics.loading ? '-' : metrics.friendsCount}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Amici</div>
+              {pendingRequests.length > 0 && (
+                <div className="text-xs text-red-600 font-medium">
+                  {pendingRequests.length} richieste
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -302,9 +318,6 @@ export default function Profilo() {
         <div className="grid grid-cols-1 gap-3">
           {/* Gestione Disponibilità */}
           <AvailabilityToggle />
-
-          {/* Sistema Amicizie */}
-          <FriendRequestsCard />
         </div>
       </div>
 
@@ -561,6 +574,11 @@ export default function Profilo() {
       <FriendSuggestionsModal
         open={showFriendSuggestions}
         onOpenChange={setShowFriendSuggestions}
+      />
+
+      <FriendRequestsModal 
+        open={showFriendRequests}
+        onOpenChange={setShowFriendRequests}
       />
 
     </div>

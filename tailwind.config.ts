@@ -65,7 +65,11 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				'brand-cream': 'hsl(var(--brand-cream))'
+				'brand-cream': 'hsl(var(--brand-cream))',
+				'disponibile-uscire': {
+					DEFAULT: 'hsl(var(--disponibile-uscire))',
+					foreground: 'hsl(var(--disponibile-uscire-foreground))'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
