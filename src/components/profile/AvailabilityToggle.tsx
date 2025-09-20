@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRealTimePresence } from '@/hooks/useRealTimePresence';
 import { AvailabilityForm } from '@/components/availability/AvailabilityForm';
+import { QuickAvailabilitySelector } from '@/components/availability/QuickAvailabilitySelector';
 import { toast } from 'sonner';
 interface Availability {
   id: string;
@@ -45,14 +46,14 @@ export function AvailabilityToggle() {
       console.error('Error fetching availability:', error);
     }
   };
-  const setAvailableToGoOut = async () => {
+  const setAvailableToGoOut = async (hours: number = 4) => {
     if (!user) return;
     try {
       setIsLoading(true);
 
-      // Set auto-expiry to 4 hours from now
+      // Set auto-expiry based on selected hours
       const autoExpiry = new Date();
-      autoExpiry.setHours(autoExpiry.getHours() + 4);
+      autoExpiry.setHours(autoExpiry.getHours() + hours);
 
       // Update or create availability
       const availabilityData = {
@@ -63,16 +64,20 @@ export function AvailabilityToggle() {
         end_at: autoExpiry.toISOString(),
         updated_at: new Date().toISOString()
       };
+      
       if (availability) {
-        const {
-          error
-        } = await supabase.from('availability').update(availabilityData).eq('id', availability.id);
+        const { error } = await supabase
+          .from('availability')
+          .update(availabilityData)
+          .eq('id', availability.id);
         if (error) throw error;
+        setAvailability({ ...availability, ...availabilityData });
       } else {
-        const {
-          data,
-          error
-        } = await supabase.from('availability').insert(availabilityData).select().single();
+        const { data, error } = await supabase
+          .from('availability')
+          .insert(availabilityData)
+          .select()
+          .single();
         if (error) throw error;
         setAvailability(data);
       }
@@ -80,7 +85,9 @@ export function AvailabilityToggle() {
       // Update presence status
       await updatePresence('Disponibile a uscire');
       setStatus('available');
-      toast.success('Sei ora disponibile a uscire! Altri utenti vicini possono trovarti.');
+      
+      const durationText = hours === 8 ? 'fino a stasera' : `per ${hours} ${hours === 1 ? 'ora' : 'ore'}`;
+      toast.success(`Sei ora disponibile a uscire ${durationText}!`);
     } catch (error) {
       console.error('Error setting availability:', error);
       toast.error('Errore nell\'aggiornamento');
@@ -179,8 +186,8 @@ export function AvailabilityToggle() {
         };
       case 'online':
         return {
-          label: 'Online',
-          description: 'Attivo ma non disponibile a uscire',
+          label: 'Disponibile',
+          description: 'Online ma non disponibile a uscire',
           color: 'bg-blue-500',
           textColor: 'text-blue-600',
           bgColor: 'bg-blue-50',
@@ -234,13 +241,11 @@ export function AvailabilityToggle() {
           
           {/* Quick Actions */}
           <div className="mt-4 space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={setAvailableToGoOut} disabled={isLoading} variant={status === 'available' ? 'default' : 'outline'} size="sm" className={`h-8 text-xs ${status === 'available' ? 'bg-disponibile-uscire hover:bg-disponibile-uscire/90 text-disponibile-uscire-foreground' : ''}`}>
-                <Zap className="w-3 h-3 mr-1" />
-                Disponibile ora
-              </Button>
-              
-            </div>
+            <QuickAvailabilitySelector 
+              onSetAvailable={setAvailableToGoOut}
+              isLoading={isLoading}
+              isActive={status === 'available'}
+            />
             
             {/* Programmazione disponibilità */}
             {!showScheduleForm ? <Button variant="ghost" size="sm" onClick={() => setShowScheduleForm(true)} className="w-full text-sm text-muted-foreground hover:text-foreground h-8">
@@ -270,7 +275,7 @@ export function AvailabilityToggle() {
             <div className="space-y-3">
               <div className="text-sm font-medium">Scegli il tuo stato</div>
               
-              <button onClick={setAvailableToGoOut} disabled={isLoading} className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${status === 'available' ? 'border-disponibile-uscire bg-disponibile-uscire/10' : 'border-gray-200 hover:border-disponibile-uscire/50'}`}>
+              <button onClick={() => setAvailableToGoOut(4)} disabled={isLoading} className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${status === 'available' ? 'border-disponibile-uscire bg-disponibile-uscire/10' : 'border-gray-200 hover:border-disponibile-uscire/50'}`}>
                 <div className="flex items-center gap-3">
                   <CircleDot className="h-4 w-4 text-disponibile-uscire" />
                   <div>
@@ -284,8 +289,8 @@ export function AvailabilityToggle() {
                 <div className="flex items-center gap-3">
                   <CircleDot className="h-4 w-4 text-blue-600" />
                   <div>
-                    <div className="font-medium text-blue-700">Solo online</div>
-                    <div className="text-xs text-blue-600">Attivo ma non disponibile a uscire</div>
+                    <div className="font-medium text-blue-700">Solo disponibile</div>
+                    <div className="text-xs text-blue-600">Online ma non disponibile a uscire</div>
                   </div>
                 </div>
               </button>

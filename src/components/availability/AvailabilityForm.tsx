@@ -98,56 +98,55 @@ export function AvailabilityForm() {
       });
     }
   };
-  return <div className="space-y-6">
-      {/* Mode Selector */}
-      <div className="grid grid-cols-2 gap-3">
-        
-        <Button variant={!isQuickMode ? "default" : "outline"} onClick={() => setIsQuickMode(false)} className="h-auto py-3">
-          <CalendarIcon className="w-4 h-4 mr-2" />
-          <div className="text-left">
-            <div className="font-medium">Programma</div>
-            <div className="text-xs opacity-70">Scegli data e ora</div>
-          </div>
-        </Button>
-      </div>
-
-      {isQuickMode ? <Card>
-          
-          
-        </Card> : <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Programma disponibilità</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label className="mb-2 block">Giorno</Label>
-                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="startTime">Inizio</Label>
-                    <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="endTime">Fine</Label>
-                    <Input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium">Visibile ad altri</div>
-                    <div className="text-xs text-muted-foreground">Altri utenti potranno trovarti</div>
-                  </div>
-                  <Switch checked={shareable} onCheckedChange={setShareable} />
-                </div>
-                <Button onClick={onSubmitScheduled} className="w-full">
-                  Programma disponibilità
-                </Button>
-              </div>
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label className="mb-2 block text-sm">Giorno</Label>
+          <Calendar 
+            mode="single" 
+            selected={date} 
+            onSelect={setDate} 
+            className="rounded-md border scale-90" 
+          />
+        </div>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="startTime" className="text-sm">Inizio</Label>
+              <Input 
+                id="startTime" 
+                type="time" 
+                value={startTime} 
+                onChange={e => setStartTime(e.target.value)}
+                className="h-8"
+              />
             </div>
-          </CardContent>
-        </Card>}
-    </div>;
+            <div>
+              <Label htmlFor="endTime" className="text-sm">Fine</Label>
+              <Input 
+                id="endTime" 
+                type="time" 
+                value={endTime} 
+                onChange={e => setEndTime(e.target.value)}
+                className="h-8"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <div className="text-sm font-medium">Visibile ad altri</div>
+              <div className="text-xs text-muted-foreground">Altri potranno trovarti</div>
+            </div>
+            <Switch checked={shareable} onCheckedChange={setShareable} />
+          </div>
+          
+          <Button onClick={onSubmitScheduled} className="w-full h-8 text-sm">
+            Salva programmazione
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
