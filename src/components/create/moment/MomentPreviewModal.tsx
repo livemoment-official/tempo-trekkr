@@ -25,6 +25,8 @@ interface MomentPreviewModalProps {
     name: string;
     avatar_url?: string;
   };
+  onConfirm?: () => void;
+  isCreating?: boolean;
 }
 
 export default function MomentPreviewModal({ 
@@ -32,7 +34,9 @@ export default function MomentPreviewModal({
   onOpenChange, 
   momentData, 
   photoPreview,
-  userProfile 
+  userProfile,
+  onConfirm,
+  isCreating = false
 }: MomentPreviewModalProps) {
   
   const getFormattedTime = () => {
@@ -178,8 +182,19 @@ export default function MomentPreviewModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Modifica
           </Button>
-          <Button>
-            Pubblica
+          <Button 
+            onClick={onConfirm} 
+            disabled={isCreating}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          >
+            {isCreating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Creando...
+              </>
+            ) : (
+              'Pubblica'
+            )}
           </Button>
         </div>
       </DialogContent>

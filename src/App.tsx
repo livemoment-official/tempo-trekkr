@@ -16,6 +16,7 @@ import Profilo from "./pages/Profilo";
 import Crea from "./pages/Crea";
 import Esplora from "./pages/Esplora";
 import CreaMomento from "./pages/CreaMomento";
+import CreaMomentoDaInvito from "./pages/CreaMomentoDaInvito";
 import CreaEvento from "./pages/CreaEvento";
 import CreaInvito from "./pages/CreaInvito";
 import Agenda from "./pages/Agenda";
@@ -49,6 +50,7 @@ const App = () => (
                 <Route path="/profilo" element={<Profilo />} />
                 <Route path="/crea" element={<Crea />} />
                 <Route path="/crea/momento" element={<CreaMomento />} />
+                <Route path="/crea/momento-da-invito/:inviteId" element={<CreaMomentoDaInvito />} />
                 <Route path="/crea/evento" element={<CreaEvento />} />
                 <Route path="/crea/invito" element={<CreaInvito />} />
                 <Route path="/agenda" element={<Agenda />} />

@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Users, Clock, MessageSquare, Share2, Check, X, User } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, MessageSquare, Share2, Check, X, User, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,11 @@ export default function InviteCard({
   const handleReject = () => {
     toast.success("Invito rifiutato");
   };
+  
+  const handleCreateMoment = () => {
+    navigate(`/crea/momento-da-invito/${invite.id}`);
+  };
+  
   const handleViewProfile = () => {
     if (invite.sender?.id) {
       navigate(`/user/${invite.sender.id}`);
@@ -130,15 +135,33 @@ export default function InviteCard({
               <p className="text-sm italic text-secondary-foreground">"{invite.response_message}"</p>
             </div>}
 
-          {/* Azioni riprogettate */}
+          {/* Azioni riprogettate con 3 opzioni */}
           {type === 'received' && invite.status === 'pending' && <div className="space-y-3 pt-2">
-              <div className="flex gap-3">
-                <Button onClick={handleAccept} className={`flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold ${isMobile ? "h-10 text-sm" : "h-11"} rounded-xl shadow-sm hover:shadow-md transition-all`}>
-                  <Check className="h-4 w-4 mr-2" />
+              {/* Bottone principale "Creaci il Momento" */}
+              <Button 
+                onClick={handleCreateMoment} 
+                className={`w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Creaci il Momento
+              </Button>
+              
+              {/* Bottoni secondari */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  onClick={handleAccept} 
+                  variant="outline"
+                  className={`border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}
+                >
+                  <Check className="h-3 w-3 mr-1" />
                   Accetta
                 </Button>
-                <Button variant="outline" onClick={handleReject} className={`flex-1 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold ${isMobile ? "h-10 text-sm" : "h-11"} rounded-xl transition-all`}>
-                  <X className="h-4 w-4 mr-2" />
+                <Button 
+                  onClick={handleReject} 
+                  variant="outline"
+                  className={`border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}
+                >
+                  <X className="h-3 w-3 mr-1" />
                   Rifiuta
                 </Button>
               </div>
