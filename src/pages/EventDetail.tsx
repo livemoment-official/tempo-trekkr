@@ -22,10 +22,7 @@ import { it } from "date-fns/locale";
 const fetchEventDetail = async (eventId: string) => {
   const { data, error } = await supabase
     .from('events')
-    .select(`
-      *,
-      host:profiles(name, avatar_url, username)
-    `)
+    .select('*')
     .eq('id', eventId)
     .single();
 
@@ -165,9 +162,13 @@ export default function EventDetail() {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <p className="font-medium">{event.place.name}</p>
-                  {event.place.address && (
-                    <p className="text-sm text-muted-foreground">{event.place.address}</p>
+                  <p className="font-medium">
+                    {typeof event.place === 'object' && event.place !== null && 'name' in event.place 
+                      ? (event.place as any).name 
+                      : 'Location evento'}
+                  </p>
+                  {typeof event.place === 'object' && event.place !== null && 'address' in event.place && (
+                    <p className="text-sm text-muted-foreground">{(event.place as any).address}</p>
                   )}
                 </div>
               </div>
@@ -193,28 +194,24 @@ export default function EventDetail() {
           </CardContent>
         </Card>
 
-        {/* Organizer */}
-        {event.host && (
-          <Card>
-            <CardHeader>
-              <h3 className="font-semibold">Organizzatore</h3>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={event.host.avatar_url} />
-                  <AvatarFallback>{event.host.name?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h4 className="font-medium">{event.host.name || 'Organizzatore'}</h4>
-                  {event.host.username && (
-                    <p className="text-sm text-muted-foreground">@{event.host.username}</p>
-                  )}
-                </div>
+        {/* Organizer - Placeholder for now */}
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Organizzatore</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-4">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src="/livemoment-mascot.png" />
+                <AvatarFallback>O</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h4 className="font-medium">Organizzatore Evento</h4>
+                <p className="text-sm text-muted-foreground">Informazioni disponibili presto</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
