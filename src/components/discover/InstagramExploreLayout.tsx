@@ -35,7 +35,7 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="relative pb-28">
       {/* Header - Only show when in chat mode */}
       {showChat && hasMessages && (
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
@@ -57,7 +57,7 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
       )}
       
       {/* Main Content Area */}
-      <div className="flex-1 relative">
+      <div className="relative">
         {/* Discovery Grid - Always rendered but hidden when chat is active */}
         <div className={cn(
           "transition-all duration-300",
@@ -74,8 +74,10 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
         )}
       </div>
       
-      {/* Bottom Chat Bar - Always visible and fixed */}
-      <BottomChatBar onSendMessage={handleSendMessage} disabled={loading} />
+      {/* Bottom Chat Bar - Fixed at bottom */}
+      <div className="fixed bottom-16 left-0 right-0 z-50 bg-background border-t border-border">
+        <BottomChatBar onSendMessage={handleSendMessage} disabled={loading} />
+      </div>
     </div>
   );
 };
