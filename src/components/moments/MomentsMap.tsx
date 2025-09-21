@@ -22,6 +22,10 @@ interface MomentMapProps {
       lng: number;
       name: string;
       address?: string;
+      coordinates?: {
+        lat: number;
+        lng: number;
+      };
     };
     host?: {
       name: string;
@@ -125,7 +129,11 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
     const markers: mapboxgl.Marker[] = [];
 
     moments.forEach((moment) => {
-      if (!moment.place?.lat || !moment.place?.lng) return;
+      // Handle both coordinate formats: place.lat/lng and place.coordinates.lat/lng
+      const lat = moment.place?.lat || moment.place?.coordinates?.lat;
+      const lng = moment.place?.lng || moment.place?.coordinates?.lng;
+      
+      if (!lat || !lng) return;
 
       const markerEl = document.createElement('div');
       markerEl.className = 'moment-marker';
@@ -136,7 +144,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
       `;
 
       const marker = new mapboxgl.Marker(markerEl)
-        .setLngLat([moment.place.lng, moment.place.lat])
+        .setLngLat([lng, lat])
         .addTo(map.current!);
 
       // Add click handler

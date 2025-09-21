@@ -259,7 +259,7 @@ export default function CreaMomento() {
       
       // Redirect to the created moment
       setTimeout(() => {
-        navigate(`/moment-detail/${data.id}`);
+        navigate(`/moment/${data.id}`);
       }, 1500);
     } catch (error) {
       console.error('Error creating moment:', error);

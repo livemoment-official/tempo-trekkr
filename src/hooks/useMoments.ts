@@ -16,12 +16,20 @@ export interface Moment {
     lng: number;
     name: string;
     address?: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
   };
   host_id: string;
   host?: {
     id: string;
     name: string;
     avatar_url?: string;
+  };
+  organizer?: {
+    name: string;
+    avatar?: string;
   };
   participants: string[];
   max_participants?: number;
@@ -124,10 +132,7 @@ export function useMoments() {
     try {
       let query = supabase
         .from('moments')
-        .select(`
-          *,
-          moment_participants!inner(user_id, status)
-        `)
+        .select(`*`)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
@@ -169,14 +174,14 @@ export function useMoments() {
 
       if (currentFilters.isPaid !== null && currentFilters.isPaid !== undefined) {
         if (currentFilters.isPaid === false) {
-          query = query.or('price.is.null,price.eq.0');
+          query = query.or('payment_required.is.false,price_cents.is.null,price_cents.eq.0');
         } else {
-          query = query.gt('price', 0);
+          query = query.eq('payment_required', true).gt('price_cents', 0);
           if (currentFilters.priceMin) {
-            query = query.gte('price', currentFilters.priceMin);
+            query = query.gte('price_cents', currentFilters.priceMin * 100);
           }
           if (currentFilters.priceMax) {
-            query = query.lte('price', currentFilters.priceMax);
+            query = query.lte('price_cents', currentFilters.priceMax * 100);
           }
         }
       }
@@ -204,16 +209,24 @@ export function useMoments() {
       }
 
       let processedMoments = (data || []).map(moment => {
-        // Cast place to proper type and ensure it has required properties
+        // Cast place to proper type and handle both coordinate formats
         const place = moment.place as any;
-        const validPlace = place && typeof place === 'object' && place.lat && place.lng 
-          ? {
-              lat: Number(place.lat),
-              lng: Number(place.lng),
+        let validPlace;
+        
+        if (place && typeof place === 'object') {
+          // Handle both place.lat/lng and place.coordinates.lat/lng
+          const lat = place.lat || place.coordinates?.lat;
+          const lng = place.lng || place.coordinates?.lng;
+          
+          if (lat && lng) {
+            validPlace = {
+              lat: Number(lat),
+              lng: Number(lng),
               name: place.name || '',
               address: place.address
-            }
-          : undefined;
+            };
+          }
+        }
 
         // Get host data from separate query
         const host = hostData[moment.host_id] || undefined;

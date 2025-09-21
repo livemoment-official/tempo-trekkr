@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { SlidersHorizontal, X, List, MapPin } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AreaIndicator } from "./AreaIndicator";
 
 interface MomentFiltersProps {
   onFiltersChange: (filters: any) => void;
@@ -186,8 +187,11 @@ export const MomentFilters = ({
             </Button>
           </div>
 
-          {/* Advanced Filters Button */}
-          <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
+          {/* Advanced Filters and Area Indicator */}
+          <div className="flex items-center gap-3">
+            <AreaIndicator />
+            
+            <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
             <SheetTrigger asChild>
               <Button 
                 variant="outline" 
@@ -338,7 +342,8 @@ export const MomentFilters = ({
                 </Button>
               </div>
             </SheetContent>
-          </Sheet>
+            </Sheet>
+          </div>
         </div>
       </div>
 

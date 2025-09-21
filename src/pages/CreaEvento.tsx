@@ -13,6 +13,7 @@ import SmartProgressIndicator from "@/components/create/event/SmartProgressIndic
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useEventValidation } from "@/hooks/useEventValidation";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 interface EventData {
   title: string;
   description: string;
@@ -187,9 +188,56 @@ export default function CreaEvento() {
                   {currentStep < steps.length ? <Button onClick={handleNext} disabled={!canProceedToNext()}>
                       Avanti
                       <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button> : <Button onClick={() => {
-                  handleAutoSave(eventData);
-                  navigate('/momenti-eventi');
+                    </Button> : <Button onClick={async () => {
+                  try {
+                    // Save event to database
+                    const eventToSave = {
+                      title: eventData.title,
+                      description: eventData.description,
+                      when_at: eventData.date && eventData.startTime 
+                        ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
+                        : null,
+                      place: eventData.location.coordinates ? {
+                        name: eventData.location.name,
+                        address: eventData.location.name,
+                        lat: eventData.location.coordinates[1],
+                        lng: eventData.location.coordinates[0],
+                        coordinates: {
+                          lat: eventData.location.coordinates[1],
+                          lng: eventData.location.coordinates[0]
+                        }
+                      } : null,
+                      max_participants: eventData.capacity,
+                      tags: eventData.tags,
+                      photos: eventData.photos,
+                      ticketing: eventData.ticketing,
+                      discovery_on: true,
+                      host_id: null // Will be set by RLS
+                    };
+
+                    const { data, error } = await supabase
+                      .from('events')
+                      .insert(eventToSave)
+                      .select()
+                      .single();
+
+                    if (error) throw error;
+
+                    handleAutoSave(eventData);
+                    toast({
+                      title: "Evento pubblicato!",
+                      description: "Il tuo evento è ora visibile a tutti",
+                      duration: 3000
+                    });
+                    navigate(`/moment/${data.id}`);
+                  } catch (error) {
+                    console.error('Error saving event:', error);
+                    toast({
+                      title: "Errore",
+                      description: "Errore nella pubblicazione dell'evento",
+                      variant: "destructive"
+                    });
+                  }
                 }} disabled={!validation.overall.isValid}>
                       Pubblica Evento
                     </Button>}
