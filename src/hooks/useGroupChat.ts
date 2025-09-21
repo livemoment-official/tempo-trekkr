@@ -38,6 +38,75 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
+  // Auto-load group info when groupType or groupId changes
+  useEffect(() => {
+    if (groupId && groupType) {
+      console.log('Loading group info for:', { groupType, groupId });
+      loadGroupInfo();
+    }
+  }, [groupType, groupId]);
+
+  // Auto-load messages when groupInfo is available
+  useEffect(() => {
+    if (groupInfo && groupId) {
+      console.log('Loading messages for group:', groupInfo.title);
+      loadMessages();
+    }
+  }, [groupInfo, groupId]);
+
+  // Set up real-time subscription for new messages
+  useEffect(() => {
+    if (!groupId) return;
+
+    console.log('Setting up real-time subscription for group:', groupId);
+    const channel = supabase
+      .channel(`group_messages:${groupId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'group_messages',
+          filter: `group_id=eq.${groupId}`
+        },
+        async (payload) => {
+          console.log('New message received:', payload);
+          if (payload.new) {
+            // Get sender profile for the new message
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id, name, avatar_url')
+              .eq('id', payload.new.sender_id)
+              .single();
+
+            const newMessage: GroupMessage = {
+              id: payload.new.id,
+              content: payload.new.content,
+              sender_id: payload.new.sender_id,
+              sender_info: {
+                id: payload.new.sender_id,
+                name: profile?.name || 'Utente',
+                avatar_url: profile?.avatar_url,
+              },
+              group_info: {
+                id: groupId,
+                title: groupInfo?.title || 'Chat di gruppo',
+              },
+              created_at: payload.new.created_at,
+            };
+
+            setMessages(prev => [...prev, newMessage]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [groupId, groupInfo]);
+
   const loadGroupInfo = async () => {
     try {
       let data, error;
