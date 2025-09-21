@@ -15,6 +15,7 @@ import Index from './pages/Index'
 import Inviti from './pages/Inviti'
 import TrovaAmici from './pages/TrovaAmici'
 import Esplora from './pages/Esplora'
+import EsploraChat from './pages/EsploraChat'
 import Gruppi from './pages/Gruppi'
 import MomentiEventi from './pages/MomentiEventi'
 import Agenda from './pages/Agenda'
@@ -49,6 +50,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="inviti" element={<Inviti />} />
               <Route path="trova-amici" element={<TrovaAmici />} />
               <Route path="esplora" element={<Esplora />} />
+              <Route path="esplora/chat" element={<EsploraChat />} />
               <Route path="gruppi" element={<Gruppi />} />
               <Route path="momenti" element={<MomentiEventi />} />
               <Route path="agenda" element={<Agenda />} />

@@ -13,6 +13,7 @@ import { FriendSuggestionsModal } from "@/components/profile/FriendSuggestionsMo
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileAvatar } from "@/hooks/useProfileAvatar";
+import { FixedChatInput } from "@/components/discover/FixedChatInput";
 import liveMomentLogo from "@/assets/livemoment-logo.png";
 const Header = ({
   onOpenSearch,
@@ -123,6 +124,9 @@ export default function AppLayout() {
 
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
+  
+  // Check if we need to show the fixed chat input
+  const showChatInput = pathname === '/esplora' || pathname === '/esplora/chat';
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
@@ -148,6 +152,9 @@ export default function AppLayout() {
         </div>}
 
       {!isCreatePage && <BottomTabBar />}
+
+      {/* Fixed Chat Input for Esplora pages */}
+      {showChatInput && <FixedChatInput />}
 
       {/* Search Overlay */}
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
