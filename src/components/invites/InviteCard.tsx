@@ -76,7 +76,14 @@ export default function InviteCard({
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1">
+            <div className="flex-1 space-y-2">
+              <div>
+                <h4 onClick={handleViewProfile} className="font-semibold cursor-pointer hover:text-primary transition-colors leading-tight text-xs">
+                  {invite.sender?.name}
+                </h4>
+                
+              </div>
+              
               <h3 className={`font-bold ${isMobile ? "text-lg" : "text-xl"} text-foreground leading-tight`}>
                 {invite.title}
               </h3>
