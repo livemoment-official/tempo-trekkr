@@ -1,61 +1,43 @@
 import React from 'react';
-import { AIHeroSection } from './AIHeroSection';
 import { CompactInputBar } from './CompactInputBar';
 import { ChatInterface } from './ChatInterface';
-import { AIDiscoveryCarousels } from './AIDiscoveryCarousels';
+import { AIHeroSection } from './AIHeroSection';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 interface ConversationalExploreLayoutProps {
-  messages: { role: 'user' | 'assistant'; content: string }[];
+  messages: Message[];
   onSendMessage: (message: string) => void;
   loading: boolean;
 }
 
-export function ConversationalExploreLayout({
+export const ConversationalExploreLayout: React.FC<ConversationalExploreLayoutProps> = ({
   messages,
   onSendMessage,
   loading
-}: ConversationalExploreLayoutProps) {
-  const isInConversation = messages.length > 0;
+}) => {
+  const hasMessages = messages.length > 0;
 
-  if (!isInConversation) {
-    // Initial state: Show full hero section
-    return (
-      <div className="min-h-screen bg-background">
-        <AIHeroSection onSendMessage={onSendMessage} loading={loading} />
-        
-        {/* Discovery Carousels */}
-        <div className="container mx-auto px-4 py-12">
-          <AIDiscoveryCarousels />
-        </div>
-      </div>
-    );
-  }
-
-  // Conversation state: ChatGPT-like interface
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Compact Input Bar at Top */}
-      <CompactInputBar onSendMessage={onSendMessage} loading={loading} />
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Compact Input Bar - Always visible at top */}
+      <CompactInputBar onSendMessage={onSendMessage} disabled={loading} />
       
-      {/* Main Chat Area */}
-      <div className="flex-1 flex">
-        {/* Chat Interface - Main Area */}
-        <div className="flex-1 flex flex-col">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {hasMessages ? (
+          /* Chat Interface - When conversation started */
           <ChatInterface messages={messages} loading={loading} />
-        </div>
-        
-        {/* Discovery Sidebar - Hidden on mobile, visible on larger screens */}
-        <div className="hidden xl:block w-80 border-l border-border/50 bg-card/30">
-          <div className="p-4 h-full overflow-y-auto">
-            <h3 className="font-semibold text-sm text-muted-foreground mb-4 uppercase tracking-wide">
-              Scopri di più
-            </h3>
-            <div className="scale-75 origin-top-left w-[133%]">
-              <AIDiscoveryCarousels />
-            </div>
+        ) : (
+          /* Hero Section - Initial state */
+          <div className="h-full overflow-y-auto">
+            <AIHeroSection onSendMessage={onSendMessage} loading={loading} />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
-}
+};
