@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export function DiscoveryGrid() {
+  const navigate = useNavigate();
   // Fetch all data
   const { data: availableUsers } = useQuery({
     queryKey: ['available-users-grid'],
@@ -27,7 +29,7 @@ export function DiscoveryGrid() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('id, title, place, when_at, tags, image_url')
+        .select('id, title, place, when_at, tags, photos')
         .eq('discovery_on', true)
         .order('when_at', { ascending: true })
         .limit(20);
@@ -41,7 +43,7 @@ export function DiscoveryGrid() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('moments')
-        .select('id, title, when_at, tags, images')
+        .select('id, title, when_at, tags, photos')
         .eq('is_public', true)
         .order('when_at', { ascending: false })
         .limit(20);
@@ -72,7 +74,7 @@ export function DiscoveryGrid() {
     switch (type) {
       case 'person':
         return (
-          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent">
+          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/user/${data.user_id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
               <Avatar className="w-full h-full rounded-lg">
@@ -98,12 +100,12 @@ export function DiscoveryGrid() {
 
       case 'event':
         return (
-          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent">
+          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/event/${data.id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
-                {data.image_url ? (
-                  <img src={data.image_url} alt={data.title} className="w-full h-full object-cover rounded-lg" />
+                {data.photos && data.photos.length > 0 ? (
+                  <img src={data.photos[0]} alt={data.title} className="w-full h-full object-cover rounded-lg" />
                 ) : (
                   <Calendar className="w-12 h-12 text-primary" />
                 )}
@@ -125,12 +127,12 @@ export function DiscoveryGrid() {
 
       case 'moment':
         return (
-          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent">
+          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/moment/${data.id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
               <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted/20 rounded-lg flex items-center justify-center">
-                {data.images && data.images.length > 0 ? (
-                  <img src={data.images[0]} alt={data.title} className="w-full h-full object-cover rounded-lg" />
+                {data.photos && data.photos.length > 0 ? (
+                  <img src={data.photos[0]} alt={data.title} className="w-full h-full object-cover rounded-lg" />
                 ) : (
                   <MapPin className="w-12 h-12 text-primary" />
                 )}
@@ -152,7 +154,7 @@ export function DiscoveryGrid() {
 
       case 'artist':
         return (
-          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent">
+          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/artist/${data.id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
               <Avatar className="w-full h-full rounded-lg">
