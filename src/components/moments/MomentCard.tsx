@@ -108,7 +108,7 @@ export function MomentCard({
   });
 
   const handleCardClick = () => {
-    navigate(`/momenti/${id}`);
+    navigate(`/moment-detail/${id}`);
   };
 
   const getCategoryEmoji = (cat: string) => {

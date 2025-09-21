@@ -149,9 +149,13 @@ export default function CreaMomento() {
         throw new Error("Failed to upload photo");
       }
 
-      // Get location coordinates if needed
+      // Get location coordinates from form or user location
       let locationCoordinates;
-      if (userLocation) {
+      const location = momentData.location;
+      if (location !== null && typeof location === 'object' && location && 'coordinates' in location) {
+        const locWithCoords = location as { name: string; address?: string; coordinates: { lat: number; lng: number } };
+        locationCoordinates = locWithCoords.coordinates;
+      } else if (userLocation) {
         locationCoordinates = {
           lat: userLocation.lat,
           lng: userLocation.lng
@@ -165,8 +169,9 @@ export default function CreaMomento() {
         description: momentData.description || `Creato velocemente${momentData.selectedCategory ? ` • ${momentData.selectedCategory}` : ''}`,
         photos: [photoUrl],
         when_at: when_at.toISOString(),
-        place: momentData.location ? {
-          name: momentData.location,
+        place: location ? {
+          name: typeof location === 'string' ? location : (location as any)?.name || '',
+          address: typeof location === 'object' && (location as any)?.address ? (location as any).address : undefined,
           coordinates: locationCoordinates
         } : null,
         age_range_min: 18,
@@ -210,8 +215,8 @@ export default function CreaMomento() {
             invite_count: 1,
             status: 'pending',
             when_at: when_at.toISOString(),
-            place: momentData.location ? {
-              name: momentData.location,
+            place: location ? {
+              name: typeof location === 'string' ? location : (location as any)?.name || '',
               coordinates: locationCoordinates
             } : null
           };
@@ -229,10 +234,14 @@ export default function CreaMomento() {
       }
       toast({
         title: "Momento creato! 🎉",
-        description: isInviteFlow ? `Momento creato e invito inviato a ${inviteUserName}!` : "Il tuo momento è stato pubblicato in 30 secondi",
+        description: isInviteFlow ? `Momento creato e invito inviato a ${inviteUserName}!` : "Il tuo momento è stato pubblicato",
         duration: 4000
       });
-      navigate("/");
+      
+      // Redirect to the created moment
+      setTimeout(() => {
+        navigate(`/moment-detail/${data.id}`);
+      }, 1500);
     } catch (error) {
       console.error('Error creating moment:', error);
       toast({

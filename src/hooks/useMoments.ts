@@ -70,16 +70,22 @@ export function useMoments() {
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<MomentsFilters>({});
 
-  // Convert mock data to Moment interface
-  const convertMockToMoment = (mockMoment: any): Moment => {
+  // Convert mock data to Moment interface  
+  const convertMockToMoment = (mockMoment: any, userLat?: number, userLng?: number): Moment => {
+    // Generate coordinates around user location if available, otherwise Milan
+    const baseLat = userLat || 45.4642;
+    const baseLng = userLng || 9.1900;
+    const mockLat = baseLat + (Math.random() - 0.5) * 0.1;
+    const mockLng = baseLng + (Math.random() - 0.5) * 0.1;
+    
     return {
       id: mockMoment.id,
       title: mockMoment.title,
       description: mockMoment.description,
       when_at: mockMoment.date,
       place: {
-        lat: 45.4642 + (Math.random() - 0.5) * 0.1, // Milan area with variation
-        lng: 9.1900 + (Math.random() - 0.5) * 0.1,
+        lat: mockLat,
+        lng: mockLng,
         name: mockMoment.location,
         address: mockMoment.location
       },
@@ -221,7 +227,7 @@ export function useMoments() {
 
       // If we have few real moments, add mock data to enrich the experience
       if (processedMoments.length < 5 && currentPage === 0) {
-        const mockMoments = generateMockMoments(15).map(convertMockToMoment);
+        const mockMoments = generateMockMoments(15).map(mock => convertMockToMoment(mock, userLoc?.lat, userLoc?.lng));
         processedMoments = [...processedMoments, ...mockMoments];
       }
 

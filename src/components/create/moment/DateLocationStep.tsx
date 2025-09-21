@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, MapPin } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { EnhancedLocationSearch } from "@/components/location/EnhancedLocationSearch";
 
 interface DateLocationStepProps {
   data: any;
@@ -23,20 +24,23 @@ export default function DateLocationStep({ data, onChange, onNext }: DateLocatio
     }
   };
 
-  const handleLocationChange = (name: string) => {
+  const handleLocationSelect = (location: { name: string; lat: number; lng: number; address?: string }) => {
     onChange({ 
       ...data, 
-      location: { 
-        ...data.location, 
-        name,
-        coordinates: null // TODO: Add geocoding
+      location: {
+        name: location.name,
+        address: location.address || location.name,
+        coordinates: {
+          lat: location.lat,
+          lng: location.lng
+        }
       } 
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (data.date && data.location.name.trim()) {
+    if (data.date && data.location?.name?.trim()) {
       onNext();
     }
   };
@@ -90,35 +94,32 @@ export default function DateLocationStep({ data, onChange, onNext }: DateLocatio
       </div>
 
       <div>
-        <Label htmlFor="location" className="text-base font-medium">
+        <Label className="text-base font-medium">
           Dove *
         </Label>
         <p className="text-sm text-muted-foreground mt-1">
-          Specifica il luogo del momento
+          Cerca e seleziona il luogo del momento
         </p>
         
-        <div className="mt-3 relative">
-          <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="location"
-            value={data.location.name}
-            onChange={(e) => handleLocationChange(e.target.value)}
+        <div className="mt-3">
+          <EnhancedLocationSearch
+            onLocationSelect={handleLocationSelect}
             placeholder="Es. Bar Central, Via Roma 123, Milano"
-            className="pl-10"
-            required
+            value={data.location?.name || ""}
           />
         </div>
         
-        {/* TODO: Add map integration and location suggestions */}
-        <p className="text-xs text-muted-foreground mt-2">
-          Inserisci l'indirizzo o il nome del luogo
-        </p>
+        {data.location?.address && (
+          <p className="text-xs text-muted-foreground mt-2">
+            📍 {data.location.address}
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end">
         <Button 
           type="submit" 
-          disabled={!data.date || !data.location.name.trim()}
+          disabled={!data.date || !data.location?.name?.trim()}
         >
           Continua
         </Button>
