@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { DiscoveryGrid } from './DiscoveryGrid';
-import { BottomChatBar } from './BottomChatBar';
 import { ChatInterface } from './ChatInterface';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Grid3X3 } from 'lucide-react';
+import { ArrowLeft, Grid3X3, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CompactInputBar } from './CompactInputBar';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -35,10 +35,10 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
   };
 
   return (
-    <div className="relative pb-28">
+    <div className="relative">
       {/* Header - Only show when in chat mode */}
       {showChat && hasMessages && (
-        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border mb-4">
           <div className="container max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
             <Button
               variant="ghost"
@@ -57,7 +57,7 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
       )}
       
       {/* Main Content Area */}
-      <div className="relative">
+      <div className="relative min-h-[60vh]">
         {/* Discovery Grid - Always rendered but hidden when chat is active */}
         <div className={cn(
           "transition-all duration-300",
@@ -68,15 +68,19 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
         
         {/* Chat Interface - Overlay when active */}
         {showChat && hasMessages && (
-          <div className="absolute inset-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="absolute inset-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 rounded-lg">
             <ChatInterface messages={messages} loading={loading} />
           </div>
         )}
       </div>
       
-      {/* Bottom Chat Bar - Fixed at bottom */}
-      <div className="fixed bottom-16 left-0 right-0 z-50 bg-background border-t border-border">
-        <BottomChatBar onSendMessage={handleSendMessage} disabled={loading} />
+      {/* Chat Input - Always visible at bottom */}
+      <div className="mt-6 pt-4 border-t border-border/50 bg-background/95">
+        <div className="flex items-center gap-3 mb-4">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <span className="font-medium text-foreground">Chiedi all'AI cosa vuoi fare</span>
+        </div>
+        <CompactInputBar onSendMessage={handleSendMessage} disabled={loading} />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { EnhancedImage } from '@/components/ui/enhanced-image';
 
 export function DiscoveryGrid() {
   const navigate = useNavigate();
@@ -103,9 +104,15 @@ export function DiscoveryGrid() {
           <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/event/${data.id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center overflow-hidden">
                 {data.photos && data.photos.length > 0 ? (
-                  <img src={data.photos[0]} alt={data.title} className="w-full h-full object-cover rounded-lg" />
+                  <EnhancedImage 
+                    src={data.photos[0]} 
+                    alt={data.title} 
+                    className="w-full h-full object-cover rounded-lg"
+                    fallbackSrc=""
+                    showSkeleton={false}
+                  />
                 ) : (
                   <Calendar className="w-12 h-12 text-primary" />
                 )}
@@ -132,22 +139,16 @@ export function DiscoveryGrid() {
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
               <div className="w-full h-full bg-gradient-to-br from-muted/50 to-muted/20 rounded-lg flex items-center justify-center overflow-hidden">
                 {data.photos && data.photos.length > 0 ? (
-                  <img 
+                  <EnhancedImage 
                     src={data.photos[0]} 
                     alt={data.title} 
-                    className="w-full h-full object-cover rounded-lg" 
-                    onError={(e) => {
-                      const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-                      if (fallback) {
-                        e.currentTarget.style.display = 'none';
-                        fallback.style.display = 'flex';
-                      }
-                    }}
+                    className="w-full h-full object-cover rounded-lg"
+                    fallbackSrc=""
+                    showSkeleton={false}
                   />
-                ) : null}
-                <div className="fallback-icon w-full h-full flex items-center justify-center" style={{display: data.photos && data.photos.length > 0 ? 'none' : 'flex'}}>
+                ) : (
                   <MapPin className="w-12 h-12 text-primary" />
-                </div>
+                )}
               </div>
               <div className="absolute bottom-2 left-2 right-2 z-20">
                 <Badge variant="secondary" className="mb-1 bg-background/90 text-xs">
