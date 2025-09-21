@@ -14,7 +14,7 @@ interface MomentPreviewModalProps {
     description: string;
     moodTag: string;
     selectedCategory: string;
-    location: string;
+    location: { name: string; address?: string; coordinates: { lat: number; lng: number } } | null;
     selectedTime: string;
     customDateTime: string;
     maxParticipants: number;
@@ -127,7 +127,7 @@ export default function MomentPreviewModal({
               {momentData.location && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  <span>{momentData.location}</span>
+                  <span>{momentData.location.name}</span>
                 </div>
               )}
               

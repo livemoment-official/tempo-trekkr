@@ -40,14 +40,15 @@ export function EnhancedLocationSearch({
   const { location, requestLocation } = useGeolocation();
   const [locationLoading, setLocationLoading] = useState(false);
 
-  // Get Mapbox token from environment
+  // Get Mapbox token from Supabase Edge Function
   const getMapboxToken = useCallback(async () => {
     try {
-      const { data, error } = await fetch('/api/mapbox-token').then(r => r.json());
-      if (error) throw new Error(error);
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+      if (error) throw new Error(error.message);
       return data.token;
-    } catch {
-      // Fallback - in production this should come from edge function
+    } catch (error) {
+      console.error('Failed to get Mapbox token:', error);
       return null;
     }
   }, []);

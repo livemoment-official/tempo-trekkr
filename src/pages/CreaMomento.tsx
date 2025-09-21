@@ -14,6 +14,12 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useAuth } from "@/contexts/AuthContext";
 import MomentPreviewModal from "@/components/create/moment/MomentPreviewModal";
+import { EnhancedLocationSearch } from "@/components/location/EnhancedLocationSearch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 export default function CreaMomento() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,7 +61,8 @@ export default function CreaMomento() {
     description: "",
     selectedTime: "now" as "now" | "tonight" | "tomorrow" | "custom",
     customDateTime: "",
-    location: "",
+    customDate: null as Date | null,
+    location: null as { name: string; address?: string; coordinates: { lat: number; lng: number } } | null,
     selectedCategory: "",
     moodTag: "Spontaneo",
     maxParticipants: 10
@@ -82,20 +89,27 @@ export default function CreaMomento() {
     if (userLocation) {
       setMomentData(prev => ({
         ...prev,
-        location: "Posizione attuale"
+        location: {
+          name: "La tua posizione",
+          address: "Posizione corrente",
+          coordinates: {
+            lat: userLocation.lat,
+            lng: userLocation.lng
+          }
+        }
       }));
     }
 
     // Generate AI suggestions
     await generateSuggestions({
       photo: file,
-      location: momentData.location
+      location: momentData.location?.name || momentData.location?.address || ""
     });
 
     // Move to form step
     setStep('form');
   }, [userLocation, momentData.location, generateSuggestions]);
-  const getDateTime = useCallback((timeOption: string, customDateTime?: string): Date => {
+  const getDateTime = useCallback((timeOption: string, customDateTime?: string, customDate?: Date | null): Date => {
     const now = new Date();
     switch (timeOption) {
       case "now":
@@ -113,6 +127,12 @@ export default function CreaMomento() {
         tomorrow.setHours(19, 0, 0, 0);
         return tomorrow;
       case "custom":
+        if (customDate && customDateTime) {
+          const [hours, minutes] = customDateTime.split(':');
+          const result = new Date(customDate);
+          result.setHours(parseInt(hours) || 19, parseInt(minutes) || 0, 0, 0);
+          return result;
+        }
         return customDateTime ? new Date(customDateTime) : now;
       default:
         return now;
@@ -149,12 +169,11 @@ export default function CreaMomento() {
         throw new Error("Failed to upload photo");
       }
 
-      // Get location coordinates from form or user location
+      // Get location coordinates from selected location
       let locationCoordinates;
       const location = momentData.location;
-      if (location !== null && typeof location === 'object' && location && 'coordinates' in location) {
-        const locWithCoords = location as { name: string; address?: string; coordinates: { lat: number; lng: number } };
-        locationCoordinates = locWithCoords.coordinates;
+      if (location?.coordinates) {
+        locationCoordinates = location.coordinates;
       } else if (userLocation) {
         locationCoordinates = {
           lat: userLocation.lat,
@@ -163,15 +182,15 @@ export default function CreaMomento() {
       }
 
       // Prepare moment data
-      const when_at = getDateTime(momentData.selectedTime, momentData.customDateTime);
+      const when_at = getDateTime(momentData.selectedTime, momentData.customDateTime, momentData.customDate);
       const momentToCreate = {
         title: momentData.title,
         description: momentData.description || `Creato velocemente${momentData.selectedCategory ? ` • ${momentData.selectedCategory}` : ''}`,
         photos: [photoUrl],
         when_at: when_at.toISOString(),
         place: location ? {
-          name: typeof location === 'string' ? location : (location as any)?.name || '',
-          address: typeof location === 'object' && (location as any)?.address ? (location as any).address : undefined,
+          name: location.name || '',
+          address: location.address,
           coordinates: locationCoordinates
         } : null,
         age_range_min: 18,
@@ -216,7 +235,7 @@ export default function CreaMomento() {
             status: 'pending',
             when_at: when_at.toISOString(),
             place: location ? {
-              name: typeof location === 'string' ? location : (location as any)?.name || '',
+              name: location.name || '',
               coordinates: locationCoordinates
             } : null
           };
@@ -260,7 +279,8 @@ export default function CreaMomento() {
       description: "",
       selectedTime: "now",
       customDateTime: "",
-      location: "",
+      customDate: null,
+      location: null,
       selectedCategory: "",
       moodTag: "Spontaneo",
       maxParticipants: 10
@@ -378,16 +398,63 @@ export default function CreaMomento() {
                   Altro
                 </Button>
               </div>
-              {momentData.selectedTime === "custom" && <Input type="datetime-local" value={momentData.customDateTime} onChange={e => setMomentData(prev => ({...prev, customDateTime: e.target.value}))} className="mt-2" />}
+              {momentData.selectedTime === "custom" && (
+                <div className="mt-2 space-y-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !momentData.customDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {momentData.customDate ? format(momentData.customDate, "PPP") : "Seleziona data"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={momentData.customDate || undefined}
+                        onSelect={(date) => setMomentData(prev => ({...prev, customDate: date || null}))}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Input 
+                    type="time" 
+                    value={momentData.customDateTime} 
+                    onChange={e => setMomentData(prev => ({...prev, customDateTime: e.target.value}))} 
+                    placeholder="Seleziona orario"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Location */}
             <div>
               <Label>Dove?</Label>
-              <Input value={momentData.location} onChange={e => setMomentData(prev => ({
-            ...prev,
-            location: e.target.value
-          }))} placeholder={userLocation ? "Posizione attuale" : "Aggiungi luogo..."} className="mt-2" />
+              <EnhancedLocationSearch
+                onLocationSelect={(selectedLocation) => 
+                  setMomentData(prev => ({
+                    ...prev,
+                    location: {
+                      name: selectedLocation.name,
+                      address: selectedLocation.address,
+                      coordinates: {
+                        lat: selectedLocation.lat,
+                        lng: selectedLocation.lng
+                      }
+                    }
+                  }))
+                }
+                placeholder={userLocation ? "Posizione corrente" : "Cerca un luogo..."}
+                value={momentData.location?.name || ""}
+                className="mt-2"
+              />
             </div>
 
             {/* Mood Tags */}

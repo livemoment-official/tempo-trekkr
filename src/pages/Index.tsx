@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { List, MapPin, Loader2 } from "lucide-react";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { MomentFilters } from "@/components/moments/MomentFilters";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
@@ -15,6 +16,7 @@ const Index = () => {
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/";
   const [view, setView] = useState<'list' | 'map'>('list');
+  const { location: userLocation } = useGeolocation();
   
   // Use real moments data
   const {
@@ -72,6 +74,14 @@ const Index = () => {
       </Helmet>
 
       <LocationPermissionCard />
+      
+      {/* Current Location Indicator */}
+      {userLocation && (
+        <div className="text-xs text-muted-foreground flex items-center gap-1 px-2">
+          <MapPin className="h-3 w-3" />
+          <span>Area attuale: {userLocation.accuracy ? `±${Math.round(userLocation.accuracy)}m` : 'Posizione precisa'}</span>
+        </div>
+      )}
       
       <MomentFilters
         onFiltersChange={handleFilterChange}
