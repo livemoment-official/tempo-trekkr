@@ -24,8 +24,10 @@ export const FixedChatInput: React.FC = () => {
       navigate('/esplora/chat');
     }
     
-    // Send the message
-    await sendMessage(message);
+    // Send the message after a small delay to ensure navigation completes
+    setTimeout(() => {
+      sendMessage(message);
+    }, 100);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

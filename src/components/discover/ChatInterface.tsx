@@ -3,14 +3,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { User, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AIResponseRenderer } from './AIResponseRenderer';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { ChatMessage } from '@/hooks/useGlobalChat';
 
 interface ChatInterfaceProps {
-  messages: Message[];
+  messages: ChatMessage[];
   loading: boolean;
 }
 

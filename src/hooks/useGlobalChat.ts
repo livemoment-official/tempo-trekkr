@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface ChatMessage {
+export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
@@ -24,9 +24,12 @@ export const useGlobalChat = () => {
     setMessages(prev => [...prev, newMessage]);
 
     try {
+      console.log('Sending message to AI:', newMessage);
       const response = await supabase.functions.invoke('ai-explore', {
         body: { messages: [...messages, newMessage] }
       });
+
+      console.log('AI response:', response);
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -36,7 +39,7 @@ export const useGlobalChat = () => {
       
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error sending message:', error);
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: 'Si è verificato un errore. Riprova più tardi.',

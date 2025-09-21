@@ -2,14 +2,10 @@ import React from 'react';
 import { CompactInputBar } from './CompactInputBar';
 import { ChatInterface } from './ChatInterface';
 import { AIHeroSection } from './AIHeroSection';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { ChatMessage } from '@/hooks/useGlobalChat';
 
 interface ConversationalExploreLayoutProps {
-  messages: Message[];
+  messages: ChatMessage[];
   onSendMessage: (message: string) => void;
   loading: boolean;
 }

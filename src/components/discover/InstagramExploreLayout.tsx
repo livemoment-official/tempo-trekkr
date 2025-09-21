@@ -1,14 +1,10 @@
 import React from 'react';
 import { ChatInterface } from './ChatInterface';
 import { DiscoveryGrid } from './DiscoveryGrid';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { ChatMessage } from '@/hooks/useGlobalChat';
 
 interface InstagramExploreLayoutProps {
-  messages: Message[];
+  messages: ChatMessage[];
   onSendMessage?: (message: string) => void;
   loading: boolean;
 }
