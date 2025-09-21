@@ -35,7 +35,7 @@ export const InstagramExploreLayout: React.FC<InstagramExploreLayoutProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-32">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header - Only show when in chat mode */}
       {showChat && hasMessages && (
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
