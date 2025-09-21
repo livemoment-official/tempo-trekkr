@@ -141,19 +141,16 @@ export default function InviteCard({
                 Creaci il Momento
               </Button>
               
-              {/* Bottoni secondari */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={handleAccept} variant="outline" className={`border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
-                  <Check className="h-3 w-3 mr-1" />
+              {/* Bottoni secondari sulla stessa riga */}
+              <div className="flex gap-3">
+                <Button onClick={handleAccept} variant="outline" className={`flex-1 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
+                  <Check className="h-4 w-4 mr-2" />
                   Accetta
                 </Button>
-                <Button onClick={handleReject} variant="outline" className={`border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
-                  <X className="h-3 w-3 mr-1" />
-                  Rifiuta
+                <Button onClick={handleReject} variant="outline" size="sm" className={`px-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9" : "h-10"} rounded-lg transition-all`}>
+                  <X className="h-3 w-3" />
                 </Button>
               </div>
-              
-              
             </div>}
         </div>
       </CardContent>
