@@ -17,6 +17,7 @@ interface MomentPreviewModalProps {
     location: { name: string; address?: string; coordinates: { lat: number; lng: number } } | null;
     selectedTime: string;
     customDateTime: string;
+    customDate: Date | null;
     maxParticipants: number;
   };
   photoPreview?: string | null;
@@ -43,16 +44,40 @@ export default function MomentPreviewModal({
         const tonight = new Date(now);
         tonight.setHours(20, 0, 0, 0);
         if (tonight <= now) tonight.setDate(tonight.getDate() + 1);
-        return format(tonight, "PPp", { locale: it });
+        try {
+          return format(tonight, "PPp", { locale: it });
+        } catch {
+          return "Stasera";
+        }
       case "tomorrow":
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(19, 0, 0, 0);
-        return format(tomorrow, "PPp", { locale: it });
+        try {
+          return format(tomorrow, "PPp", { locale: it });
+        } catch {
+          return "Domani";
+        }
       case "custom":
-        return momentData.customDateTime 
-          ? format(new Date(momentData.customDateTime), "PPp", { locale: it })
-          : "Data da definire";
+        try {
+          if (momentData.customDate && momentData.customDateTime) {
+            const [hours, minutes] = momentData.customDateTime.split(':');
+            const customDate = new Date(momentData.customDate);
+            customDate.setHours(parseInt(hours) || 19, parseInt(minutes) || 0, 0, 0);
+            return format(customDate, "PPp", { locale: it });
+          } else if (momentData.customDate) {
+            return format(momentData.customDate, "PP", { locale: it }) + " - Orario da definire";
+          } else if (momentData.customDateTime) {
+            // Legacy support for old datetime-local format
+            const customDate = new Date(momentData.customDateTime);
+            if (!isNaN(customDate.getTime())) {
+              return format(customDate, "PPp", { locale: it });
+            }
+          }
+          return "Data da definire";
+        } catch {
+          return "Data da definire";
+        }
       default:
         return "Ora";
     }
