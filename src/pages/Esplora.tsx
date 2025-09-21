@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { ConversationalExploreLayout } from '@/components/discover/ConversationalExploreLayout';
+import { InstagramExploreLayout } from '@/components/discover/InstagramExploreLayout';
 
 export default function Esplora() {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
@@ -39,7 +39,7 @@ export default function Esplora() {
         <meta name="description" content="Scopri il tuo prossimo momento perfetto con l'aiuto dell'AI. Trova persone, eventi, luoghi e artisti su misura per te." />
       </Helmet>
 
-      <ConversationalExploreLayout
+      <InstagramExploreLayout
         messages={messages}
         onSendMessage={onSendMessage}
         loading={loading}
