@@ -9,9 +9,8 @@ import { MapPin, Users, ArrowLeft, Trophy, Star, Gift } from "lucide-react";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
-// SwipeInterface moved to Inviti page
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
-import { getRandomUserProfiles } from "@/utils/enhancedMockData";
+import { useFriendship } from "@/hooks/useFriendship";
 import { toast } from "sonner";
 export default function TrovaAmici() {
   const location = useLocation();
@@ -28,32 +27,53 @@ export default function TrovaAmici() {
     isLoading: locationLoading
   } = useAutoGeolocation();
 
-  // Get mock user profiles for a more populated experience
-  const mockUsers = getRandomUserProfiles(15);
+  // Get real nearby users from database
+  const { data: nearbyUsers, isLoading: usersLoading } = useNearbyUsers(
+    userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null,
+    radiusKm
+  );
 
-  // Filtra utenti per ricerca e filtri
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = searchQuery === "" || user.name.toLowerCase().includes(searchQuery.toLowerCase()) || user.city.toLowerCase().includes(searchQuery.toLowerCase()) || user.preferred_moments?.some(moment => moment.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesAvailability = availabilityFilter === "all" || availabilityFilter === "available" && user.is_available || availabilityFilter === "unavailable" && !user.is_available;
+  // Get friendship functionality
+  const { sendFriendRequest, friends } = useFriendship();
+
+  // Transform nearby users to match UserListItem interface
+  const transformedUsers = (nearbyUsers || []).map(user => ({
+    id: user.user_id,
+    name: user.name,
+    avatar_url: user.avatar_url || "/placeholder.svg",
+    city: "Unknown", // Could be extracted from location if available
+    age: 25, // Default age - could be calculated from profile data
+    distance_km: user.distance_km,
+    is_available: true, // User is available if returned from nearby query
+    preferred_moments: user.interests || []
+  }));
+
+  // Filter users based on search and availability
+  const filteredUsers = transformedUsers.filter(user => {
+    const matchesSearch = searchQuery === "" || 
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.preferred_moments || []).some(moment => 
+        moment.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    const matchesAvailability = availabilityFilter === "all" || 
+      (availabilityFilter === "available" && user.is_available) || 
+      (availabilityFilter === "unavailable" && !user.is_available);
     const matchesDistance = !user.distance_km || user.distance_km <= radiusKm;
     return matchesSearch && matchesAvailability && matchesDistance;
   });
-  const handleFollow = (userId: string) => {
-    const user = mockUsers.find(u => u.id === userId);
-    if (user) {
-      toast.success(`Ora segui ${user.name}!`);
+  const handleFollow = async (userId: string) => {
+    const success = await sendFriendRequest(userId);
+    if (success) {
+      const user = transformedUsers.find(u => u.id === userId);
+      if (user) {
+        toast.success(`Richiesta di amicizia inviata a ${user.name}!`);
+      }
     }
   };
+
   const handleInvite = (userId: string, userName: string) => {
-    toast.success(`Invito inviato a ${userName}!`);
-  };
-  const handlePass = (userId: string) => {
-    const user = mockUsers.find(u => u.id === userId);
-    if (user) {
-      toast(`Hai saltato ${user.name}`, {
-        description: "Non vedrai più questo profilo"
-      });
-    }
+    // Navigate to create invite with pre-selected user
+    navigate('/crea-invito', { state: { preselectedUser: userId } });
   };
   return <div className="min-h-screen bg-[#FFFCEF]">
       <Helmet>
@@ -86,9 +106,16 @@ export default function TrovaAmici() {
           <TabsContent value="vicinanze" className="space-y-4 mt-4">
             <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
 
-            {locationLoading ? <div className="text-center py-8">
+            {locationLoading || usersLoading ? <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
+                <p className="text-muted-foreground">
+                  {locationLoading ? "Ottenendo la tua posizione..." : "Cercando persone nelle vicinanze..."}
+                </p>
+              </div> : !userLocation ? <div className="text-center py-8">
+                <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-muted-foreground">
+                  Attiva la geolocalizzazione per trovare persone nelle vicinanze
+                </p>
               </div> : filteredUsers.length === 0 ? <div className="text-center py-8">
                 <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">
@@ -109,7 +136,12 @@ export default function TrovaAmici() {
                 </div>
                 
                 <div className="space-y-3 pb-20">
-                  {filteredUsers.map(user => <UserListItem key={user.id} user={user} onFollow={handleFollow} />)}
+                  {filteredUsers.map(user => <UserListItem 
+                    key={user.id} 
+                    user={user} 
+                    onFollow={handleFollow}
+                    onInvite={handleInvite}
+                  />)}
                 </div>
               </>}
           </TabsContent>
