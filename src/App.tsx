@@ -28,6 +28,10 @@ import Premi from "./pages/Premi";
 import Abbonamento from "./pages/Abbonamento";
 import GroupChat from "./pages/GroupChat";
 import CityChat from "./pages/CityChat";
+import EventDetail from "./pages/EventDetail";
+import ArtistDetail from "./pages/ArtistDetail";
+import VenueDetail from "./pages/VenueDetail";
+import UserDetailById from "./pages/UserDetailById";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +68,10 @@ const App = () => (
                 <Route path="/profili" element={<Profili />} />
                 <Route path="/premi" element={<Premi />} />
                 <Route path="/abbonamento" element={<Abbonamento />} />
+                <Route path="/evento/:id" element={<EventDetail />} />
+                <Route path="/artista/:id" element={<ArtistDetail />} />
+                <Route path="/location/:id" element={<VenueDetail />} />
+                <Route path="/user/:id" element={<UserDetailById />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

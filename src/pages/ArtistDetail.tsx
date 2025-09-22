@@ -84,25 +84,25 @@ export default function ArtistDetail() {
         </div>
 
         {/* Hero Section */}
-        <Card>
+        <Card className="shadow-card">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="relative">
-                <Avatar className="h-24 w-24">
+                <Avatar className="h-24 w-24 avatar-ring">
                   <AvatarImage src={artist.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/50 text-white text-2xl">
+                  <AvatarFallback className="gradient-brand text-white text-2xl">
                     {artist.name?.charAt(0) || 'A'}
                   </AvatarFallback>
                 </Avatar>
                 {artist.verified && (
                   <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-primary border-2 border-background rounded-full flex items-center justify-center">
-                    <Star className="h-3 w-3 text-white fill-white" />
+                    <Star className="h-3 w-3 text-primary-foreground fill-current" />
                   </div>
                 )}
               </div>
               
               <div>
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-bold text-foreground">
                   {artist.stage_name || artist.name}
                 </h1>
                 {artist.stage_name && artist.name && (
@@ -118,10 +118,23 @@ export default function ArtistDetail() {
                 </div>
               </div>
 
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 text-primary fill-current" />
+                  <span className="text-foreground font-medium">4.8</span>
+                </div>
+                {artist.experience_years && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span>{artist.experience_years} anni esperienza</span>
+                  </div>
+                )}
+              </div>
+
               {/* Location */}
               {artist.province && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-primary" />
                   <span>{artist.province}</span>
                 </div>
               )}
@@ -129,9 +142,27 @@ export default function ArtistDetail() {
           </CardContent>
         </Card>
 
+        {/* Profile Video */}
+        {artist.profile_video_url && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <h3 className="font-semibold">Video Profilo</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                <video
+                  src={artist.profile_video_url}
+                  controls
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Bio */}
         {artist.bio && (
-          <Card>
+          <Card className="shadow-card">
             <CardHeader>
               <h3 className="font-semibold">Bio</h3>
             </CardHeader>
@@ -142,9 +173,9 @@ export default function ArtistDetail() {
         )}
 
         {/* Info */}
-        <Card>
+        <Card className="shadow-card">
           <CardHeader>
-            <h3 className="font-semibold">Informazioni</h3>
+            <h3 className="font-semibold">Informazioni Artistiche</h3>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Artist Type */}
@@ -160,17 +191,6 @@ export default function ArtistDetail() {
               <div>
                 <h4 className="font-medium mb-2">Specializzazione</h4>
                 <p className="text-muted-foreground">{artist.specialization}</p>
-              </div>
-            )}
-
-            {/* Experience */}
-            {artist.experience_years && (
-              <div>
-                <h4 className="font-medium mb-2">Esperienza</h4>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span>{artist.experience_years} anni</span>
-                </div>
               </div>
             )}
 
@@ -196,6 +216,20 @@ export default function ArtistDetail() {
                   {artist.instruments.map((instrument) => (
                     <Badge key={instrument} variant="secondary">
                       {instrument}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Event Types */}
+            {artist.event_types && artist.event_types.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Tipi di Eventi</h4>
+                <div className="flex flex-wrap gap-2">
+                  {artist.event_types.map((eventType) => (
+                    <Badge key={eventType} variant="outline">
+                      {eventType}
                     </Badge>
                   ))}
                 </div>
@@ -229,12 +263,91 @@ export default function ArtistDetail() {
                 </div>
               </>
             )}
+
+            {/* Target Provinces */}
+            {artist.target_provinces && artist.target_provinces.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Province Target</h4>
+                <div className="flex flex-wrap gap-2">
+                  {artist.target_provinces.map((province) => (
+                    <Badge key={province} variant="secondary">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {province}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Ideal Situations */}
+            {artist.ideal_situations && artist.ideal_situations.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Situazioni Ideali</h4>
+                <div className="flex flex-wrap gap-2">
+                  {artist.ideal_situations.map((situation) => (
+                    <Badge key={situation} variant="outline">
+                      {situation}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
+        {/* Pricing & Availability */}
+        {(artist.pricing || artist.availability || artist.cachet_info) && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <h3 className="font-semibold">Prezzi e Disponibilità</h3>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {artist.cachet_info && (
+                <div>
+                  <h4 className="font-medium mb-2">Informazioni Cachet</h4>
+                  <p className="text-muted-foreground">{JSON.stringify(artist.cachet_info)}</p>
+                </div>
+              )}
+              
+              {artist.pricing && (
+                <div>
+                  <h4 className="font-medium mb-2">Prezzi</h4>
+                  <p className="text-muted-foreground">{JSON.stringify(artist.pricing)}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Contact Info */}
+        {(artist.contact_info || artist.phone) && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <h3 className="font-semibold">Contatti</h3>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {artist.phone && (
+                <div>
+                  <h4 className="font-medium mb-1">Telefono</h4>
+                  <a href={`tel:${artist.phone}`} className="text-primary hover:text-primary/80 transition-colors">
+                    {artist.phone}
+                  </a>
+                </div>
+              )}
+              
+              {artist.contact_info && (
+                <div>
+                  <h4 className="font-medium mb-1">Altre Informazioni</h4>
+                  <p className="text-muted-foreground">{JSON.stringify(artist.contact_info)}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Exhibition Description */}
         {artist.exhibition_description && (
-          <Card>
+          <Card className="shadow-card">
             <CardHeader>
               <h3 className="font-semibold">Descrizione Esibizione</h3>
             </CardHeader>
@@ -248,7 +361,7 @@ export default function ArtistDetail() {
 
         {/* Social Media */}
         {artist.social_media && Object.keys(artist.social_media).length > 0 && (
-          <Card>
+          <Card className="shadow-card">
             <CardHeader>
               <h3 className="font-semibold">Social Media</h3>
             </CardHeader>
@@ -271,13 +384,13 @@ export default function ArtistDetail() {
         )}
 
         {/* Action Buttons */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-          <div className="flex gap-3">
-            <Button size="lg" className="flex-1">
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-elevated p-4">
+          <div className="flex gap-3 max-w-md mx-auto">
+            <Button size="lg" className="flex-1 shadow-brand">
               <MessageCircle className="h-4 w-4 mr-2" />
               Contatta Artista
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="px-4">
               <Heart className="h-4 w-4" />
             </Button>
           </div>
