@@ -197,6 +197,60 @@ export type Database = {
         }
         Relationships: []
       }
+      event_artists: {
+        Row: {
+          artist_id: string
+          created_at: string
+          event_id: string
+          id: string
+          invitation_message: string | null
+          invited_at: string
+          responded_at: string | null
+          response_message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          invitation_message?: string | null
+          invited_at?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          invitation_message?: string | null
+          invited_at?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_artists_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_artists_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_participants: {
         Row: {
           created_at: string
@@ -234,6 +288,60 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_venues: {
+        Row: {
+          contact_message: string | null
+          contacted_at: string
+          created_at: string
+          event_id: string
+          id: string
+          responded_at: string | null
+          response_message: string | null
+          status: string
+          updated_at: string
+          venue_id: string
+        }
+        Insert: {
+          contact_message?: string | null
+          contacted_at?: string
+          created_at?: string
+          event_id: string
+          id?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+          venue_id: string
+        }
+        Update: {
+          contact_message?: string | null
+          contacted_at?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          responded_at?: string | null
+          response_message?: string | null
+          status?: string
+          updated_at?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_venues_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_venues_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
             referencedColumns: ["id"]
           },
         ]

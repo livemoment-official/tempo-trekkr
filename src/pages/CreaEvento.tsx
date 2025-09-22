@@ -211,8 +211,7 @@ export default function CreaEvento() {
                       tags: eventData.tags,
                       photos: eventData.photos,
                       ticketing: eventData.ticketing,
-                      discovery_on: true,
-                      host_id: null // Will be set by RLS
+                      discovery_on: true
                     };
 
                     const { data, error } = await supabase
@@ -223,13 +222,61 @@ export default function CreaEvento() {
 
                     if (error) throw error;
 
+                    // Save artist and venue selections
+                    if (eventData.selectedArtists.length > 0) {
+                      const { error: artistError } = await supabase
+                        .from('event_artists')
+                        .insert(
+                          eventData.selectedArtists.map(artistId => ({
+                            event_id: data.id,
+                            artist_id: artistId,
+                            status: 'invited',
+                            invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`
+                          }))
+                        );
+                      
+                      if (artistError) console.error('Error saving artist invitations:', artistError);
+                    }
+
+                    if (eventData.selectedVenues.length > 0) {
+                      const { error: venueError } = await supabase
+                        .from('event_venues')
+                        .insert(
+                          eventData.selectedVenues.map(venueId => ({
+                            event_id: data.id,
+                            venue_id: venueId,
+                            status: 'contacted',
+                            contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`
+                          }))
+                        );
+                      
+                      if (venueError) console.error('Error saving venue contacts:', venueError);
+
+                    }
+
+                    // Send notifications to artists and venues
+                    if (eventData.selectedArtists.length > 0 || eventData.selectedVenues.length > 0) {
+                      try {
+                        await supabase.functions.invoke('send-event-notifications', {
+                          body: {
+                            eventId: data.id,
+                            artistIds: eventData.selectedArtists,
+                            venueIds: eventData.selectedVenues
+                          }
+                        });
+                      } catch (notificationError) {
+                        console.error('Error sending notifications:', notificationError);
+                        // Don't block event creation if notifications fail
+                      }
+                    }
+
                     handleAutoSave(eventData);
                     toast({
                       title: "Evento pubblicato!",
                       description: "Il tuo evento è ora visibile a tutti",
                       duration: 3000
                     });
-                    navigate(`/moment/${data.id}`);
+                    navigate(`/event/${data.id}`);
                   } catch (error) {
                     console.error('Error saving event:', error);
                     toast({

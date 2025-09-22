@@ -1,6 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,45 +11,37 @@ import {
   Users, 
   Calendar,
   Star,
-  Ticket
+  Ticket,
+  User,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useEventDetails } from "@/hooks/useEventDetails";
 
-const fetchEventDetail = async (eventId: string) => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single();
-
-  if (error) throw error;
-  return data;
-};
 
 export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: event, isLoading, error } = useQuery({
-    queryKey: ['event-detail', id],
-    queryFn: () => fetchEventDetail(id!),
-    enabled: !!id,
-  });
+  const { data: eventDetails, isLoading, error } = useEventDetails(id!);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Caricamento evento...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !event) {
+  if (error || !eventDetails?.event) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -61,6 +51,8 @@ export default function EventDetail() {
       </div>
     );
   }
+
+  const { event, artists, venues } = eventDetails;
 
   const getCategoryEmoji = (tag: string) => {
     const categories: Record<string, string> = {
@@ -76,6 +68,33 @@ export default function EventDetail() {
       'danza': '💃'
     };
     return categories[tag.toLowerCase()] || '🎫';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+      case 'accepted':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'invited':
+      case 'contacted':
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      case 'declined':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'invited': return 'Invitato';
+      case 'accepted': return 'Accettato';
+      case 'confirmed': return 'Confermato';
+      case 'declined': return 'Rifiutato';
+      case 'contacted': return 'Contattato';
+      case 'interested': return 'Interessato';
+      default: return status;
+    }
   };
 
   return (
@@ -193,6 +212,107 @@ export default function EventDetail() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Artists Section */}
+        {artists.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="font-semibold">Artisti Invitati ({artists.length})</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {artists.map((eventArtist: any) => (
+                  <div key={eventArtist.id} className="flex items-start gap-4 p-3 rounded-lg border bg-card">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={eventArtist.artists.avatar_url || '/livemoment-mascot.png'} />
+                      <AvatarFallback>
+                        {eventArtist.artists.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-medium">{eventArtist.artists.name}</h4>
+                          {eventArtist.artists.stage_name && (
+                            <p className="text-sm text-muted-foreground">({eventArtist.artists.stage_name})</p>
+                          )}
+                          <p className="text-sm text-muted-foreground">{eventArtist.artists.artist_type}</p>
+                          {eventArtist.artists.bio && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{eventArtist.artists.bio}</p>
+                          )}
+                          <div className="flex gap-1 mt-2">
+                            {eventArtist.artists.genres?.slice(0, 3).map((genre: string) => (
+                              <Badge key={genre} variant="outline" className="text-xs">
+                                {genre}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(eventArtist.status)}
+                          <span className="text-sm font-medium">{getStatusText(eventArtist.status)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Venues Section */}
+        {venues.length > 0 && (
+          <Card>
+            <CardHeader>
+              <h3 className="font-semibold">Location Contattate ({venues.length})</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {venues.map((eventVenue: any) => (
+                  <div key={eventVenue.id} className="flex items-start gap-4 p-3 rounded-lg border bg-card">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={(eventVenue.venues.images as string[] | null)?.[0] || '/livemoment-mascot.png'} />
+                      <AvatarFallback>
+                        <MapPin className="h-6 w-6" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-medium">{eventVenue.venues.name}</h4>
+                          <p className="text-sm text-muted-foreground">{eventVenue.venues.venue_type}</p>
+                          {eventVenue.venues.description && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{eventVenue.venues.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            {eventVenue.venues.capacity && (
+                              <div className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                <span>{eventVenue.venues.capacity} persone</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-1 mt-2">
+                            {eventVenue.venues.amenities?.slice(0, 3).map((amenity: string) => (
+                              <Badge key={amenity} variant="outline" className="text-xs">
+                                {amenity}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(eventVenue.status)}
+                          <span className="text-sm font-medium">{getStatusText(eventVenue.status)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Organizer - Placeholder for now */}
         <Card>
