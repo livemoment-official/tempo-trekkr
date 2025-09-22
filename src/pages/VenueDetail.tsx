@@ -24,11 +24,15 @@ import {
 import { Helmet } from "react-helmet-async";
 
 const fetchVenueDetail = async (venueId: string) => {
+  console.log('Fetching venue with ID:', venueId);
+  
   const { data, error } = await supabase
     .from('venues')
     .select('*')
     .eq('id', venueId)
     .single();
+
+  console.log('Venue query result:', { data, error });
 
   if (error) throw error;
   return data;
@@ -38,11 +42,15 @@ export default function VenueDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  console.log('VenueDetail - ID from URL:', id);
+
   const { data: venue, isLoading, error } = useQuery({
     queryKey: ['venue-detail', id],
     queryFn: () => fetchVenueDetail(id!),
     enabled: !!id,
   });
+
+  console.log('VenueDetail - Query state:', { venue, isLoading, error });
 
   if (isLoading) {
     return (
