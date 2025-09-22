@@ -91,8 +91,6 @@ export default function InviteCard({
                 {invite.title}
               </h3>
               
-              {/* Hide description on mobile */}
-              {!isMobile && invite.description}
             </div>
           </div>
 
