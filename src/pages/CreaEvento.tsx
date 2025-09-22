@@ -190,10 +190,17 @@ export default function CreaEvento() {
                       <ArrowRight className="h-4 w-4 ml-1" />
                     </Button> : <Button onClick={async () => {
                   try {
+                    // Get current user first
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) {
+                      throw new Error('Utente non autenticato');
+                    }
+
                     // Save event to database
                     const eventToSave = {
                       title: eventData.title,
                       description: eventData.description,
+                      host_id: user.id, // CRITICAL: Add missing host_id
                       when_at: eventData.date && eventData.startTime 
                         ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
                         : null,
@@ -254,9 +261,10 @@ export default function CreaEvento() {
 
                     }
 
-                    // Send notifications to artists and venues
+                    // Send notifications to artists and venues (non-blocking)
                     if (eventData.selectedArtists.length > 0 || eventData.selectedVenues.length > 0) {
                       try {
+                        console.log('Sending notifications for event:', data.id);
                         await supabase.functions.invoke('send-event-notifications', {
                           body: {
                             eventId: data.id,
@@ -264,6 +272,7 @@ export default function CreaEvento() {
                             venueIds: eventData.selectedVenues
                           }
                         });
+                        console.log('Notifications sent successfully');
                       } catch (notificationError) {
                         console.error('Error sending notifications:', notificationError);
                         // Don't block event creation if notifications fail

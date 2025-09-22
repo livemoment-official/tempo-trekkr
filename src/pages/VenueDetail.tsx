@@ -64,11 +64,22 @@ export default function VenueDetail() {
   }
 
   if (error || !venue) {
+    console.error('VenueDetail error details:', { error, venue, id });
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Venue non trovata</p>
-          <Button onClick={() => navigate('/')}>Torna alla home</Button>
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">Venue non trovata</h1>
+          <p className="text-muted-foreground">La location che stai cercando non esiste o si è verificato un errore.</p>
+          {error && <p className="text-sm text-destructive">Errore: {error.message}</p>}
+          <p className="text-sm text-muted-foreground">ID ricercato: {id}</p>
+          <div className="space-x-2">
+            <Button onClick={() => navigate(-1)} variant="outline">
+              Torna indietro
+            </Button>
+            <Button onClick={() => navigate('/')}>
+              Vai alla home
+            </Button>
+          </div>
         </div>
       </div>
     );
