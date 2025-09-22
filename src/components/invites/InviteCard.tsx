@@ -47,7 +47,7 @@ export default function InviteCard({
       case 'postponed':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-amber-50 text-amber-800 border-amber-200';
     }
   };
   const getStatusText = (status: string) => {
@@ -81,16 +81,14 @@ export default function InviteCard({
             
             <div className="flex-1 space-y-2">
               <div>
-                <h4 onClick={handleViewProfile} className="font-semibold cursor-pointer hover:text-primary transition-colors leading-tight text-xs">
-                  {invite.sender?.name}
-                </h4>
-                
+                <p className={`font-semibold ${isMobile ? "text-sm" : "text-base"} text-foreground leading-tight`}>
+                  <span onClick={handleViewProfile} className="cursor-pointer hover:text-primary transition-colors">
+                    {invite.sender?.name}
+                  </span>
+                  {" "}ti ha invitato a:{" "}
+                  <span className="font-bold">{invite.title}</span>
+                </p>
               </div>
-              
-              <h3 className={`font-bold ${isMobile ? "text-lg" : "text-xl"} text-foreground leading-tight`}>
-                {invite.title}
-              </h3>
-              
             </div>
           </div>
 
@@ -99,7 +97,7 @@ export default function InviteCard({
             {invite.when_at && <div className="flex items-center gap-3 text-muted-foreground">
                 <Calendar className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">
-                  {format(new Date(invite.when_at), "dd MMM yyyy", {
+                  {format(new Date(invite.when_at), "dd MMM yyyy, HH:mm", {
                 locale: it
               })}
                 </span>
