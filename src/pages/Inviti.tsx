@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Search, Users, Plus, LayoutGrid, Heart } from "lucide-react";
-import { useMyInvites } from "@/hooks/useInvites";
+import { useMyInvites, useUpdateInviteStatus } from "@/hooks/useInvites";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import InviteCard from "@/components/invites/InviteCard";
 import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { SwipeInterface } from "@/components/profile/SwipeInterface";
-import { getRandomUserProfiles, getMockInvites } from "@/utils/enhancedMockData";
+import { getRandomUserProfiles } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
@@ -39,14 +41,45 @@ export default function Inviti() {
     data: inviteData,
     isLoading: invitesLoading
   } = useMyInvites();
+  
+  const updateInviteStatus = useUpdateInviteStatus();
+
+  // Transform invites to include sender info for SwipeInterface
+  const { data: transformedInvites, isLoading: transformingInvites } = useQuery({
+    queryKey: ['invites-with-senders', inviteData],
+    queryFn: async () => {
+      if (!inviteData?.received) return [];
+      
+      const invitesWithSenders = await Promise.all(
+        inviteData.received.map(async (invite) => {
+          const { data: hostProfile } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .eq('id', invite.host_id)
+            .single();
+            
+          return {
+            ...invite,
+            sender: {
+              id: invite.host_id,
+              name: hostProfile?.name || 'Utente',
+              avatar_url: hostProfile?.avatar_url
+            }
+          };
+        })
+      );
+      
+      return invitesWithSenders;
+    },
+    enabled: !!inviteData?.received
+  });
   const {
     data: nearbyUsers = [],
     isLoading: nearbyLoading
   } = useNearbyUsers(userLocation, radiusKm);
 
-  // Get mock data
+  // Get mock data for nearby users display
   const mockUsers = getRandomUserProfiles(12);
-  const mockInvites = getMockInvites();
   const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : mockUsers;
 
   // Transform mock users to have the right structure for UserDiscoveryCard
@@ -102,15 +135,26 @@ export default function Inviti() {
     }
   };
   const handleAcceptInvite = (inviteId: string) => {
-    const invite = mockInvites.find(i => i.id === inviteId);
+    const allInvites = [...(inviteData?.received || []), ...(inviteData?.sent || [])];
+    const invite = allInvites.find(i => i.id === inviteId);
     if (invite) {
-      toast.success(`Invito accettato! Ci vediamo da ${invite.sender?.name}`);
+      updateInviteStatus.mutate({ 
+        inviteId, 
+        status: 'accepted',
+        responseMessage: 'Accettato!' 
+      });
     }
   };
+  
   const handleRejectInvite = (inviteId: string) => {
-    const invite = mockInvites.find(i => i.id === inviteId);
+    const allInvites = [...(inviteData?.received || []), ...(inviteData?.sent || [])];
+    const invite = allInvites.find(i => i.id === inviteId);
     if (invite) {
-      toast.success(`Invito di ${invite.sender?.name} rifiutato`);
+      updateInviteStatus.mutate({ 
+        inviteId, 
+        status: 'rejected',
+        responseMessage: 'Non posso partecipare.' 
+      });
     }
   };
   return <div className="min-h-screen bg-background space-y-4 pb-20">
@@ -141,15 +185,23 @@ export default function Inviti() {
             
           </div>
 
-          {invitesLoading ? <div className="text-center py-12">
+          {(invitesLoading || transformingInvites) ? <div className="text-center py-12">
               <p className="text-muted-foreground">Caricamento inviti...</p>
             </div> : <>
               {/* Swipe Interface for Invites */}
-              {inviteViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <InviteSwipeInterface invites={mockInvites.filter(invite => invite.status === 'pending')} onAccept={handleAcceptInvite} onReject={handleRejectInvite} />
-                </div> : (/* List View for Invites */
-          <div className="space-y-4">
-                  {mockInvites.length === 0 ? <div className="text-center py-12">
+              {inviteViewMode === "swipe" ? 
+                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <InviteSwipeInterface 
+                    invites={(transformedInvites || []).filter(invite => invite.status === 'pending')} 
+                    onAccept={handleAcceptInvite} 
+                    onReject={handleRejectInvite} 
+                  />
+                </div>
+              : 
+                (/* List View for Invites */
+                <div className="space-y-4">
+                  {(inviteData?.received || []).length === 0 ? (
+                    <div className="text-center py-12">
                       <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <Users className="h-8 w-8 text-primary" />
                       </div>
@@ -157,18 +209,24 @@ export default function Inviti() {
                       <p className="text-muted-foreground">
                         Non hai inviti in attesa al momento.
                       </p>
-                    </div> : <>
+                    </div>
+                  ) : (
+                    <>
                       <div className="flex items-center justify-between mb-4">
                         <p className="text-sm text-muted-foreground">
-                          {mockInvites.filter(i => i.status === 'pending').length} inviti in attesa
+                          {(inviteData?.received || []).filter(i => i.status === 'pending').length} inviti in attesa
                         </p>
                         <Badge variant="secondary">
-                          {mockInvites.length} totali
+                          {(inviteData?.received || []).length} totali
                         </Badge>
                       </div>
-                      {mockInvites.map(invite => <InviteCard key={invite.id} invite={invite} type="received" />)}
-                    </>}
-                </div>)}
+                      {(inviteData?.received || []).map(invite => (
+                        <InviteCard key={invite.id} invite={invite} type="received" />
+                      ))}
+                    </>
+                  )}
+                </div>
+                )}
             </>}
         </TabsContent>
 
