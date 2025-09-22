@@ -2,6 +2,8 @@ import React from 'react';
 import { Users, Calendar, MapPin, Music, Star, Clock, Heart } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useArtists } from '@/hooks/useArtists';
+import { useVenues } from '@/hooks/useVenues';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -53,20 +55,19 @@ export function DiscoveryGrid() {
     }
   });
 
-  // Mock artists
-  const mockArtists = [
-    { id: 1, name: 'Marco Rossi', genre: 'Jazz', location: 'Milano', rating: 4.8, image: '/livemoment-mascot.png' },
-    { id: 2, name: 'Luna Sound', genre: 'Electronic', location: 'Roma', rating: 4.6, image: '/livemoment-mascot.png' },
-    { id: 3, name: 'Vintage Vibes', genre: 'Indie Rock', location: 'Torino', rating: 4.7, image: '/livemoment-mascot.png' },
-    { id: 4, name: 'Soul Sisters', genre: 'R&B', location: 'Napoli', rating: 4.9, image: '/livemoment-mascot.png' },
-  ];
+  // Fetch real artists
+  const { data: artists } = useArtists();
+  
+  // Fetch real venues  
+  const { data: venues } = useVenues();
 
   // Mix all content types
   const allContent = [
     ...(availableUsers?.map(user => ({ type: 'person', data: user })) || []),
     ...(events?.map(event => ({ type: 'event', data: event })) || []),
     ...(moments?.map(moment => ({ type: 'moment', data: moment })) || []),
-    ...mockArtists.map(artist => ({ type: 'artist', data: artist }))
+    ...(artists?.slice(0, 8).map(artist => ({ type: 'artist', data: artist })) || []),
+    ...(venues?.slice(0, 8).map(venue => ({ type: 'venue', data: venue })) || [])
   ].sort(() => Math.random() - 0.5); // Shuffle content
 
   const getCardContent = (item: any) => {
@@ -170,24 +171,57 @@ export function DiscoveryGrid() {
           <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/artist/${data.id}`)}>
             <CardContent className="p-0 relative aspect-square">
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
-              <Avatar className="w-full h-full rounded-lg">
-                <AvatarImage 
-                  src={data.image || '/livemoment-mascot.png'} 
-                  className="object-cover w-full h-full"
-                />
-                <AvatarFallback className="w-full h-full rounded-lg bg-primary/10">
-                  <Music className="w-8 h-8 text-primary" />
-                </AvatarFallback>
-              </Avatar>
+               <Avatar className="w-full h-full rounded-lg">
+                 <AvatarImage 
+                   src={data.avatar_url || '/livemoment-mascot.png'} 
+                   className="object-cover w-full h-full"
+                 />
+                 <AvatarFallback className="w-full h-full rounded-lg bg-primary/10">
+                   <Music className="w-8 h-8 text-primary" />
+                 </AvatarFallback>
+               </Avatar>
+               <div className="absolute bottom-2 left-2 right-2 z-20">
+                 <Badge variant="secondary" className="mb-1 bg-background/90 text-xs">
+                   <Music className="w-3 h-3 mr-1" />
+                   Artista
+                 </Badge>
+                 <h3 className="font-semibold text-sm text-foreground line-clamp-1">{data.name}</h3>
+                 <div className="flex items-center text-xs text-muted-foreground">
+                   <Star className="w-3 h-3 mr-1" />
+                   {data.genres?.join(', ') || 'Artista'}
+                 </div>
+               </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'venue':
+        return (
+          <Card className="group cursor-pointer overflow-hidden border-0 shadow-none bg-transparent" onClick={() => navigate(`/location/${data.id}`)}>
+            <CardContent className="p-0 relative aspect-square">
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
+              <div className="w-full h-full bg-gradient-to-br from-accent/20 to-accent/5 rounded-lg flex items-center justify-center overflow-hidden">
+                {data.venue_photos && data.venue_photos.length > 0 ? (
+                  <EnhancedImage 
+                    src={data.venue_photos[0]} 
+                    alt={data.name} 
+                    className="w-full h-full object-cover rounded-lg"
+                    fallbackSrc=""
+                    showSkeleton={false}
+                  />
+                ) : (
+                  <MapPin className="w-12 h-12 text-accent" />
+                )}
+              </div>
               <div className="absolute bottom-2 left-2 right-2 z-20">
                 <Badge variant="secondary" className="mb-1 bg-background/90 text-xs">
-                  <Music className="w-3 h-3 mr-1" />
-                  Artista
+                  <MapPin className="w-3 h-3 mr-1" />
+                  Location
                 </Badge>
                 <h3 className="font-semibold text-sm text-foreground line-clamp-1">{data.name}</h3>
                 <div className="flex items-center text-xs text-muted-foreground">
                   <Star className="w-3 h-3 mr-1" />
-                  {data.rating} • {data.genre}
+                  {data.venue_type || 'Venue'}
                 </div>
               </div>
             </CardContent>

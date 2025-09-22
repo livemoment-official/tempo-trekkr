@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, Calendar, MapPin, Music, Sparkles } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useArtists } from '@/hooks/useArtists';
 import { AICarousel, CarouselItem } from './AICarousel';
 import { AIRecommendationCard } from './AIRecommendationCard';
 import { UserDiscoveryCard } from '../profile/UserDiscoveryCard';
@@ -50,15 +51,8 @@ export function AIDiscoveryCarousels() {
     }
   });
 
-  // Mock artists data (you can replace with real data)
-  const mockArtists = [
-    { id: 1, name: 'Marco Rossi', genre: 'Jazz', location: 'Milano', rating: 4.8, image: null },
-    { id: 2, name: 'Luna Sound', genre: 'Electronic', location: 'Roma', rating: 4.6, image: null },
-    { id: 3, name: 'Vintage Vibes', genre: 'Indie Rock', location: 'Torino', rating: 4.7, image: null },
-    { id: 4, name: 'Soul Sisters', genre: 'R&B', location: 'Napoli', rating: 4.9, image: null },
-    { id: 5, name: 'Urban Beats', genre: 'Hip Hop', location: 'Bologna', rating: 4.5, image: null },
-    { id: 6, name: 'Acoustic Dreams', genre: 'Folk', location: 'Firenze', rating: 4.8, image: null },
-  ];
+  // Fetch real artists
+  const { data: artists, isLoading: loadingArtists } = useArtists();
 
   const handlePersonAction = (userId: string) => {
     console.log('Inviting user:', userId);
@@ -75,7 +69,7 @@ export function AIDiscoveryCarousels() {
     // Implement location exploration logic
   };
 
-  const handleArtistAction = (artistId: number) => {
+  const handleArtistAction = (artistId: string) => {
     console.log('Contacting artist:', artistId);
     // Implement artist contact logic
   };
@@ -158,22 +152,22 @@ export function AIDiscoveryCarousels() {
       <AICarousel
         title="Artisti nella tua zona"
         icon={<Music className="h-5 w-5 text-primary" />}
-        loading={false}
+        loading={loadingArtists}
         itemCount={6}
       >
-        {mockArtists.map((artist) => (
+        {artists?.slice(0, 6).map((artist) => (
           <CarouselItem key={artist.id} className="basis-auto">
             <AIRecommendationCard
               type="artist"
               title={artist.name}
-              subtitle={artist.genre}
+              subtitle={artist.genres?.join(', ') || 'Artista'}
               description="Disponibile per collaborazioni ed eventi"
               actionLabel="Contatta"
               onAction={() => handleArtistAction(artist.id)}
               aiReason="Il suo stile musicale si allinea perfettamente con i tuoi gusti"
-              location={artist.location}
-              rating={artist.rating}
-              image={artist.image}
+              location={artist.province || 'Italia'}
+              rating={4.5}
+              image={artist.avatar_url}
             />
           </CarouselItem>
         ))}
