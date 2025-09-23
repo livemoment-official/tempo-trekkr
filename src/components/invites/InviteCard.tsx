@@ -146,25 +146,29 @@ export default function InviteCard({
               <p className="text-sm italic text-secondary-foreground">"{invite.response_message}"</p>
             </div>}
 
-          {/* Azioni riprogettate con 3 opzioni */}
-          {type === 'received' && invite.status === 'pending' && <div className="space-y-3 pt-2">
-              {/* Bottone principale "Creaci il Momento" */}
+          {/* Azioni per inviti ricevuti */}
+          {type === 'received' && (
+            <div className="space-y-3 pt-2">
+              {/* Bottone principale "Creaci il Momento" - sempre visibile per inviti ricevuti */}
               <Button onClick={handleCreateMoment} className={`w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}>
                 <Sparkles className="h-4 w-4 mr-2" />
                 Creaci il Momento
               </Button>
               
-              {/* Bottoni secondari sulla stessa riga */}
-              <div className="flex gap-3">
-                <Button onClick={handleAccept} variant="outline" className={`flex-1 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
-                  <Check className="h-4 w-4 mr-2" />
-                  Accetta
-                </Button>
-                <Button onClick={handleReject} variant="outline" size="sm" className={`px-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9" : "h-10"} rounded-lg transition-all`}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>}
+              {/* Bottoni secondari - solo per inviti pending */}
+              {invite.status === 'pending' && (
+                <div className="flex gap-3">
+                  <Button onClick={handleAccept} variant="outline" className={`flex-1 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
+                    <Check className="h-4 w-4 mr-2" />
+                    Accetta
+                  </Button>
+                  <Button onClick={handleReject} variant="outline" size="sm" className={`px-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9" : "h-10"} rounded-lg transition-all`}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>;
