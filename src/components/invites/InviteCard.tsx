@@ -13,10 +13,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface InviteCardProps {
   invite: any;
   type: 'received' | 'sent';
+  onAccept?: (inviteId: string) => void;
+  onReject?: (inviteId: string) => void;
+  onCreateMoment?: (inviteId: string) => void;
 }
 export default function InviteCard({
   invite,
-  type
+  type,
+  onAccept,
+  onReject,
+  onCreateMoment
 }: InviteCardProps) {
   const [showResponseModal, setShowResponseModal] = useState(false);
   const {
@@ -25,13 +31,17 @@ export default function InviteCard({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const handleAccept = () => {
-    toast.success(`Invito accettato! Ci vediamo da ${invite.sender?.name}`);
+    onAccept?.(invite.id);
   };
   const handleReject = () => {
-    toast.success("Invito rifiutato");
+    onReject?.(invite.id);
   };
   const handleCreateMoment = () => {
-    navigate(`/crea/momento-da-invito/${invite.id}`);
+    if (onCreateMoment) {
+      onCreateMoment(invite.id);
+    } else {
+      navigate(`/crea/momento-da-invito/${invite.id}`);
+    }
   };
   const handleViewProfile = () => {
     if (invite.sender?.id) {
@@ -81,13 +91,20 @@ export default function InviteCard({
             
             <div className="flex-1 space-y-2">
               <div>
-                <p className={`font-semibold ${isMobile ? "text-sm" : "text-base"} text-foreground leading-tight`}>
-                  <span onClick={handleViewProfile} className="cursor-pointer hover:text-primary transition-colors">
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span 
+                    onClick={handleViewProfile} 
+                    className={`font-medium cursor-pointer hover:text-primary transition-colors ${isMobile ? "text-sm" : "text-base"}`}
+                  >
                     {invite.sender?.name}
                   </span>
-                  {" "}ti ha invitato a:{" "}
-                  <span className="font-bold">{invite.title}</span>
-                </p>
+                  <span className={`text-muted-foreground ${isMobile ? "text-xs" : "text-sm"}`}>
+                    ti ha invitato a:
+                  </span>
+                </div>
+                <h3 className={`font-bold text-foreground ${isMobile ? "text-base" : "text-lg"} leading-tight mt-1`}>
+                  {invite.title}
+                </h3>
               </div>
             </div>
           </div>

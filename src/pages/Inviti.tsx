@@ -220,9 +220,19 @@ export default function Inviti() {
                           {(inviteData?.received || []).length} totali
                         </Badge>
                       </div>
-                      {(inviteData?.received || []).map(invite => (
-                        <InviteCard key={invite.id} invite={invite} type="received" />
-                      ))}
+                      {(inviteData?.received || []).map(invite => {
+                        // Transform invite to include sender info
+                        const transformedInvite = transformedInvites?.find(t => t.id === invite.id) || invite;
+                        return (
+                          <InviteCard 
+                            key={invite.id} 
+                            invite={transformedInvite} 
+                            type="received"
+                            onAccept={handleAcceptInvite}
+                            onReject={handleRejectInvite}
+                          />
+                        );
+                      })}
                     </>
                   )}
                 </div>
