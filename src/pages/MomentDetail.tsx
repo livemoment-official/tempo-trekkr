@@ -372,7 +372,7 @@ export default function MomentDetail() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" className="flex-1" onClick={() => navigate(`/chat/group/${moment.id}`)}>
+              <Button variant="outline" className="flex-1" onClick={() => navigate(`/chat/moment/${moment.id}`)}>
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Chatta
               </Button>
@@ -395,7 +395,7 @@ export default function MomentDetail() {
                 <Button 
                   size="lg" 
                   className="flex-1"
-                  onClick={() => navigate(`/chat/group/${moment.id}`)}
+                  onClick={() => navigate(`/chat/moment/${moment.id}`)}
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Entra in Chat
@@ -425,11 +425,11 @@ export default function MomentDetail() {
                 
                 {/* Chat icon - only visible after participation */}
                 {isParticipating && (
-                  <Button 
+                  <Button
                     variant="outline"
                     size="lg"
                     className="p-3"
-                    onClick={() => navigate(`/chat/group/${moment.id}`)}
+                    onClick={() => navigate(`/chat/moment/${moment.id}`)}
                   >
                     <MessageCircle className="h-5 w-5" />
                   </Button>

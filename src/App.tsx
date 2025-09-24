@@ -29,6 +29,7 @@ import Abbonamento from "./pages/Abbonamento";
 import GroupChat from "./pages/GroupChat";
 import CityChat from "./pages/CityChat";
 import MomentChat from "./pages/MomentChat";
+import EsploraChat from "./pages/EsploraChat";
 import EventDetail from "./pages/EventDetail";
 import ArtistDetail from "./pages/ArtistDetail";
 import VenueDetail from "./pages/VenueDetail";
@@ -63,8 +64,9 @@ const App = () => (
                 <Route path="/chat/:type/:id" element={<ChatFullscreen />} />
                 <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
                 <Route path="/chat/group/:groupId" element={<GroupChat />} />
-                <Route path="/chat/group/:momentId" element={<MomentChat />} />
+                <Route path="/chat/moment/:momentId" element={<MomentChat />} />
                 <Route path="/chat/city/:cityName" element={<CityChat />} />
+                <Route path="/esplora/chat" element={<EsploraChat />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
                 <Route path="/trova-amici" element={<TrovaAmici />} />
                 <Route path="/profili" element={<Profili />} />
