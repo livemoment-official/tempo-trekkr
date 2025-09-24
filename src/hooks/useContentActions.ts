@@ -24,13 +24,37 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
 
   return useMutation({
     mutationFn: async (contentId: string) => {
+      console.log(`🗑️ [DELETE] Attempting to delete ${contentType} with ID:`, contentId);
+      
+      // Check authentication first
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error(`🗑️ [DELETE] Authentication error:`, authError);
+        throw new Error('Devi effettuare il login per eliminare il contenuto');
+      }
+      
+      console.log(`🗑️ [DELETE] Authenticated user:`, user.id);
+      
       // Soft delete: set deleted_at timestamp instead of hard delete
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from(contentType)
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', contentId);
+        .eq('id', contentId)
+        .select('*');
 
-      if (error) throw error;
+      console.log(`🗑️ [DELETE] Result:`, { data, error });
+      
+      if (error) {
+        console.error(`🗑️ [DELETE] Error details:`, error);
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.error(`🗑️ [DELETE] No rows affected - permission denied or item not found`);
+        throw new Error('Permessi insufficienti per eliminare questo contenuto');
+      }
+      
+      console.log(`🗑️ [DELETE] Successfully deleted:`, data);
     },
     onSuccess: () => {
       toast({

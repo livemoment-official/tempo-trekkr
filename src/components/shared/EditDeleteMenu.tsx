@@ -4,6 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
 import { useDeleteContent } from "@/hooks/useContentActions";
+import { AuthenticationGuard } from "@/components/shared/AuthenticationGuard";
 
 interface EditDeleteMenuProps {
   contentType: 'moments' | 'events' | 'invites';
@@ -19,20 +20,22 @@ export function EditDeleteMenu({ contentType, contentId, onEdit, isOwner }: Edit
   if (!isOwner) return null;
 
   const handleDelete = () => {
-    console.log('Attempting to delete content:', contentType, contentId);
+    console.log('🗑️ [MENU] Attempting to delete content:', contentType, contentId);
+    console.log('🗑️ [MENU] User is owner:', isOwner);
     deleteContent.mutate(contentId, {
       onSuccess: () => {
+        console.log('🗑️ [MENU] Delete success, closing dialog');
         setShowDeleteDialog(false);
       },
       onError: (error) => {
-        console.error('Delete error details:', error);
+        console.error('🗑️ [MENU] Delete error details:', error);
         // Keep dialog open on error so user can try again
       }
     });
   };
 
   return (
-    <>
+    <AuthenticationGuard action="eliminare questo contenuto">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
@@ -77,6 +80,6 @@ export function EditDeleteMenu({ contentType, contentId, onEdit, isOwner }: Edit
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </AuthenticationGuard>
   );
 }
