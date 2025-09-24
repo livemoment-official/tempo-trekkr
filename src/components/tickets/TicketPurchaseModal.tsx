@@ -45,8 +45,16 @@ export function TicketPurchaseModal({
   moment 
 }: TicketPurchaseModalProps) {
   const { user } = useAuth();
-  const { purchaseTicket, isLoading } = useMomentTickets();
+  const { purchaseTicket, checkPendingPayments, isLoading } = useMomentTickets();
   const [feeBreakdown, setFeeBreakdown] = useState<any>(null);
+  const [purchaseState, setPurchaseState] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+
+  // Check for pending payments when modal opens
+  useEffect(() => {
+    if (open && user) {
+      checkPendingPayments();
+    }
+  }, [open, user, checkPendingPayments]);
 
   // Calculate fees
   const basePrice = moment.price_cents;
@@ -80,11 +88,29 @@ export function TicketPurchaseModal({
   };
 
   const handlePurchase = async () => {
-    const result = await purchaseTicket(moment.id);
-    if (result?.feeBreakdown) {
-      setFeeBreakdown(result.feeBreakdown);
+    try {
+      setPurchaseState('processing');
+      const result = await purchaseTicket(moment.id);
+      
+      if (result?.feeBreakdown) {
+        setFeeBreakdown(result.feeBreakdown);
+        setPurchaseState('success');
+        
+        // Close modal after 2 seconds if payment was initiated
+        setTimeout(() => {
+          onOpenChange(false);
+          setPurchaseState('idle');
+          setFeeBreakdown(null);
+        }, 2000);
+      } else {
+        setPurchaseState('error');
+        setTimeout(() => setPurchaseState('idle'), 3000);
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      setPurchaseState('error');
+      setTimeout(() => setPurchaseState('idle'), 3000);
     }
-    // Modal will stay open to show purchase initiated message
   };
 
   const availableSpots = moment.max_participants 
@@ -224,12 +250,22 @@ export function TicketPurchaseModal({
             ) : (
               <Button 
                 onClick={handlePurchase}
-                disabled={isLoading}
+                disabled={isLoading || purchaseState === 'processing'}
                 className="w-full bg-gradient-to-r from-brand to-brand-accent hover:from-brand-accent hover:to-brand text-white font-medium"
                 size="lg"
               >
-                {isLoading ? (
-                  "Elaborazione..."
+                {purchaseState === 'processing' || isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Reindirizzamento...
+                  </>
+                ) : purchaseState === 'success' ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Reindirizzamento in corso...
+                  </>
+                ) : purchaseState === 'error' ? (
+                  "Riprova"
                 ) : (
                   <>
                     <CreditCard className="h-4 w-4 mr-2" />
@@ -240,12 +276,23 @@ export function TicketPurchaseModal({
             )}
           </div>
 
-          {feeBreakdown && (
+          {purchaseState === 'success' && (
             <div className="bg-green-50 p-3 rounded-lg">
               <div className="flex items-center gap-2 text-green-800">
                 <CheckCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">
-                  Pagamento avviato! Completa il processo nella nuova finestra.
+                  Reindirizzamento al pagamento in corso...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {purchaseState === 'error' && (
+            <div className="bg-red-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-red-800">
+                <Info className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  Errore durante l'avvio del pagamento. Riprova.
                 </span>
               </div>
             </div>
