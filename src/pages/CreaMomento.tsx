@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useAuth } from "@/contexts/AuthContext";
 import MomentPreviewModal from "@/components/create/moment/MomentPreviewModal";
 import { EnhancedLocationSearch } from "@/components/location/EnhancedLocationSearch";
@@ -46,7 +46,7 @@ export default function CreaMomento() {
   const {
     location: userLocation,
     requestLocation
-  } = useGeolocation();
+  } = useUnifiedGeolocation();
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Unified Flow States

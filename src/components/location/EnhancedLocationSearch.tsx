@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Search, Navigation, Loader2 } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 
 interface LocationResult {
   place_name: string;
@@ -37,7 +37,7 @@ export function EnhancedLocationSearch({
   const [results, setResults] = useState<LocationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const { location, requestLocation } = useGeolocation();
+  const { location, requestLocation } = useUnifiedGeolocation();
   const [locationLoading, setLocationLoading] = useState(false);
 
   // Get Mapbox token from Supabase Edge Function

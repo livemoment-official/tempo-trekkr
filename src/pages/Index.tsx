@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { List, MapPin, Loader2 } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { MomentFilters } from "@/components/moments/MomentFilters";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
@@ -16,7 +16,7 @@ const Index = () => {
   const navigate = useNavigate();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/";
   const [view, setView] = useState<'list' | 'map'>('list');
-  const { location: userLocation } = useGeolocation();
+  const { location: userLocation } = useUnifiedGeolocation();
   
   // Use real moments data
   const {

@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useGeolocation } from "./useGeolocation";
-import { useUserLocation } from "./useUserLocation";
+import { useUnifiedGeolocation } from "./useUnifiedGeolocation";
 
 export interface Event {
   id: string;
@@ -45,8 +44,7 @@ export interface Event {
 export function useEvents() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { location } = useGeolocation();
-  const { getUserLocation } = useUserLocation();
+  const { location } = useUnifiedGeolocation();
   
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -120,8 +118,7 @@ export function useEvents() {
       }) as unknown as Event[];
 
       // Add distance calculation if user location is available
-      const userLoc = location || await getUserLocation();
-      if (userLoc && processedEvents.length > 0) {
+      if (location && processedEvents.length > 0) {
         processedEvents = processedEvents.map(event => {
           if (event.place && typeof event.place === 'object') {
             const place = event.place as any;
@@ -130,8 +127,8 @@ export function useEvents() {
             
             if (lat && lng) {
               const distance = calculateDistance(
-                userLoc.lat,
-                userLoc.lng,
+                location.lat,
+                location.lng,
                 lat,
                 lng
               );
@@ -175,7 +172,7 @@ export function useEvents() {
     } finally {
       setIsLoading(false);
     }
-  }, [location, getUserLocation, toast]);
+  }, [location, toast]);
 
   // Calculate distance between two points
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {

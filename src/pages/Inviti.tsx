@@ -19,7 +19,7 @@ import { getRandomUserProfiles } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
-import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 export default function Inviti() {
@@ -36,7 +36,7 @@ export default function Inviti() {
   const {
     location: userLocation,
     isLoading: locationLoading
-  } = useAutoGeolocation();
+  } = useUnifiedGeolocation();
   const {
     data: inviteData,
     isLoading: invitesLoading

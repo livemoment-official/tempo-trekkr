@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Clock, Users, MessageCircle, Navigation, AlertCircle } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
-import { useUserLocation } from "@/hooks/useUserLocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface MomentMapProps {
@@ -42,8 +41,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { user } = useAuth();
-  const { location, permission, requestLocation } = useGeolocation();
-  const { updateLocation } = useUserLocation();
+  const { location, permission, requestLocation, updateLocationInProfile } = useUnifiedGeolocation();
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
 
@@ -68,7 +66,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
 
   // Request location permission if not granted
   useEffect(() => {
-    if (permission.prompt && !permission.loading) {
+    if (permission === 'prompt') {
       // Auto-request location for better UX
       // requestLocation();
     }
@@ -77,9 +75,9 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
   // Save location to profile when obtained
   useEffect(() => {
     if (location && user) {
-      updateLocation(location);
+      updateLocationInProfile(location);
     }
-  }, [location, user, updateLocation]);
+  }, [location, user, updateLocationInProfile]);
 
   // Initialize map
   useEffect(() => {
@@ -208,7 +206,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
   return (
     <div className="relative w-full h-[600px]">
       {/* Location Permission Banner */}
-      {permission.prompt && (
+      {permission === 'prompt' && (
         <div className="absolute top-4 left-4 right-4 z-10">
           <Card className="bg-background/95 backdrop-blur-sm">
             <CardContent className="flex items-center gap-3 p-4">
@@ -222,9 +220,8 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
               <Button 
                 size="sm" 
                 onClick={requestLocation}
-                disabled={permission.loading}
               >
-                {permission.loading ? 'Caricamento...' : 'Attiva'}
+                Attiva
               </Button>
             </CardContent>
           </Card>

@@ -10,7 +10,7 @@ import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { useAllUsers } from "@/hooks/useAllUsers";
 import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
-import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useFriendship } from "@/hooks/useFriendship";
 import { toast } from "sonner";
 export default function TrovaAmici() {
@@ -26,7 +26,7 @@ export default function TrovaAmici() {
   const {
     location: userLocation,
     isLoading: locationLoading
-  } = useAutoGeolocation();
+  } = useUnifiedGeolocation();
 
   // Get real nearby users from database
   const { data: nearbyUsers, isLoading: nearbyUsersLoading } = useNearbyUsers(

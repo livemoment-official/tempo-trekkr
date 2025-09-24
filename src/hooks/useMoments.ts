@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useGeolocation } from "./useGeolocation";
-import { useUserLocation } from "./useUserLocation";
+import { useUnifiedGeolocation } from "./useUnifiedGeolocation";
 import { generateMockMoments } from "@/utils/mockData";
 
 export interface Moment {
@@ -69,8 +68,7 @@ export interface MomentsFilters {
 export function useMoments() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { location } = useGeolocation();
-  const { getUserLocation } = useUserLocation();
+  const { location } = useUnifiedGeolocation();
   
   const [moments, setMoments] = useState<Moment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -245,20 +243,19 @@ export function useMoments() {
 
       // If we have few real moments, add mock data to enrich the experience
       if (processedMoments.length < 5 && currentPage === 0) {
-        const mockMoments = generateMockMoments(15).map(mock => convertMockToMoment(mock, userLoc?.lat, userLoc?.lng));
+        const mockMoments = generateMockMoments(15).map(mock => convertMockToMoment(mock, location?.lat, location?.lng));
         processedMoments = [...processedMoments, ...mockMoments];
       }
 
       // Add distance calculation if user location is available
-      const userLoc = location || await getUserLocation();
-      if (userLoc && processedMoments.length > 0) {
+      if (location && processedMoments.length > 0) {
         processedMoments = processedMoments.map(moment => {
           if (moment.place && typeof moment.place === 'object') {
             const place = moment.place as any;
             if (place.lat && place.lng) {
               const distance = calculateDistance(
-                userLoc.lat,
-                userLoc.lng,
+                location.lat,
+                location.lng,
                 place.lat,
                 place.lng
               );
@@ -317,7 +314,7 @@ export function useMoments() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, page, location, getUserLocation, toast]);
+  }, [filters, page, location, toast]);
 
   // Helper function to get moment IDs for a user
   const getUserMomentIds = async (userId: string): Promise<string[]> => {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useGeolocation } from "./useGeolocation";
+import { useUnifiedGeolocation } from "./useUnifiedGeolocation";
 
 interface UserPresence {
   user_id: string;
@@ -18,7 +18,7 @@ interface UserPresence {
 
 export function useRealTimePresence() {
   const { user } = useAuth();
-  const { location } = useGeolocation();
+  const { location } = useUnifiedGeolocation();
   const [nearbyUsers, setNearbyUsers] = useState<UserPresence[]>([]);
   const [isOnline, setIsOnline] = useState(false);
 

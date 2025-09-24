@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 
 export function AreaIndicator() {
-  const { location, permission } = useGeolocation();
+  const { location, permission, isLoading: geoLoading, error } = useUnifiedGeolocation();
   const [areaName, setAreaName] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
 
   useEffect(() => {
     if (!location) return;
 
     const reverseGeocode = async () => {
-      setIsLoading(true);
+      setIsReverseGeocoding(true);
       try {
         // Get Mapbox token
         const { data: tokenData } = await supabase.functions.invoke('get-mapbox-token');
@@ -51,18 +51,27 @@ export function AreaIndicator() {
         // Fallback to coordinates
         setAreaName(`${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`);
       } finally {
-        setIsLoading(false);
+        setIsReverseGeocoding(false);
       }
     };
 
     reverseGeocode();
   }, [location]);
 
-  if (permission.prompt) {
+  if (permission === 'denied') {
+    return (
+      <Badge variant="destructive" className="text-xs">
+        <AlertCircle className="h-3 w-3 mr-1" />
+        Posizione non consentita
+      </Badge>
+    );
+  }
+
+  if (permission === 'prompt' || geoLoading) {
     return (
       <Badge variant="outline" className="text-xs">
-        <MapPin className="h-3 w-3 mr-1" />
-        Posizione non attiva
+        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+        Rilevamento posizione...
       </Badge>
     );
   }
@@ -71,7 +80,7 @@ export function AreaIndicator() {
     return (
       <Badge variant="outline" className="text-xs">
         <MapPin className="h-3 w-3 mr-1" />
-        Rilevamento posizione...
+        {error || "Posizione non disponibile"}
       </Badge>
     );
   }
@@ -79,7 +88,7 @@ export function AreaIndicator() {
   return (
     <Badge variant="secondary" className="text-xs">
       <MapPin className="h-3 w-3 mr-1" />
-      {isLoading ? (
+      {isReverseGeocoding ? (
         <>
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
           Rilevamento area...
