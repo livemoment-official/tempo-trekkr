@@ -252,12 +252,6 @@ export default function GroupChat() {
                 Crea Momento
               </Button>
             </CreateMomentFromGroupModal>
-
-            <GroupManagementModal
-              groupId={groupId || ''}
-              groupTitle={group.title}
-              isHost={group.host_id === user?.id}
-            />
           </div>
         </div>
 

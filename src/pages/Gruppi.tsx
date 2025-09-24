@@ -8,12 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Plus, X, Users, MapPin, Loader2 } from "lucide-react";
+import { Search, Filter, Plus, X, Users, MapPin, Loader2, MoreVertical } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
 import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
 import { useGroups } from "@/hooks/useGroups";
+import { useMomentChats } from "@/hooks/useMomentChats";
+import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,32 +38,6 @@ const categoryEmojis: Record<string, string> = {
   "default": "👥"
 };
 
-// Mock data per chat con amici
-const mockChatAmici = [{
-  id: "1",
-  name: "Marco Rossi",
-  avatar: "👨‍💼",
-  lastMessage: "Ci vediamo stasera?",
-  time: "10:30",
-  unread: 2
-}, {
-  id: "2",
-  name: "Giulia Bianchi",
-  avatar: "👩‍🎨",
-  lastMessage: "Perfetto! A che ora?",
-  time: "9:15",
-  unread: 0
-}];
-
-// Mock data per chat momenti
-const mockChatMomenti = [{
-  id: "1",
-  title: "Picnic sul prato!",
-  participants: 15,
-  lastMessage: "Portate qualcosa da bere!",
-  time: "11:45",
-  unread: 3
-}];
 const GroupInfoModal = ({
   trigger
 }: {
@@ -228,32 +204,37 @@ const GroupCard = ({
         <AuthGuard fallback={<Button variant="outline" size="sm" disabled>
             Accedi
           </Button>}>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {(isHost || isParticipant) && (
+              <Button 
+                size="sm" 
+                className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground" 
+                onClick={() => navigate(`/chat/group/${group.id}`)}
+              >
+                Entra
+              </Button>
+            )}
+            
             {isHost ? (
               <GroupManagementModal
                 groupId={group.id}
                 groupTitle={group.title}
                 isHost={true}
               >
-                <Button variant="outline" size="sm" className="rounded-xl">
-                  Gestisci
+                <Button variant="outline" size="sm" className="rounded-xl p-2">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </GroupManagementModal>
             ) : isParticipant ? (
-              <>
-                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/chat/group/${group.id}`)}>
-                  Chat
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="rounded-xl" 
-                  onClick={() => onLeave?.(group.id)}
-                  disabled={isLeaving}
-                >
-                  {isLeaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Esci"}
-                </Button>
-              </>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-xl" 
+                onClick={() => onLeave?.(group.id)}
+                disabled={isLeaving}
+              >
+                {isLeaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Esci"}
+              </Button>
             ) : (
               <Button 
                 size="sm" 
@@ -276,20 +257,29 @@ export default function Gruppi() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { groups, userGroups, isLoading, joinGroup, leaveGroup, loadPublicGroups, loadUserGroups } = useGroups();
+  const { momentChats, isLoading: isMomentChatsLoading } = useMomentChats();
+  const { conversations, isLoading: isConversationsLoading, loadConversations } = useChat();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [showBanner, setShowBanner] = useState(() => {
     return localStorage.getItem('gruppi-banner-dismissed') !== 'true';
   });
-  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
-  const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
+   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
+   const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+    }
+  }, [user, loadConversations]);
 
   const dismissBanner = () => {
     setShowBanner(false);
     localStorage.setItem('gruppi-banner-dismissed', 'true');
   };
 
-  // Combine user groups and public groups, removing duplicates
+  // For "I tuoi Gruppi" tab - show only groups where user is host
+  // For other views - combine user groups and public groups, removing duplicates
+  const hostedGroups = userGroups.filter(g => g.host_id === user?.id);
   const allGroups = [...userGroups, ...groups.filter(g => !userGroups.some(ug => ug.id === g.id))];
   
   const filteredProvince = provincieItaliane.filter(provincia => 
@@ -478,11 +468,81 @@ export default function Gruppi() {
           </TabsContent>
 
           <TabsContent value="amici" className="space-y-4">
-            {mockChatAmici.map(amico => <GroupCard key={amico.id} group={amico} type="friend" />)}
+            {isConversationsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="mb-3">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div>
+                          <Skeleton className="h-4 w-32 mb-2" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-3 w-12" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">Non hai ancora conversazioni con amici.</p>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate('/trova-amici')}>
+                  Trova Amici
+                </Button>
+              </div>
+            ) : (
+              conversations.map((conversation) => (
+                <GroupCard 
+                  key={conversation.id} 
+                  group={{
+                    id: conversation.id,
+                    name: conversation.other_participant?.name || 'Utente',
+                    avatar: conversation.other_participant?.avatar_url ? '👤' : '👤',
+                    lastMessage: conversation.last_message?.content || 'Nessun messaggio',
+                    time: conversation.last_message ? new Date(conversation.last_message.created_at).toLocaleTimeString('it-IT', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : '',
+                    unread: conversation.unread_count || 0
+                  }} 
+                  type="friend" 
+                />
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="momenti" className="space-y-4">
-            {mockChatMomenti.map(momento => <GroupCard key={momento.id} group={momento} type="moment" />)}
+            {isMomentChatsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="mb-3">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div>
+                          <Skeleton className="h-4 w-32 mb-2" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-3 w-12" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : momentChats.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">Non hai momenti con chat attive.</p>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate('/crea-momento')}>
+                  Crea Momento
+                </Button>
+              </div>
+            ) : (
+              momentChats.map((chat) => (
+                <GroupCard key={chat.id} group={chat} type="moment" />
+              ))
+            )}
           </TabsContent>
         </Tabs>
       </div>
