@@ -16,6 +16,8 @@ import { EnhancedLocationSearch } from "@/components/location/EnhancedLocationSe
 import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { useImageUpload } from "@/hooks/useImageUpload";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +31,13 @@ interface MomentData {
   end_at: Date | null;
   place: any;
   is_public: boolean;
+  max_participants?: number;
 }
+
+const popularCategories = [
+  "Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", 
+  "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"
+];
 
 export default function CreaMomento() {
   const [step, setStep] = useState<'camera' | 'form' | 'preview'>('camera');
@@ -42,7 +50,8 @@ export default function CreaMomento() {
     when_at: null,
     end_at: null,
     place: null,
-    is_public: true
+    is_public: true,
+    max_participants: 8
   });
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -56,6 +65,7 @@ export default function CreaMomento() {
   const { location, requestLocation, isLoading: locationLoading } = useUnifiedGeolocation();
   const { reverseGeocode } = useReverseGeocoding();
   const { uploadGalleryImage } = useImageUpload();
+  const { titleSuggestions, generateSuggestions, isGenerating } = useAISuggestions();
 
   // Auto-set location on mount
   useEffect(() => {
@@ -78,10 +88,13 @@ export default function CreaMomento() {
               address: result.formatted_address
             }
           }));
+          
+          // Generate suggestions based on location
+          generateSuggestions({ location: result.formatted_address });
         }
       });
     }
-  }, [location, momentData.place, reverseGeocode]);
+  }, [location, momentData.place, reverseGeocode, generateSuggestions]);
 
   // Auto-calculate end time when start time changes
   useEffect(() => {
@@ -159,6 +172,54 @@ export default function CreaMomento() {
     }
   }, [startDate, startTime, endDate, endTime]);
 
+  const handleQuickTimeSelect = useCallback((type: 'tonight' | 'tomorrow' | 'weekend') => {
+    const now = new Date();
+    let date: Date;
+    let startTimeStr: string;
+    let endTimeStr: string;
+
+    switch (type) {
+      case 'tonight':
+        date = new Date();
+        startTimeStr = '19:00';
+        endTimeStr = '23:00';
+        break;
+      case 'tomorrow':
+        date = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        startTimeStr = '12:00';
+        endTimeStr = '16:00';
+        break;
+      case 'weekend':
+        // Next Saturday
+        const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+        date = new Date(now.getTime() + (daysUntilSaturday || 7) * 24 * 60 * 60 * 1000);
+        startTimeStr = '15:00';
+        endTimeStr = '19:00';
+        break;
+    }
+
+    setStartDate(date);
+    setEndDate(date);
+    setStartTime(startTimeStr);
+    setEndTime(endTimeStr);
+  }, []);
+
+  const handleAddTag = useCallback((tag: string) => {
+    if (tag && !momentData.tags.includes(tag)) {
+      setMomentData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
+    }
+  }, [momentData.tags]);
+
+  const handleRemoveTag = useCallback((tagToRemove: string) => {
+    setMomentData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((tag: string) => tag !== tagToRemove)
+    }));
+  }, []);
+
   useEffect(() => {
     handleDateTimeChange();
   }, [handleDateTimeChange]);
@@ -207,6 +268,7 @@ export default function CreaMomento() {
         end_at: momentData.end_at.toISOString(),
         place: momentData.place,
         is_public: momentData.is_public,
+        max_participants: momentData.max_participants,
         host_id: user.id,
         participants: [user.id]
       };
@@ -297,32 +359,132 @@ export default function CreaMomento() {
           )}
 
           {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Titolo del momento *</Label>
+          <div className="space-y-3">
+            <Label htmlFor="title" className="text-base font-semibold">Cosa stai facendo? *</Label>
             <Input
               id="title"
               value={momentData.title}
               onChange={(e) => setMomentData(prev => ({...prev, title: e.target.value}))}
-              placeholder="Cosa stai facendo?"
-              className="text-lg"
+              placeholder="Scrivi il titolo del momento..."
+              className="text-lg font-medium"
             />
+            
+            {/* Title Suggestions */}
+            {titleSuggestions.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Suggerimenti rapidi:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {titleSuggestions.map((suggestion) => (
+                    <Badge
+                      key={suggestion}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-accent"
+                      onClick={() => setMomentData(prev => ({...prev, title: suggestion}))}
+                    >
+                      {suggestion}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Descrizione</Label>
+            <Label htmlFor="description" className="text-sm">Aggiungi una descrizione</Label>
             <Textarea
               id="description"
               value={momentData.description}
               onChange={(e) => setMomentData(prev => ({...prev, description: e.target.value}))}
-              placeholder="Aggiungi una descrizione..."
+              placeholder="Racconta qualcosa in più..."
               rows={3}
+              className="text-sm"
             />
+          </div>
+
+          {/* Max Participants */}
+          <div className="space-y-2">
+            <Label htmlFor="maxParticipants">Massimo partecipanti</Label>
+            <Input
+              id="maxParticipants"
+              type="number"
+              min="2"
+              max="50"
+              value={momentData.max_participants || 8}
+              onChange={(e) => setMomentData(prev => ({...prev, max_participants: parseInt(e.target.value) || 8}))}
+              className="w-24"
+            />
+          </div>
+
+          {/* Categories */}
+          <div className="space-y-3">
+            <Label>Categorie</Label>
+            <div className="flex flex-wrap gap-2">
+              {popularCategories.map((category) => (
+                <Badge
+                  key={category}
+                  variant={momentData.tags.includes(category) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => handleAddTag(category)}
+                >
+                  {category}
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Selected Categories */}
+            {momentData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {momentData.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Date and Time */}
           <div className="space-y-4">
             <Label>Data e orari *</Label>
+            
+            {/* Quick Time Buttons */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickTimeSelect('tonight')}
+              >
+                Stasera
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickTimeSelect('tomorrow')}
+              >
+                Domani
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickTimeSelect('weekend')}
+              >
+                Nel weekend
+              </Button>
+            </div>
             
             {/* Start Date/Time */}
             <div className="grid grid-cols-2 gap-4">
