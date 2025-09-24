@@ -535,7 +535,7 @@ export default function Gruppi() {
             ) : momentChats.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">Non hai momenti con chat attive.</p>
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate('/crea-momento')}>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate('/crea/momento')}>
                   Crea Momento
                 </Button>
               </div>

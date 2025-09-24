@@ -30,7 +30,7 @@ export function useMomentChats() {
         .from('moments')
         .select('id, title, participants, when_at, place, created_at')
         .or(`host_id.eq.${user.id},participants.cs.{${user.id}}`)
-        .eq('deleted_at', null)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (momentsError) throw momentsError;

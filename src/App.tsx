@@ -60,12 +60,8 @@ const App = () => (
                 <Route path="/crea/evento" element={<CreaEvento />} />
                 <Route path="/crea/invito" element={<CreaInvito />} />
                 <Route path="/agenda" element={<Agenda />} />
-                {/* Profile route unified to ID-based */}
+                {/* Unified chat routing */}
                 <Route path="/chat/:type/:id" element={<UnifiedChatPage />} />
-                <Route path="/chat/conversation/:id" element={<ChatFullscreen />} />
-                <Route path="/chat/group/:groupId" element={<GroupChat />} />
-                <Route path="/chat/moment/:momentId" element={<MomentChat />} />
-                <Route path="/chat/city/:cityName" element={<CityChat />} />
                 <Route path="/esplora/chat" element={<EsploraChat />} />
                 <Route path="/moment/:id" element={<MomentDetail />} />
                 <Route path="/trova-amici" element={<TrovaAmici />} />
