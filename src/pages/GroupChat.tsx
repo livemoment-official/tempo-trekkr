@@ -39,7 +39,7 @@ interface Group {
 }
 
 export default function GroupChat() {
-  const { groupId } = useParams<{ groupId: string }>();
+  const { id: groupId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();

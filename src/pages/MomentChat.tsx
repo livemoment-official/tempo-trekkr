@@ -41,7 +41,7 @@ interface MomentInfo {
 }
 
 export default function MomentChat() {
-  const { momentId } = useParams<{ momentId: string }>();
+  const { id: momentId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
