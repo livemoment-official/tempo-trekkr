@@ -46,7 +46,7 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
       console.error(`Delete ${contentType} error:`, error);
       toast({
         title: "Errore",
-        description: "Non è stato possibile eliminare il contenuto",
+        description: error.message || "Non è stato possibile eliminare il contenuto",
         variant: "destructive"
       });
     }
@@ -79,7 +79,7 @@ export function useUpdateContent(contentType: 'moments' | 'events' | 'invites') 
       console.error(`Update ${contentType} error:`, error);
       toast({
         title: "Errore",
-        description: "Non è stato possibile salvare le modifiche",
+        description: error.message || "Non è stato possibile salvare le modifiche",
         variant: "destructive"
       });
     }
