@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Users, ArrowLeft, Trophy, Star, Gift } from "lucide-react";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
+import { useAllUsers } from "@/hooks/useAllUsers";
 import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useAutoGeolocation } from "@/hooks/useAutoGeolocation";
@@ -28,25 +29,55 @@ export default function TrovaAmici() {
   } = useAutoGeolocation();
 
   // Get real nearby users from database
-  const { data: nearbyUsers, isLoading: usersLoading } = useNearbyUsers(
+  const { data: nearbyUsers, isLoading: nearbyUsersLoading } = useNearbyUsers(
     userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null,
     radiusKm
+  );
+
+  // Get all users as fallback
+  const { data: allUsers, isLoading: allUsersLoading } = useAllUsers(
+    userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null
   );
 
   // Get friendship functionality
   const { sendFriendRequest, friends } = useFriendship();
 
-  // Transform nearby users to match UserListItem interface
-  const transformedUsers = (nearbyUsers || []).map(user => ({
-    id: user.user_id,
-    name: user.name,
-    avatar_url: user.avatar_url || "/placeholder.svg",
-    city: "Unknown", // Could be extracted from location if available
-    age: 25, // Default age - could be calculated from profile data
-    distance_km: user.distance_km,
-    is_available: true, // User is available if returned from nearby query
-    preferred_moments: user.interests || []
-  }));
+  const usersLoading = nearbyUsersLoading || allUsersLoading;
+
+  // Smart user selection: nearby users first, then all users as fallback
+  const getDisplayUsers = () => {
+    // If we have nearby users, use them
+    if (nearbyUsers && nearbyUsers.length > 0) {
+      return nearbyUsers.map(user => ({
+        id: user.user_id,
+        name: user.name,
+        avatar_url: user.avatar_url || "/placeholder.svg",
+        city: "Unknown",
+        age: 25,
+        distance_km: user.distance_km,
+        is_available: true,
+        preferred_moments: user.interests || []
+      }));
+    }
+    
+    // Otherwise, use all users with distance calculation
+    if (allUsers && allUsers.length > 0) {
+      return allUsers.map(user => ({
+        id: user.id,
+        name: user.name,
+        avatar_url: user.avatar_url,
+        city: "Unknown",
+        age: 25,
+        distance_km: user.distance_km,
+        is_available: false, // Not necessarily available
+        preferred_moments: user.interests || []
+      }));
+    }
+    
+    return [];
+  };
+
+  const transformedUsers = getDisplayUsers();
 
   // Filter users based on search and availability
   const filteredUsers = transformedUsers.filter(user => {
@@ -119,7 +150,7 @@ export default function TrovaAmici() {
               </div> : filteredUsers.length === 0 ? <div className="text-center py-8">
                 <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">
-                  {searchQuery ? "Nessun risultato per la ricerca" : "Nessuno disponibile nelle vicinanze al momento"}
+                  {searchQuery ? "Nessun risultato per la ricerca" : "Nessun utente trovato"}
                 </p>
                 {searchQuery && <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")} className="mt-2">
                     Mostra tutti
@@ -128,7 +159,7 @@ export default function TrovaAmici() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} 
-                    {searchQuery && ' trovate'} nelle vicinanze
+                    {searchQuery && ' trovate'}
                   </p>
                   {searchQuery && <Badge variant="secondary" className="text-xs">
                       {searchQuery}
@@ -136,12 +167,30 @@ export default function TrovaAmici() {
                 </div>
                 
                 <div className="space-y-3 pb-20">
-                  {filteredUsers.map(user => <UserListItem 
-                    key={user.id} 
-                    user={user} 
-                    onFollow={handleFollow}
-                    onInvite={handleInvite}
-                  />)}
+                  {filteredUsers.map(user => (
+                    <div key={user.id} className="relative">
+                      <UserListItem 
+                        user={user} 
+                        onFollow={handleFollow}
+                        onInvite={handleInvite}
+                      />
+                      {/* Distance indicator */}
+                      {user.distance_km !== undefined && user.distance_km !== null && (
+                        <Badge 
+                          variant={user.distance_km <= radiusKm ? "secondary" : "outline"}
+                          className={`absolute top-2 right-2 text-xs ${
+                            user.distance_km <= radiusKm 
+                              ? "bg-green-100 text-green-700 border-green-200" 
+                              : ""
+                          }`}
+                        >
+                          {user.distance_km < 1 
+                            ? `${Math.round(user.distance_km * 1000)}m` 
+                            : `${user.distance_km.toFixed(1)} km`}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </>}
           </TabsContent>
