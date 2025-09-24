@@ -27,6 +27,7 @@ interface GroupManagementModalProps {
   groupTitle: string;
   isHost: boolean;
   children?: React.ReactNode;
+  groupCategory?: string;
 }
 
 export function GroupManagementModal({
@@ -34,6 +35,7 @@ export function GroupManagementModal({
   groupTitle,
   isHost,
   children,
+  groupCategory,
 }: GroupManagementModalProps) {
   const { toast } = useToast();
   const { deleteGroup } = useGroups();
@@ -113,7 +115,7 @@ export function GroupManagementModal({
                   onClick={() => setShowDeleteDialog(true)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Elimina gruppo
+                  {groupCategory === 'moment_chat' ? 'Elimina momento' : 'Elimina gruppo'}
                 </Button>
               )}
             </div>
@@ -124,9 +126,11 @@ export function GroupManagementModal({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminare il gruppo?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {groupCategory === 'moment_chat' ? 'Eliminare il momento?' : 'Eliminare il gruppo?'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Questa azione non può essere annullata. Il gruppo "{groupTitle}" e tutti i suoi messaggi verranno eliminati permanentemente.
+              Questa azione non può essere annullata. {groupCategory === 'moment_chat' ? 'Il momento' : 'Il gruppo'} "{groupTitle}" e tutti i suoi messaggi verranno eliminati permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -221,6 +221,11 @@ export default function MomentChat() {
           onBack={() => navigate(`/moment/${momentId}`)}
           onShowParticipants={() => setShowParticipants(true)}
           onShowSettings={() => setShowSettings(true)}
+          chatType="moment"
+          eventDate={moment.when_at ? new Date(moment.when_at).toLocaleDateString('it-IT') : undefined}
+          eventTime={moment.when_at ? new Date(moment.when_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : undefined}
+          location={moment.place?.name}
+          participantCount={moment.participants.length}
           avatar={
             moment.photos?.[0] && (
               <div className="relative w-10 h-10 overflow-hidden rounded-lg">

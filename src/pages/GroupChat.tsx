@@ -214,6 +214,9 @@ export default function GroupChat() {
           onBack={() => navigate('/gruppi')}
           onShowParticipants={() => setShowParticipants(true)}
           onShowSettings={() => setShowSettings(true)}
+          chatType="group"
+          participantCount={group.participants.length}
+          location={group.location?.name}
           avatar={
             group.avatar_url && (
               <div className="relative w-10 h-10 overflow-hidden rounded-lg">

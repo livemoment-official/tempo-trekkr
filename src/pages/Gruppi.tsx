@@ -216,11 +216,12 @@ const GroupCard = ({
             )}
             
             {isHost ? (
-              <GroupManagementModal
-                groupId={group.id}
-                groupTitle={group.title}
-                isHost={true}
-              >
+                <GroupManagementModal
+                  groupId={group.id}
+                  groupTitle={group.title}
+                  isHost={true}
+                  groupCategory={group.category}
+                >
                 <Button variant="outline" size="sm" className="rounded-xl p-2">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
@@ -277,9 +278,9 @@ export default function Gruppi() {
     localStorage.setItem('gruppi-banner-dismissed', 'true');
   };
 
-  // For "I tuoi Gruppi" tab - show only groups where user is host
+  // For "I tuoi Gruppi" tab - show only normal groups where user is host (exclude moment chats)
   // For other views - combine user groups and public groups, removing duplicates
-  const hostedGroups = userGroups.filter(g => g.host_id === user?.id);
+  const hostedGroups = userGroups.filter(g => g.host_id === user?.id && g.category !== 'moment_chat');
   const allGroups = [...userGroups, ...groups.filter(g => !userGroups.some(ug => ug.id === g.id))];
   
   const filteredProvince = provincieItaliane.filter(provincia => 
