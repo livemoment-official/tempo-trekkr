@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Users, MessageCircle } from "lucide-react";
+import { MapPin, Users, MessageCircle } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ChatHeader } from "@/components/chat/ChatHeader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,19 +41,19 @@ export default function CityChat() {
     <AuthGuard title="Accedi per i gruppi città" description="Devi essere autenticato per accedere ai gruppi delle città">
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/gruppi')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex-1">
-            <h1 className="font-semibold">Gruppo {cityDisplayName}</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              <span>Provincia di {cityDisplayName}</span>
+        <ChatHeader
+          title={`Gruppo ${cityDisplayName}`}
+          onBack={() => navigate('/gruppi')}
+          onShowParticipants={() => {}}
+          onShowSettings={() => {}}
+          chatType="city"
+          subtitle={`Provincia di ${cityDisplayName}`}
+          avatar={
+            <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+              <MapPin className="h-5 w-5 text-primary" />
             </div>
-          </div>
-        </div>
+          }
+        />
 
         <div className="p-4">
           <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
