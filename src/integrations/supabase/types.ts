@@ -1645,6 +1645,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      is_moment_owner: {
+        Args: { moment_id: string }
+        Returns: boolean
+      }
       migrate_existing_moment_participants: {
         Args: Record<PropertyKey, never>
         Returns: undefined

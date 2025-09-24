@@ -132,6 +132,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
 
   const handleDelete = async () => {
     try {
+      console.log('Attempting to delete moment:', moment.id);
       await updateMoment.mutateAsync({ 
         id: moment.id, 
         data: { deleted_at: new Date().toISOString() }
@@ -146,9 +147,11 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting moment:', error);
+      console.error('Moment ID:', moment.id);
+      console.error('User ID should be:', moment.host_id);
       toast({
         title: "Errore",
-        description: "Non è stato possibile eliminare il momento",
+        description: `Non è stato possibile eliminare il momento: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`,
         variant: "destructive"
       });
     }

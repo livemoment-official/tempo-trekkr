@@ -19,8 +19,15 @@ export function EditDeleteMenu({ contentType, contentId, onEdit, isOwner }: Edit
   if (!isOwner) return null;
 
   const handleDelete = () => {
-    deleteContent.mutate(contentId);
-    setShowDeleteDialog(false);
+    console.log('Attempting to delete content:', contentType, contentId);
+    deleteContent.mutate(contentId, {
+      onSuccess: () => {
+        setShowDeleteDialog(false);
+      },
+      onError: (error) => {
+        console.error('Delete error:', error);
+      }
+    });
   };
 
   return (
