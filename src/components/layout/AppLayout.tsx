@@ -65,7 +65,7 @@ const Header = ({
           </NavLink>
           
           {/* Profile Avatar */}
-          <NavLink to={user ? `/user/${user.id}` : "/profilo"} className="relative hover-scale press-scale">
+          <NavLink to="/profilo" className="relative hover-scale press-scale">
             <Avatar className="h-9 w-9 border-2 border-primary/20">
               <AvatarImage src={avatarUrl || user?.user_metadata?.avatar_url} alt="Profile" />
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
