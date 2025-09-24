@@ -41,34 +41,29 @@ export default function Inviti() {
     data: inviteData,
     isLoading: invitesLoading
   } = useMyInvites();
-  
   const updateInviteStatus = useUpdateInviteStatus();
 
   // Transform invites to include sender info for SwipeInterface
-  const { data: transformedInvites, isLoading: transformingInvites } = useQuery({
+  const {
+    data: transformedInvites,
+    isLoading: transformingInvites
+  } = useQuery({
     queryKey: ['invites-with-senders', inviteData],
     queryFn: async () => {
       if (!inviteData?.received) return [];
-      
-      const invitesWithSenders = await Promise.all(
-        inviteData.received.map(async (invite) => {
-          const { data: hostProfile } = await supabase
-            .from('profiles')
-            .select('id, name, avatar_url')
-            .eq('id', invite.host_id)
-            .single();
-            
-          return {
-            ...invite,
-            sender: {
-              id: invite.host_id,
-              name: hostProfile?.name || 'Utente',
-              avatar_url: hostProfile?.avatar_url
-            }
-          };
-        })
-      );
-      
+      const invitesWithSenders = await Promise.all(inviteData.received.map(async invite => {
+        const {
+          data: hostProfile
+        } = await supabase.from('profiles').select('id, name, avatar_url').eq('id', invite.host_id).single();
+        return {
+          ...invite,
+          sender: {
+            id: invite.host_id,
+            name: hostProfile?.name || 'Utente',
+            avatar_url: hostProfile?.avatar_url
+          }
+        };
+      }));
       return invitesWithSenders;
     },
     enabled: !!inviteData?.received
@@ -138,22 +133,21 @@ export default function Inviti() {
     const allInvites = [...(inviteData?.received || []), ...(inviteData?.sent || [])];
     const invite = allInvites.find(i => i.id === inviteId);
     if (invite) {
-      updateInviteStatus.mutate({ 
-        inviteId, 
+      updateInviteStatus.mutate({
+        inviteId,
         status: 'accepted',
-        responseMessage: 'Accettato!' 
+        responseMessage: 'Accettato!'
       });
     }
   };
-  
   const handleRejectInvite = (inviteId: string) => {
     const allInvites = [...(inviteData?.received || []), ...(inviteData?.sent || [])];
     const invite = allInvites.find(i => i.id === inviteId);
     if (invite) {
-      updateInviteStatus.mutate({ 
-        inviteId, 
+      updateInviteStatus.mutate({
+        inviteId,
         status: 'rejected',
-        responseMessage: 'Non posso partecipare.' 
+        responseMessage: 'Non posso partecipare.'
       });
     }
   };
@@ -180,28 +174,17 @@ export default function Inviti() {
         
         <TabsContent value="ricevuti" className="space-y-6">
           {/* Toggle between swipe and list view for invites */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">I tuoi inviti</h2>
-            
-          </div>
+          
 
-          {(invitesLoading || transformingInvites) ? <div className="text-center py-12">
+          {invitesLoading || transformingInvites ? <div className="text-center py-12">
               <p className="text-muted-foreground">Caricamento inviti...</p>
             </div> : <>
               {/* Swipe Interface for Invites */}
-              {inviteViewMode === "swipe" ? 
-                <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <InviteSwipeInterface 
-                    invites={(transformedInvites || []).filter(invite => invite.status === 'pending')} 
-                    onAccept={handleAcceptInvite} 
-                    onReject={handleRejectInvite} 
-                  />
-                </div>
-              : 
-                (/* List View for Invites */
-                <div className="space-y-4">
-                  {(inviteData?.received || []).length === 0 ? (
-                    <div className="text-center py-12">
+              {inviteViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
+                  <InviteSwipeInterface invites={(transformedInvites || []).filter(invite => invite.status === 'pending')} onAccept={handleAcceptInvite} onReject={handleRejectInvite} />
+                </div> : (/* List View for Invites */
+          <div className="space-y-4">
+                  {(inviteData?.received || []).length === 0 ? <div className="text-center py-12">
                       <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <Users className="h-8 w-8 text-primary" />
                       </div>
@@ -209,9 +192,7 @@ export default function Inviti() {
                       <p className="text-muted-foreground">
                         Non hai inviti in attesa al momento.
                       </p>
-                    </div>
-                  ) : (
-                    <>
+                    </div> : <>
                       <div className="flex items-center justify-between mb-4">
                         <p className="text-sm text-muted-foreground">
                           {(inviteData?.received || []).filter(i => i.status === 'pending').length} inviti in attesa
@@ -221,22 +202,12 @@ export default function Inviti() {
                         </Badge>
                       </div>
                       {(inviteData?.received || []).map(invite => {
-                        // Transform invite to include sender info
-                        const transformedInvite = transformedInvites?.find(t => t.id === invite.id) || invite;
-                        return (
-                          <InviteCard 
-                            key={invite.id} 
-                            invite={transformedInvite} 
-                            type="received"
-                            onAccept={handleAcceptInvite}
-                            onReject={handleRejectInvite}
-                          />
-                        );
-                      })}
-                    </>
-                  )}
-                </div>
-                )}
+                // Transform invite to include sender info
+                const transformedInvite = transformedInvites?.find(t => t.id === invite.id) || invite;
+                return <InviteCard key={invite.id} invite={transformedInvite} type="received" onAccept={handleAcceptInvite} onReject={handleRejectInvite} />;
+              })}
+                    </>}
+                </div>)}
             </>}
         </TabsContent>
 
@@ -258,18 +229,7 @@ export default function Inviti() {
           </div>
 
           {/* Only show filters when not in swipe mode on mobile */}
-          {!(isMobile && friendsViewMode === "swipe") && (
-            <FriendsSearchFilters 
-              searchQuery={searchQuery} 
-              onSearchChange={setSearchQuery} 
-              selectedMood={selectedMood} 
-              onMoodChange={setSelectedMood} 
-              radiusKm={radiusKm} 
-              onRadiusChange={setRadiusKm} 
-              availabilityFilter={availabilityFilter} 
-              onAvailabilityChange={setAvailabilityFilter} 
-            />
-          )}
+          {!(isMobile && friendsViewMode === "swipe") && <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />}
           
           {locationLoading ? <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
@@ -277,13 +237,7 @@ export default function Inviti() {
             </div> : filteredUsers.length > 0 ? <>
               {/* Swipe Interface for Friends */}
               {friendsViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
-                  <SwipeInterface 
-                    users={swipeUsers} 
-                    onInvite={handleInvite} 
-                    onPass={handlePass}
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                  />
+                  <SwipeInterface users={swipeUsers} onInvite={handleInvite} onPass={handlePass} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
                 </div> : (/* List View for Friends */
           <div className="space-y-4">
                   <div className="flex items-center justify-between">
