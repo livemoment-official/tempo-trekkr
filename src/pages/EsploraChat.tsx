@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/discover/ChatInterface';
+import { AIChatInput } from '@/components/discover/AIChatInput';
 import { useGlobalChat } from '@/hooks/useGlobalChat';
 
 export default function EsploraChat() {
   const navigate = useNavigate();
-  const { messages, loading } = useGlobalChat();
+  const { messages, loading, sendMessage } = useGlobalChat();
 
   return (
     <>
@@ -40,6 +41,12 @@ export default function EsploraChat() {
         <div className="flex-1 pb-20">
           <ChatInterface messages={messages} loading={loading} />
         </div>
+
+        {/* AI Chat Input */}
+        <AIChatInput 
+          onSendMessage={sendMessage}
+          disabled={loading}
+        />
       </div>
     </>
   );
