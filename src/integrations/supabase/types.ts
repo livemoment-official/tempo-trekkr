@@ -355,6 +355,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           discovery_on: boolean
+          end_at: string | null
           host_id: string | null
           id: string
           max_participants: number | null
@@ -376,6 +377,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           discovery_on?: boolean
+          end_at?: string | null
           host_id?: string | null
           id?: string
           max_participants?: number | null
@@ -397,6 +399,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           discovery_on?: boolean
+          end_at?: string | null
           host_id?: string | null
           id?: string
           max_participants?: number | null
@@ -561,6 +564,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           description: string | null
+          end_at: string | null
           host_id: string
           id: string
           invite_count: number | null
@@ -578,6 +582,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          end_at?: string | null
           host_id: string
           id?: string
           invite_count?: number | null
@@ -595,6 +600,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          end_at?: string | null
           host_id?: string
           id?: string
           invite_count?: number | null
@@ -839,6 +845,7 @@ export type Database = {
           currency: string | null
           deleted_at: string | null
           description: string | null
+          end_at: string | null
           host_id: string
           id: string
           is_public: boolean
@@ -866,6 +873,7 @@ export type Database = {
           currency?: string | null
           deleted_at?: string | null
           description?: string | null
+          end_at?: string | null
           host_id: string
           id?: string
           is_public?: boolean
@@ -893,6 +901,7 @@ export type Database = {
           currency?: string | null
           deleted_at?: string | null
           description?: string | null
+          end_at?: string | null
           host_id?: string
           id?: string
           is_public?: boolean
