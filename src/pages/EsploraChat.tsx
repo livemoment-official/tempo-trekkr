@@ -38,7 +38,7 @@ export default function EsploraChat() {
         </div>
 
         {/* Chat content - with bottom padding for fixed input */}
-        <div className="flex-1 pb-20">
+        <div className="flex-1 pb-32">
           <ChatInterface messages={messages} loading={loading} />
         </div>
 

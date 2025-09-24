@@ -125,8 +125,8 @@ export default function AppLayout() {
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
   
-  // Check if we need to show the fixed chat input
-  const showChatInput = pathname === '/esplora' || pathname === '/esplora/chat';
+  // Check if we need to show the fixed chat input (only on /esplora, not on chat page)
+  const showChatInput = pathname === '/esplora';
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);

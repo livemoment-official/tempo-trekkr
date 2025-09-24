@@ -72,7 +72,7 @@ export function AIChatInput({ onSendMessage, disabled }: AIChatInputProps) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border p-4">
       <div className="flex items-end gap-2 max-w-4xl mx-auto">
         {/* Voice Recorder */}
         <VoiceRecorder 
