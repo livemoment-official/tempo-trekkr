@@ -75,9 +75,6 @@ const Index = () => {
 
       <LocationPermissionCard />
       
-      {/* Current Location Indicator */}
-      {userLocation}
-      
       <MomentFilters onFiltersChange={handleFilterChange} currentFilters={filterState} view={view} onViewChange={setView} />
 
       {/* Content */}
