@@ -60,3 +60,6 @@ template_subjects_map = { confirmation = "Confirm your signup", invite = "You ha
 
 [functions.ai-explore]
 verify_jwt = false
+
+[functions.cleanup-deleted-content]
+verify_jwt = false

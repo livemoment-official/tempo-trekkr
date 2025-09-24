@@ -60,8 +60,13 @@ export function useEvents() {
         .from('events')
         .select(`*`)
         .eq('discovery_on', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(20);
+
+      // Filter out past events by default (only show current and future events)
+      // Show events with no date OR events in the future
+      query = query.or('when_at.is.null,when_at.gte.' + new Date().toISOString());
 
       const { data, error } = await query;
 

@@ -134,8 +134,13 @@ export function useMoments() {
         .from('moments')
         .select(`*`)
         .eq('is_public', true)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
+
+      // Filter out past moments by default (only show current and future moments)
+      // Show moments with no date OR moments in the future
+      query = query.or('when_at.is.null,when_at.gte.' + new Date().toISOString());
 
       // Apply filters
       if (currentFilters.query) {

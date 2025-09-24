@@ -352,6 +352,7 @@ export type Database = {
           age_range_min: number | null
           capacity: number | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           discovery_on: boolean
           host_id: string | null
@@ -372,6 +373,7 @@ export type Database = {
           age_range_min?: number | null
           capacity?: number | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           discovery_on?: boolean
           host_id?: string | null
@@ -392,6 +394,7 @@ export type Database = {
           age_range_min?: number | null
           capacity?: number | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           discovery_on?: boolean
           host_id?: string | null
@@ -556,6 +559,7 @@ export type Database = {
         Row: {
           can_be_public: boolean | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           host_id: string
           id: string
@@ -572,6 +576,7 @@ export type Database = {
         Insert: {
           can_be_public?: boolean | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           host_id: string
           id?: string
@@ -588,6 +593,7 @@ export type Database = {
         Update: {
           can_be_public?: boolean | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           host_id?: string
           id?: string
@@ -831,6 +837,7 @@ export type Database = {
           capacity: number | null
           created_at: string
           currency: string | null
+          deleted_at: string | null
           description: string | null
           host_id: string
           id: string
@@ -857,6 +864,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string
           currency?: string | null
+          deleted_at?: string | null
           description?: string | null
           host_id: string
           id?: string
@@ -883,6 +891,7 @@ export type Database = {
           capacity?: number | null
           created_at?: string
           currency?: string | null
+          deleted_at?: string | null
           description?: string | null
           host_id?: string
           id?: string
@@ -1580,6 +1589,10 @@ export type Database = {
       calculate_distance_km: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
+      }
+      cleanup_deleted_content: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       count_user_invites_today: {
         Args: { inviter_id?: string; target_user_id: string }
