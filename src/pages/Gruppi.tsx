@@ -12,6 +12,7 @@ import { Search, Filter, Plus, X, Users, MapPin, Loader2 } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
+import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
 import { useGroups } from "@/hooks/useGroups";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -229,9 +230,15 @@ const GroupCard = ({
           </Button>}>
           <div className="flex gap-2">
             {isHost ? (
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/chat/group/${group.id}`)}>
-                Gestisci
-              </Button>
+              <GroupManagementModal
+                groupId={group.id}
+                groupTitle={group.title}
+                isHost={true}
+              >
+                <Button variant="outline" size="sm" className="rounded-xl">
+                  Gestisci
+                </Button>
+              </GroupManagementModal>
             ) : isParticipant ? (
               <>
                 <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate(`/chat/group/${group.id}`)}>

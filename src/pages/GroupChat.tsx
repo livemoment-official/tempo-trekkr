@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { Send, Plus } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,8 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatInfoBanner } from "@/components/chat/ChatInfoBanner";
 import { ChatSettingsModal } from "@/components/chat/ChatSettingsModal";
 import { ParticipantsList } from "@/components/chat/ParticipantsList";
+import { CreateMomentFromGroupModal } from "@/components/groups/CreateMomentFromGroupModal";
+import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GroupMessage {
@@ -235,6 +237,29 @@ export default function GroupChat() {
           onShowParticipants={() => setShowParticipants(true)}
           category={group.category}
         />
+
+        {/* Group Actions */}
+        <div className="px-4 py-2 border-b border-border bg-muted/30">
+          <div className="flex gap-2 justify-center">
+            <CreateMomentFromGroupModal
+              groupId={groupId || ''}
+              groupTitle={group.title}
+              groupCategory={group.category}
+              groupLocation={group.location}
+            >
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Crea Momento
+              </Button>
+            </CreateMomentFromGroupModal>
+
+            <GroupManagementModal
+              groupId={groupId || ''}
+              groupTitle={group.title}
+              isHost={group.host_id === user?.id}
+            />
+          </div>
+        </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">

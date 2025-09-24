@@ -3,10 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Globe, Lock } from 'lucide-react';
 import LocationSearchInput from '@/components/location/LocationSearchInput';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { MOMENT_CATEGORIES } from '@/constants/unifiedTags';
 
 const categories = [
   { id: 'aperitivo', label: 'Aperitivo', emoji: '🍺' },
@@ -33,6 +36,7 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
     title: '',
     category: '',
     location: '',
+    isPublic: true,
   });
 
   const handleCategorySelect = (categoryId: string) => {
@@ -64,6 +68,7 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
           location: formData.location ? { name: formData.location } : null,
           host_id: user?.id,
           participants: [user?.id],
+          is_public: formData.isPublic,
         })
         .select()
         .single();
@@ -76,7 +81,7 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
       });
 
       // Reset form and close modal
-      setFormData({ title: '', category: '', location: '' });
+      setFormData({ title: '', category: '', location: '', isPublic: true });
       setOpen(false);
     } catch (error) {
       console.error('Error creating group:', error);
@@ -137,6 +142,23 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
                 onChange={handleLocationChange}
                 placeholder="Seleziona una zona..."
               />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label>Visibilità del gruppo</Label>
+              <p className="text-sm text-muted-foreground">
+                {formData.isPublic ? 'Il gruppo sarà visibile a tutti' : 'Solo su invito'}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Lock className={`h-4 w-4 ${!formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Switch
+                checked={formData.isPublic}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
+              />
+              <Globe className={`h-4 w-4 ${formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
             </div>
           </div>
 

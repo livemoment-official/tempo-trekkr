@@ -158,12 +158,48 @@ export function useGroups() {
     };
   }, [user?.id]);
 
+  const deleteGroup = async (groupId: string) => {
+    if (!user?.id) return false;
+
+    try {
+      // Check if user is the host
+      const { data: group, error: fetchError } = await supabase
+        .from('groups')
+        .select('host_id')
+        .eq('id', groupId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (group.host_id !== user.id) {
+        return false; // Only host can delete
+      }
+
+      // Delete the group
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', groupId);
+
+      if (error) throw error;
+
+      // Refresh groups
+      await loadPublicGroups();
+      await loadUserGroups();
+      return true;
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      return false;
+    }
+  };
+
   return {
     groups,
     userGroups,
     isLoading,
     joinGroup,
     leaveGroup,
+    deleteGroup,
     loadPublicGroups,
     loadUserGroups
   };
