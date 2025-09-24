@@ -71,7 +71,8 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
         },
         async (payload) => {
           console.log('New message received:', payload);
-          if (payload.new) {
+          if (payload.new && payload.new.sender_id !== user?.id) {
+            // Only add message if it's not from current user (to avoid duplicates)
             // Get sender profile for the new message
             const { data: profile } = await supabase
               .from('profiles')
@@ -259,6 +260,7 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
           created_at: data.created_at,
         };
 
+        // Add immediately for current user's message
         setMessages(prev => [...prev, newMessage]);
       }
     } catch (error) {

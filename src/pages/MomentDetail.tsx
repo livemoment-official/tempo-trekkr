@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -22,13 +21,17 @@ import {
   Calendar,
   Info,
   Settings,
-  Edit
+  Edit,
+  Share2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModal";
 import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { MomentStories } from "@/components/moments/MomentStories";
+import { ShareModal } from "@/components/shared/ShareModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -36,15 +39,50 @@ export default function MomentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isParticipating, setIsParticipating] = useState(false);
-  const [chatMessage, setChatMessage] = useState("");
-  const [showChat, setShowChat] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(null);
+  const [participantCount, setParticipantCount] = useState(0);
 
   // Fetch real moment data
   const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
+
+  // Check if user is host
+  const isHost = user && moment && user.id === moment.host_id;
+
+  // Set up real-time participant count updates
+  useEffect(() => {
+    if (!moment?.id) return;
+
+    // Initial count
+    setParticipantCount(moment.participant_count || 0);
+
+    // Real-time subscription
+    const channel = supabase
+      .channel(`moment_participants:${moment.id}`)
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'moment_participants', filter: `moment_id=eq.${moment.id}` },
+        async () => {
+          // Refresh participant count
+          const { data, error } = await supabase
+            .from('moment_participants')
+            .select('*')
+            .eq('moment_id', moment.id)
+            .eq('status', 'confirmed');
+          
+          if (!error && data) {
+            setParticipantCount(data.length);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [moment?.id]);
 
   if (isLoading) {
     return (
@@ -132,14 +170,8 @@ export default function MomentDetail() {
     setUserReaction(userReaction === reactionType ? null : reactionType);
   };
 
-  const sendMessage = () => {
-    if (chatMessage.trim()) {
-      toast({
-        title: "Messaggio inviato!",
-        description: "Il tuo messaggio è stato inviato al gruppo"
-      });
-      setChatMessage("");
-    }
+  const handleDeleteSuccess = () => {
+    navigate('/momenti');
   };
 
   return (
@@ -280,12 +312,12 @@ export default function MomentDetail() {
                 <Users className="h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">
-                    {moment.participant_count}
+                    {participantCount}
                     {moment.max_participants && `/${moment.max_participants}`} partecipanti
                   </p>
                   {moment.max_participants && (
                     <p className="text-sm text-muted-foreground">
-                      {moment.max_participants - moment.participant_count} posti disponibili
+                      {moment.max_participants - participantCount} posti disponibili
                     </p>
                   )}
                 </div>
@@ -340,83 +372,69 @@ export default function MomentDetail() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" className="flex-1" onClick={() => setShowChat(!showChat)}>
+              <Button variant="outline" className="flex-1" onClick={() => navigate(`/chat/group/${moment.id}`)}>
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Chatta
               </Button>
-              <Button variant="outline">
-                <UserPlus className="h-4 w-4" />
-              </Button>
+              <ShareModal contentType="moment" contentId={moment.id} title={moment.title}>
+                <Button variant="outline">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </ShareModal>
             </div>
           </CardContent>
         </Card>
 
-        {/* Chat Section */}
-        {showChat && (
-          <Card>
-            <CardHeader>
-              <h3 className="font-semibold">Chat del Gruppo</h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Messages */}
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {chatMessages.map((msg) => (
-                  <div key={msg.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">{msg.user.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{msg.user}</span>
-                        {msg.isOrganizer && (
-                          <Badge variant="secondary" className="text-xs">Organizzatore</Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground">{msg.time}</span>
-                      </div>
-                      <p className="text-sm mt-1">{msg.message}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Message Input */}
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Scrivi un messaggio..."
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  className="flex-1 min-h-[40px] max-h-[80px]"
-                />
-                <Button onClick={sendMessage} disabled={!chatMessage.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Action Buttons - Fixed at bottom */}
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
           <div className="flex items-center gap-3">
-            <Button 
-              size="lg" 
-              className="flex-1"
-              onClick={handleParticipate}
-              variant={isParticipating ? "outline" : "default"}
-            >
-              {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
-            </Button>
-            
-            {/* Small chat icon - only visible after participation */}
-            {isParticipating && (
-              <Button 
-                variant="outline"
-                size="lg"
-                className="bg-white p-3"
-                onClick={() => navigate(`/chat/organizer/${moment.host_id}`)}
-              >
-                <MessageCircle className="h-5 w-5" />
-              </Button>
+            {isHost ? (
+              /* Host Actions */
+              <>
+                <Button 
+                  size="lg" 
+                  className="flex-1"
+                  onClick={() => navigate(`/chat/group/${moment.id}`)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Entra in Chat
+                </Button>
+                
+                <ShareModal contentType="moment" contentId={moment.id} title={moment.title}>
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    className="p-3"
+                  >
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </ShareModal>
+              </>
+            ) : (
+              /* Participant Actions */
+              <>
+                <Button 
+                  size="lg" 
+                  className="flex-1"
+                  onClick={handleParticipate}
+                  variant={isParticipating ? "outline" : "default"}
+                >
+                  {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
+                </Button>
+                
+                {/* Chat icon - only visible after participation */}
+                {isParticipating && (
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    className="p-3"
+                    onClick={() => navigate(`/chat/group/${moment.id}`)}
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -439,6 +457,7 @@ export default function MomentDetail() {
             onOpenChange={setShowEditModal}
             moment={moment}
             onSuccess={refreshMoment}
+            onDelete={handleDeleteSuccess}
           />
         )}
       </div>

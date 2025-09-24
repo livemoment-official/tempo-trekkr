@@ -17,7 +17,7 @@ export function ShareModal({ contentType, contentId, title, children }: ShareMod
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   
-  const shareUrl = `${window.location.origin}/${contentType === 'moment' ? 'momenti' : 'eventi'}/${contentId}`;
+  const shareUrl = `${window.location.origin}/${contentType === 'moment' ? 'moment' : 'evento'}/${contentId}`;
 
   const handleCopy = async () => {
     try {

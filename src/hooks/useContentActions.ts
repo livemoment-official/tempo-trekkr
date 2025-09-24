@@ -10,6 +10,11 @@ export interface UpdateContentData {
   place?: any;
   capacity?: number;
   max_participants?: number;
+  age_range_min?: number;
+  age_range_max?: number;
+  photos?: string[];
+  deleted_at?: string;
+  host_id?: string;
 }
 
 // Hook for soft deleting content (moments, events, invites)
