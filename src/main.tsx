@@ -33,6 +33,7 @@ import Chat from './pages/Chat'
 import ChatFullscreen from './pages/ChatFullscreen'
 import Abbonamento from './pages/Abbonamento'
 import NotFound from './pages/NotFound'
+import UnifiedChatPage from './pages/UnifiedChatPage'
 
 import './index.css'
 
@@ -72,8 +73,8 @@ createRoot(document.getElementById("root")!).render(
             <Route path="event/:id" element={<MinimalLayoutWrapper title="Evento"><EventDetail /></MinimalLayoutWrapper>} />
             <Route path="artist/:id" element={<MinimalLayoutWrapper title="Artista"><ArtistDetail /></MinimalLayoutWrapper>} />
             <Route path="momenti/:id" element={<MinimalLayoutWrapper title="Momento"><MomentDetail /></MinimalLayoutWrapper>} />
-            
-
+            {/* Unified chat dynamic route */}
+            <Route path="chat/:type/:id" element={<UnifiedChatPage />} />
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
