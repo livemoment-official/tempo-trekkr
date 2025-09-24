@@ -25,7 +25,8 @@ export function EditDeleteMenu({ contentType, contentId, onEdit, isOwner }: Edit
         setShowDeleteDialog(false);
       },
       onError: (error) => {
-        console.error('Delete error:', error);
+        console.error('Delete error details:', error);
+        // Keep dialog open on error so user can try again
       }
     });
   };
@@ -69,8 +70,9 @@ export function EditDeleteMenu({ contentType, contentId, onEdit, isOwner }: Edit
             <AlertDialogAction 
               onClick={handleDelete}
               className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteContent.isPending}
             >
-              Elimina
+              {deleteContent.isPending ? 'Eliminando...' : 'Elimina'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

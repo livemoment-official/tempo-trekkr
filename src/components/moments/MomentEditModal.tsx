@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useUpdateContent } from "@/hooks/useContentActions";
+import { useUpdateContent, useDeleteContent } from "@/hooks/useContentActions";
 import { MomentDetail } from "@/hooks/useMomentDetail";
 import { useAllUsers } from "@/hooks/useAllUsers";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -30,6 +30,7 @@ const availableTags = [
 export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelete }: MomentEditModalProps) {
   const { toast } = useToast();
   const updateMoment = useUpdateContent('moments');
+  const deleteMoment = useDeleteContent('moments');
   const { data: usersData } = useAllUsers(null);
   const { uploadGalleryImage } = useImageUpload();
 
@@ -133,16 +134,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
   const handleDelete = async () => {
     try {
       console.log('Attempting to delete moment:', moment.id);
-      await updateMoment.mutateAsync({ 
-        id: moment.id, 
-        data: { deleted_at: new Date().toISOString() }
-      });
-
-      toast({
-        title: "Momento eliminato",
-        description: "Il momento è stato eliminato con successo"
-      });
-
+      await deleteMoment.mutateAsync(moment.id);
       onDelete?.();
       onOpenChange(false);
     } catch (error) {
@@ -403,6 +395,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
                   type="button" 
                   variant="destructive"
                   size="sm"
+                  disabled={deleteMoment.isPending}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -416,8 +409,8 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Annulla</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Elimina
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deleteMoment.isPending}>
+                    {deleteMoment.isPending ? 'Eliminando...' : 'Elimina'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
