@@ -16,13 +16,25 @@ import { useFriendship } from "@/hooks/useFriendship";
 import { toast } from 'sonner';
 
 const fetchUserProfileById = async (userId: string) => {
+  console.log('🔍 Fetching profile for user ID:', userId);
+  
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .maybeSingle();
 
-  if (error) throw error;
+  console.log('📊 Profile query result:', { data, error });
+
+  if (error) {
+    console.error('❌ Error fetching profile:', error);
+    throw error;
+  }
+  
+  if (!data) {
+    console.warn('⚠️ No profile data found for user ID:', userId);
+  }
+  
   return data;
 };
 
@@ -34,11 +46,17 @@ export default function UserDetailById() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'friends'>('none');
 
+  console.log('🔍 UserDetailById loaded with ID:', id);
+  console.log('👤 Current user:', user?.id);
+  
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user-profile-by-id', id],
     queryFn: () => fetchUserProfileById(id!),
     enabled: !!id,
+    retry: 1,
   });
+
+  console.log('📊 Profile query state:', { profile, isLoading, error, id });
 
   // Check friendship status
   useEffect(() => {
@@ -123,12 +141,45 @@ export default function UserDetailById() {
     );
   }
 
-  if (error || !profile) {
+  if (error) {
+    console.error('❌ Error in UserDetailById:', error);
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Utente non trovato</p>
-          <Button onClick={() => navigate('/')}>Torna alla home</Button>
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Errore nel caricamento</h2>
+          <p className="text-muted-foreground">
+            Si è verificato un errore nel caricamento del profilo.
+          </p>
+          <div className="space-x-2">
+            <Button onClick={() => navigate(-1)} variant="outline">
+              Indietro
+            </Button>
+            <Button onClick={() => navigate('/trova-amici')}>
+              Trova Altri Utenti
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    console.warn('⚠️ Profile not found for ID:', id);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Profilo non trovato</h2>
+          <p className="text-muted-foreground">
+            Questo utente potrebbe aver impostato il profilo come privato o non esiste più.
+          </p>
+          <div className="space-x-2">
+            <Button onClick={() => navigate(-1)} variant="outline">
+              Indietro
+            </Button>
+            <Button onClick={() => navigate('/trova-amici')}>
+              Trova Altri Utenti
+            </Button>
+          </div>
         </div>
       </div>
     );

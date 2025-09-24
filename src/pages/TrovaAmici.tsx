@@ -46,9 +46,14 @@ export default function TrovaAmici() {
 
   // Smart user selection: nearby users first, then all users as fallback
   const getDisplayUsers = () => {
+    console.log('🔄 Getting display users...');
+    console.log('📍 Nearby users:', nearbyUsers);
+    console.log('🌐 All users:', allUsers);
+
     // If we have nearby users, use them
     if (nearbyUsers && nearbyUsers.length > 0) {
-      return nearbyUsers.map(user => ({
+      console.log('✅ Using nearby users');
+      const nearby = nearbyUsers.map(user => ({
         id: user.user_id,
         name: user.name,
         avatar_url: user.avatar_url || "/placeholder.svg",
@@ -58,11 +63,14 @@ export default function TrovaAmici() {
         is_available: true,
         preferred_moments: user.interests || []
       }));
+      console.log('🎯 Transformed nearby users:', nearby);
+      return nearby;
     }
     
     // Otherwise, use all users with distance calculation
     if (allUsers && allUsers.length > 0) {
-      return allUsers.map(user => ({
+      console.log('🔄 Using all users fallback');
+      const all = allUsers.map(user => ({
         id: user.id,
         name: user.name,
         avatar_url: user.avatar_url,
@@ -72,8 +80,11 @@ export default function TrovaAmici() {
         is_available: false, // Not necessarily available
         preferred_moments: user.interests || []
       }));
+      console.log('📋 Transformed all users:', all);
+      return all;
     }
-    
+
+    console.log('⚠️ No users found');
     return [];
   };
 
