@@ -1,13 +1,6 @@
 import { ArrowLeft, Settings, MoreVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 interface ChatHeaderProps {
   title: string;
   subtitle?: string;
@@ -23,12 +16,11 @@ interface ChatHeaderProps {
   onCreateMoment?: () => void;
   showCreateMoment?: boolean;
 }
-
-export function ChatHeader({ 
-  title, 
-  subtitle, 
-  onBack, 
-  onShowParticipants, 
+export function ChatHeader({
+  title,
+  subtitle,
+  onBack,
+  onShowParticipants,
   onShowSettings,
   avatar,
   chatType,
@@ -39,11 +31,9 @@ export function ChatHeader({
   onCreateMoment,
   showCreateMoment
 }: ChatHeaderProps) {
-  
   // Generate contextual subtitle based on chat type
   const getContextualSubtitle = () => {
     if (subtitle) return subtitle;
-    
     switch (chatType) {
       case 'moment':
         if (eventDate && eventTime) {
@@ -64,8 +54,7 @@ export function ChatHeader({
         return undefined;
     }
   };
-  return (
-    <div className="bg-card border-b border-border">
+  return <div className="bg-card border-b border-border">
       {/* Main header with title and actions */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3 flex-1">
@@ -81,12 +70,10 @@ export function ChatHeader({
         </div>
 
         <div className="flex items-center gap-2">
-          {showCreateMoment && onCreateMoment && (
-            <Button variant="default" size="sm" onClick={onCreateMoment} className="rounded-full">
+          {showCreateMoment && onCreateMoment && <Button variant="default" size="sm" onClick={onCreateMoment} className="rounded-full">
               <Plus className="h-4 w-4 mr-2" />
               Crea il Momento
-            </Button>
-          )}
+            </Button>}
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -109,11 +96,8 @@ export function ChatHeader({
       </div>
 
       {/* Contextual information row */}
-      {getContextualSubtitle() && (
-        <div className="px-4 pb-3">
-          <p className="text-sm text-muted-foreground">{getContextualSubtitle()}</p>
-        </div>
-      )}
-    </div>
-  );
+      {getContextualSubtitle() && <div className="px-4 pb-3">
+          
+        </div>}
+    </div>;
 }
