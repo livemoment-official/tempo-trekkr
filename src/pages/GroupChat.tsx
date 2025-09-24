@@ -51,6 +51,7 @@ export default function GroupChat() {
   const [isSending, setIsSending] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [showCreateMoment, setShowCreateMoment] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -184,6 +185,7 @@ export default function GroupChat() {
   };
 
   const isUserInGroup = group && (group.host_id === user?.id || group.participants.includes(user?.id || ''));
+  const canCreateMoment = group && group.category !== 'moment_chat' && group.host_id === user?.id;
 
   if (isLoading) {
     return (
@@ -217,6 +219,8 @@ export default function GroupChat() {
           chatType="group"
           participantCount={group.participants.length}
           location={group.location?.name}
+          onCreateMoment={() => setShowCreateMoment(true)}
+          showCreateMoment={canCreateMoment}
           avatar={
             group.avatar_url && (
               <div className="relative w-10 h-10 overflow-hidden rounded-lg">
@@ -240,23 +244,6 @@ export default function GroupChat() {
           onShowParticipants={() => setShowParticipants(true)}
           category={group.category}
         />
-
-        {/* Group Actions */}
-        <div className="px-4 py-2 border-b border-border bg-muted/30">
-          <div className="flex gap-2 justify-center">
-            <CreateMomentFromGroupModal
-              groupId={groupId || ''}
-              groupTitle={group.title}
-              groupCategory={group.category}
-              groupLocation={group.location}
-            >
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Crea Momento
-              </Button>
-            </CreateMomentFromGroupModal>
-          </div>
-        </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -344,6 +331,18 @@ export default function GroupChat() {
           title={group.title}
           type="group"
         />
+
+        {/* Create Moment Modal */}
+        {canCreateMoment && (
+          <CreateMomentFromGroupModal
+            groupId={groupId || ''}
+            groupTitle={group.title}
+            groupCategory={group.category}
+            groupLocation={group.location}
+            open={showCreateMoment}
+            onOpenChange={setShowCreateMoment}
+          />
+        )}
       </div>
     </AuthGuard>
   );

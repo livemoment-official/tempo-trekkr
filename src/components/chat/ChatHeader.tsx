@@ -1,4 +1,4 @@
-import { ArrowLeft, Settings, MoreVertical } from "lucide-react";
+import { ArrowLeft, Settings, MoreVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +20,8 @@ interface ChatHeaderProps {
   eventTime?: string;
   location?: string;
   participantCount?: number;
+  onCreateMoment?: () => void;
+  showCreateMoment?: boolean;
 }
 
 export function ChatHeader({ 
@@ -33,7 +35,9 @@ export function ChatHeader({
   eventDate,
   eventTime,
   location,
-  participantCount
+  participantCount,
+  onCreateMoment,
+  showCreateMoment
 }: ChatHeaderProps) {
   
   // Generate contextual subtitle based on chat type
@@ -77,23 +81,32 @@ export function ChatHeader({
         </div>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <MoreVertical className="h-4 w-4" />
+      <div className="flex items-center gap-2">
+        {showCreateMoment && onCreateMoment && (
+          <Button variant="default" size="sm" onClick={onCreateMoment} className="rounded-full">
+            <Plus className="h-4 w-4 mr-2" />
+            Crea il Momento
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onShowParticipants}>
-            Vedi partecipanti
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onShowSettings}>
-            <Settings className="h-4 w-4 mr-2" />
-            Impostazioni chat
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        )}
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onShowParticipants}>
+              Vedi partecipanti
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onShowSettings}>
+              <Settings className="h-4 w-4 mr-2" />
+              Impostazioni chat
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

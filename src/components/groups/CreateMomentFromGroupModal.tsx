@@ -15,6 +15,8 @@ interface CreateMomentFromGroupModalProps {
   groupCategory: string;
   groupLocation?: any;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function CreateMomentFromGroupModal({
@@ -23,11 +25,17 @@ export function CreateMomentFromGroupModal({
   groupCategory,
   groupLocation,
   children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: CreateMomentFromGroupModalProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
   const [formData, setFormData] = useState({
     title: `Momento: ${groupTitle}`,
     description: '',
