@@ -54,7 +54,7 @@ export default function Inviti() {
       const invitesWithSenders = await Promise.all(inviteData.received.map(async invite => {
         const {
           data: hostProfile
-        } = await supabase.from('profiles').select('id, name, avatar_url').eq('id', invite.host_id).single();
+        } = await supabase.from('profiles').select('id, name, avatar_url').eq('id', invite.host_id).maybeSingle();
         return {
           ...invite,
           sender: {

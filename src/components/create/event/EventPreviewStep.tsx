@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 interface EventPreviewStepProps {
   data: any;
   onChange: (data: any) => void;
@@ -14,9 +15,8 @@ interface EventPreviewStepProps {
 export default function EventPreviewStep({
   data
 }: EventPreviewStepProps) {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const handlePublish = async () => {
     try {
       if (!data.title || !data.date) {
@@ -92,7 +92,7 @@ export default function EventPreviewStep({
         title: "Evento creato!",
         description: "Il tuo evento è stato pubblicato con successo"
       });
-      window.location.href = "/momenti";
+      navigate("/momenti");
     } catch (error) {
       console.error('Publish error:', error);
       toast({

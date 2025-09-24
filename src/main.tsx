@@ -20,7 +20,6 @@ import Gruppi from './pages/Gruppi'
 import MomentiEventi from './pages/MomentiEventi'
 import Agenda from './pages/Agenda'
 import Profilo from './pages/Profilo'
-import UserProfile from './pages/UserProfile'
 import UserDetailById from './pages/UserDetailById'
 import EventDetail from './pages/EventDetail'
 import ArtistDetail from './pages/ArtistDetail'
@@ -56,7 +55,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="momenti" element={<MomentiEventi />} />
               <Route path="agenda" element={<Agenda />} />
               <Route path="profilo" element={<Profilo />} />
-              <Route path="profilo/:userId" element={<UserProfile />} />
+              <Route path="profilo/:userId" element={<UserDetailById />} />
               <Route path="abbonamento" element={<Abbonamento />} />
               <Route path="crea" element={<Crea />} />
               <Route path="chat" element={<Chat />} />
@@ -67,7 +66,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="crea/momento" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomento /></MinimalLayoutWrapper>} />
             <Route path="crea/momento-da-invito/:inviteId" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomentoDaInvito /></MinimalLayoutWrapper>} />
             <Route path="crea/evento" element={<MinimalLayoutWrapper title="Crea Evento"><CreaEvento /></MinimalLayoutWrapper>} />
-            <Route path="user/:username" element={<MinimalLayoutWrapper title="Profilo"><UserProfile /></MinimalLayoutWrapper>} />
+            {/* Profile route unified to ID-based */}
             <Route path="user/:id" element={<MinimalLayoutWrapper title="Profilo"><UserDetailById /></MinimalLayoutWrapper>} />
             <Route path="moment/:id" element={<MinimalLayoutWrapper title="Momento"><MomentDetail /></MinimalLayoutWrapper>} />
             <Route path="event/:id" element={<MinimalLayoutWrapper title="Evento"><EventDetail /></MinimalLayoutWrapper>} />

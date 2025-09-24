@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface MomentPreviewStepProps {
   data: any;
@@ -15,6 +16,7 @@ interface MomentPreviewStepProps {
 
 export default function MomentPreviewStep({ data }: MomentPreviewStepProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handlePublish = async () => {
     try {
@@ -105,7 +107,7 @@ export default function MomentPreviewStep({ data }: MomentPreviewStepProps) {
       });
       
       // Navigate to the created moment
-      window.location.href = `/momento/${createdMoment.id}`;
+      navigate(`/momento/${createdMoment.id}`);
     } catch (error) {
       console.error('Error creating moment:', error);
       toast({

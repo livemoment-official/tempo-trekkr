@@ -51,7 +51,7 @@ export default function CreaMomentoDaInvito() {
         .from('invites')
         .select('*')
         .eq('id', inviteId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

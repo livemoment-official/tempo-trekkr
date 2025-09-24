@@ -24,7 +24,7 @@ const fetchArtistDetail = async (artistId: string) => {
     .from('artists')
     .select('*')
     .eq('id', artistId)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;

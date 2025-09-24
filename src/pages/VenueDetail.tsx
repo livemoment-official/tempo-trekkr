@@ -30,7 +30,7 @@ const fetchVenueDetail = async (venueId: string) => {
     .from('venues')
     .select('*')
     .eq('id', venueId)
-    .single();
+    .maybeSingle();
 
   console.log('Venue query result:', { data, error });
 

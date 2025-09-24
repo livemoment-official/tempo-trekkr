@@ -7,16 +7,16 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateInvite } from "@/hooks/useInvites";
+import { useNavigate } from "react-router-dom";
 interface InvitePreviewStepProps {
   data: any;
 }
 export default function InvitePreviewStep({
   data
 }: InvitePreviewStepProps) {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const createInvite = useCreateInvite();
+  const navigate = useNavigate();
   const handleSendInvites = async () => {
     try {
       console.log('Creating invite with data:', data);
@@ -66,7 +66,7 @@ export default function InvitePreviewStep({
         title: "Inviti inviati!",
         description: `${data.selectedPeople.length} persone hanno ricevuto il tuo invito`
       });
-      window.location.href = "/inviti";
+      navigate("/inviti");
     } catch (error) {
       console.error('Send invites error:', error);
       toast({

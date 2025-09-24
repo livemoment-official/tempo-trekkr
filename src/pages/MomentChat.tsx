@@ -96,7 +96,7 @@ export default function MomentChat() {
           host:profiles!moments_host_id_fkey(name, avatar_url)
         `)
         .eq('id', momentId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

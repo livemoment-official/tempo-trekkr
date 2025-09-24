@@ -73,7 +73,7 @@ export default function Profilo() {
       const {
         data,
         error
-      } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
       if (error) {
         if (error.code === 'PGRST116') {
           console.log('📝 Profile not found, will show onboarding');

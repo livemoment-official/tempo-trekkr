@@ -98,7 +98,7 @@ export default function UserDetailById() {
         .from('conversations')
         .select('id')
         .or(`and(participant_1.eq.${user.id},participant_2.eq.${profile.id}),and(participant_1.eq.${profile.id},participant_2.eq.${user.id})`)
-        .single();
+        .maybeSingle();
       
       if (existingConversation) {
         // Navigate to existing conversation
@@ -112,7 +112,7 @@ export default function UserDetailById() {
             participant_2: profile.id
           })
           .select('id')
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
         
