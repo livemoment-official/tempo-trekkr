@@ -100,92 +100,96 @@ export function CreateGroupModal({ children }: CreateGroupModalProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Crea Nuovo Gruppo</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Nome del gruppo</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="es. Aperitivi Milano Centro"
-              className="mt-2"
-            />
-          </div>
-
-          <div>
-            <Label>Categoria</Label>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  type="button"
-                  variant={formData.category === category.id ? "default" : "outline"}
-                  onClick={() => handleCategorySelect(category.id)}
-                  className="h-auto p-3 flex flex-col items-center gap-1"
-                >
-                  <span className="text-lg">{category.emoji}</span>
-                  <span className="text-xs">{category.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>Posizione</Label>
-            <div className="mt-2">
-              <LocationSearchInput
-                value={formData.location}
-                onChange={handleLocationChange}
-                placeholder="Seleziona una zona..."
+        <div className="flex-1 overflow-y-auto px-1">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <Label htmlFor="title">Nome del gruppo</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="es. Aperitivi Milano Centro"
+                className="mt-1"
               />
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Visibilità del gruppo</Label>
-              <p className="text-sm text-muted-foreground">
-                {formData.isPublic ? 'Il gruppo sarà visibile a tutti' : 'Solo su invito'}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Lock className={`h-4 w-4 ${!formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
-              <Switch
-                checked={formData.isPublic}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
-              />
-              <Globe className={`h-4 w-4 ${formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
-            </div>
-          </div>
-
-          {selectedCategory && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">Anteprima gruppo:</p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center text-2xl">
-                  {selectedCategory.emoji}
-                </div>
-                <div>
-                  <p className="font-medium">{formData.title || "Nome del gruppo"}</p>
-                  <p className="text-sm text-muted-foreground">{formData.location || "Posizione"}</p>
-                </div>
+            <div>
+              <Label>Categoria</Label>
+              <div className="grid grid-cols-3 gap-1.5 mt-2">
+                {categories.map((category) => (
+                  <Button
+                    key={category.id}
+                    type="button"
+                    variant={formData.category === category.id ? "default" : "outline"}
+                    onClick={() => handleCategorySelect(category.id)}
+                    className="h-auto p-2 flex flex-col items-center gap-1"
+                  >
+                    <span className="text-base">{category.emoji}</span>
+                    <span className="text-xs leading-tight">{category.label}</span>
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
 
-          <div className="flex gap-2 pt-4">
+            <div>
+              <Label>Posizione</Label>
+              <div className="mt-1">
+                <LocationSearchInput
+                  value={formData.location}
+                  onChange={handleLocationChange}
+                  placeholder="Seleziona una zona..."
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Visibilità del gruppo</Label>
+                <p className="text-xs text-muted-foreground">
+                  {formData.isPublic ? 'Il gruppo sarà visibile a tutti' : 'Solo su invito'}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Lock className={`h-4 w-4 ${!formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Switch
+                  checked={formData.isPublic}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
+                />
+                <Globe className={`h-4 w-4 ${formData.isPublic ? 'text-primary' : 'text-muted-foreground'}`} />
+              </div>
+            </div>
+
+            {selectedCategory && (
+              <div className="p-2.5 bg-muted rounded-lg">
+                <p className="text-sm font-medium mb-1.5">Anteprima gruppo:</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center text-xl">
+                    {selectedCategory.emoji}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{formData.title || "Nome del gruppo"}</p>
+                    <p className="text-xs text-muted-foreground">{formData.location || "Posizione"}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
+        
+        <div className="shrink-0 border-t pt-4 mt-4">
+          <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
               Annulla
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" onClick={handleSubmit} className="flex-1">
               Crea Gruppo
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
