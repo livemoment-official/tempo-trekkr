@@ -38,7 +38,8 @@ export function UserListItem({
   };
 
   const handleProfileClick = () => {
-    console.log('🔗 Navigating to user profile:', user.id);
+    console.log('🔗 Navigating to user profile, user data:', user);
+    console.log('🔗 User ID:', user.id, 'Type:', typeof user.id);
     navigate(`/user/${user.id}`);
   };
 

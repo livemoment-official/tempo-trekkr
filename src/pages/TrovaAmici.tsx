@@ -54,7 +54,7 @@ export default function TrovaAmici() {
     if (nearbyUsers && nearbyUsers.length > 0) {
       console.log('✅ Using nearby users');
       const nearby = nearbyUsers.map(user => ({
-        id: user.user_id,
+        id: user.id,
         name: user.name,
         avatar_url: user.avatar_url || "/placeholder.svg",
         city: "Unknown",

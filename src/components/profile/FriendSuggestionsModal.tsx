@@ -132,9 +132,9 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
                 <div className="space-y-3">
                   {filteredNearbyUsers.map((user) => (
                     <UserDiscoveryCard
-                      key={user.user_id}
+                      key={user.id}
                       user={{
-                        id: user.user_id,
+                        id: user.id,
                         name: user.name,
                         avatar_url: user.avatar_url,
                         city: user.job_title || 'Milano',

@@ -8,7 +8,7 @@ import QuickInviteModal from "./QuickInviteModal";
 import { useInviteCount } from "@/hooks/useNearbyUsers";
 
 interface NearbyUser {
-  user_id: string;
+  id: string; // Changed from user_id to id for consistency
   name: string;
   username: string;
   avatar_url: string;
@@ -25,7 +25,7 @@ interface EnhancedNearbyUserCardProps {
 
 export default function EnhancedNearbyUserCard({ user }: EnhancedNearbyUserCardProps) {
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const { data: inviteCount = 0 } = useInviteCount(user.user_id);
+  const { data: inviteCount = 0 } = useInviteCount(user.id);
   
   const remainingInvites = Math.max(0, 3 - inviteCount);
 

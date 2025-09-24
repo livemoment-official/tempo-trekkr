@@ -9,7 +9,7 @@ import QuickInviteModal from "./QuickInviteModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 
 interface NearbyUser {
-  user_id: string;
+  id: string; // Changed from user_id to id for consistency
   name: string;
   username: string;
   avatar_url: string;
@@ -26,7 +26,7 @@ interface NearbyUserCardProps {
 
 export default function NearbyUserCard({ user }: NearbyUserCardProps) {
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const { data: inviteCount = 0 } = useInviteCount(user.user_id);
+  const { data: inviteCount = 0 } = useInviteCount(user.id);
   
   const canInvite = inviteCount < 3;
   const remainingInvites = 3 - inviteCount;

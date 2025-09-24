@@ -48,6 +48,8 @@ export default function UserDetailById() {
 
   console.log('🔍 UserDetailById loaded with ID:', id);
   console.log('👤 Current user:', user?.id);
+  console.log('🔗 ID type check:', typeof id, 'ID length:', id?.length);
+  console.log('🔍 URL pathname:', window.location.pathname);
   
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['user-profile-by-id', id],

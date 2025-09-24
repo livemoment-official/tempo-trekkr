@@ -12,7 +12,7 @@ import { it } from "date-fns/locale";
 import { useCreateInvite } from "@/hooks/useInvites";
 
 interface NearbyUser {
-  user_id: string;
+  id: string; // Changed from user_id to id for consistency
   name: string;
   username: string;
   avatar_url: string;
@@ -57,7 +57,7 @@ export default function QuickInviteModal({
     await createInvite.mutateAsync({
       title: title.trim(),
       description: description.trim() || undefined,
-      participants: [targetUser.user_id],
+      participants: [targetUser.id], // Changed from user_id to id
       when_at,
       place: location.trim() ? { name: location.trim() } : undefined
     });

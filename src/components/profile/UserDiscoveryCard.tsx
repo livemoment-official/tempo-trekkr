@@ -33,7 +33,7 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
 
   // Transform user to NearbyUser format for the modal
   const nearbyUser = {
-    user_id: user.id,
+    id: user.id, // Changed from user_id to id
     name: user.name,
     username: user.name.toLowerCase().replace(/\s+/g, ''),
     avatar_url: user.avatar_url || '/placeholder.svg',

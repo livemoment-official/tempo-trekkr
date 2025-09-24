@@ -3,7 +3,7 @@ import { generateMockUsers } from "@/utils/mockData";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NearbyUser {
-  user_id: string;
+  id: string; // Changed from user_id to id for consistency
   name: string;
   username: string;
   avatar_url: string;
@@ -43,7 +43,15 @@ export function useNearbyUsers(
         throw error;
       }
 
-      return data || [];
+      // Transform user_id to id for consistency with other hooks
+      const transformedData = (data || []).map(user => ({
+        ...user,
+        id: user.user_id // Map user_id to id for consistent navigation
+      }));
+      
+      console.log('🌍 Nearby users transformed:', transformedData);
+      
+      return transformedData;
     },
     enabled: !!userLocation,
     staleTime: 1000 * 60 * 2, // 2 minutes
