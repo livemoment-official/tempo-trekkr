@@ -3,10 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Send, Users, Settings, MapPin } from "lucide-react";
+import { Send } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { ShareModal } from "@/components/shared/ShareModal";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatInfoBanner } from "@/components/chat/ChatInfoBanner";
+import { ChatSettingsModal } from "@/components/chat/ChatSettingsModal";
+import { ParticipantsList } from "@/components/chat/ParticipantsList";
 import { supabase } from "@/integrations/supabase/client";
 
 interface GroupMessage {
@@ -42,6 +47,8 @@ export default function GroupChat() {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -200,30 +207,34 @@ export default function GroupChat() {
     <AuthGuard title="Accedi per chattare" description="Devi essere autenticato per partecipare alla chat del gruppo">
       <div className="flex flex-col h-screen bg-background">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/gruppi')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex-1">
-            <h1 className="font-semibold">{group.title}</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>{group.participants.length} membri</span>
-              {group.location?.name && (
-                <>
-                  <span>•</span>
-                  <MapPin className="h-3 w-3" />
-                  <span>{group.location.name}</span>
-                </>
-              )}
-            </div>
-          </div>
+        <ChatHeader
+          title={group.title}
+          onBack={() => navigate('/gruppi')}
+          onShowParticipants={() => setShowParticipants(true)}
+          onShowSettings={() => setShowSettings(true)}
+          avatar={
+            group.avatar_url && (
+              <div className="relative w-10 h-10 overflow-hidden rounded-lg">
+                <img 
+                  src={group.avatar_url} 
+                  alt={group.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )
+          }
+        />
 
-          <Button variant="ghost" size="sm">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Info Banner */}
+        <ChatInfoBanner
+          type="group"
+          contentId={groupId || ''}
+          contentTitle={group.title}
+          location={group.location ? { name: group.location.name } : undefined}
+          participantCount={group.participants.length}
+          onShowParticipants={() => setShowParticipants(true)}
+          category={group.category}
+        />
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -294,6 +305,23 @@ export default function GroupChat() {
             </Button>
           </div>
         </form>
+
+        {/* Modals */}
+        <ChatSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          chatTitle={group.title}
+          chatType="group"
+        />
+
+        <ParticipantsList
+          isOpen={showParticipants}
+          onClose={() => setShowParticipants(false)}
+          participantIds={group.participants}
+          hostId={group.host_id}
+          title={group.title}
+          type="group"
+        />
       </div>
     </AuthGuard>
   );

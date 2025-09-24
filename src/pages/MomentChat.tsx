@@ -3,14 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Send, Users, Settings, MapPin, Calendar, UserPlus } from "lucide-react";
+import { Send } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ShareModal } from "@/components/shared/ShareModal";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatInfoBanner } from "@/components/chat/ChatInfoBanner";
+import { ChatSettingsModal } from "@/components/chat/ChatSettingsModal";
+import { ParticipantsList } from "@/components/chat/ParticipantsList";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 
 interface GroupMessage {
   id: string;
@@ -49,6 +51,8 @@ export default function MomentChat() {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -212,13 +216,13 @@ export default function MomentChat() {
     <AuthGuard title="Accedi per chattare" description="Devi essere autenticato per partecipare alla chat del momento">
       <div className="flex flex-col h-screen bg-background">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/moment/${momentId}`)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex items-center gap-3 flex-1">
-            {moment.photos?.[0] && (
+        <ChatHeader
+          title={moment.title}
+          onBack={() => navigate(`/moment/${momentId}`)}
+          onShowParticipants={() => setShowParticipants(true)}
+          onShowSettings={() => setShowSettings(true)}
+          avatar={
+            moment.photos?.[0] && (
               <div className="relative w-10 h-10 overflow-hidden rounded-lg">
                 <img 
                   src={moment.photos[0]} 
@@ -226,43 +230,20 @@ export default function MomentChat() {
                   className="w-full h-full object-cover"
                 />
               </div>
-            )}
-            
-            <div className="flex-1">
-              <h1 className="font-semibold truncate">{moment.title}</h1>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span>{moment.participants.length} membri</span>
-                {moment.when_at && (
-                  <>
-                    <span>•</span>
-                    <Calendar className="h-3 w-3" />
-                    <span>{format(new Date(moment.when_at), "d MMM", { locale: it })}</span>
-                  </>
-                )}
-                {moment.place?.name && (
-                  <>
-                    <span>•</span>
-                    <MapPin className="h-3 w-3" />
-                    <span className="truncate">{moment.place.name}</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+            )
+          }
+        />
 
-          <div className="flex items-center gap-2">
-            <ShareModal contentType="moment" contentId={momentId} title={moment.title}>
-              <Button variant="ghost" size="sm">
-                <UserPlus className="h-4 w-4" />
-              </Button>
-            </ShareModal>
-            
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        {/* Info Banner */}
+        <ChatInfoBanner
+          type="moment"
+          contentId={momentId || ''}
+          contentTitle={moment.title}
+          location={moment.place ? { name: moment.place.name } : undefined}
+          when={moment.when_at}
+          participantCount={moment.participants.length}
+          onShowParticipants={() => setShowParticipants(true)}
+        />
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -342,6 +323,23 @@ export default function MomentChat() {
             </Button>
           </div>
         </form>
+
+        {/* Modals */}
+        <ChatSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          chatTitle={moment.title}
+          chatType="moment"
+        />
+
+        <ParticipantsList
+          isOpen={showParticipants}
+          onClose={() => setShowParticipants(false)}
+          participantIds={moment.participants}
+          hostId={moment.host_id}
+          title={moment.title}
+          type="moment"
+        />
       </div>
     </AuthGuard>
   );
