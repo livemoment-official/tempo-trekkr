@@ -20,7 +20,6 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-
 interface MomentData {
   title: string;
   description: string;
@@ -33,12 +32,7 @@ interface MomentData {
   is_public: boolean;
   max_participants?: number;
 }
-
-const popularCategories = [
-  "Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", 
-  "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"
-];
-
+const popularCategories = ["Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"];
 export default function CreaMomento() {
   const [step, setStep] = useState<'camera' | 'form' | 'preview'>('camera');
   const [momentData, setMomentData] = useState<MomentData>({
@@ -58,14 +52,27 @@ export default function CreaMomento() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [isUploading, setIsUploading] = useState(false);
-  
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { location, requestLocation, isLoading: locationLoading } = useUnifiedGeolocation();
-  const { reverseGeocode } = useReverseGeocoding();
-  const { uploadGalleryImage } = useImageUpload();
-  const { titleSuggestions, generateSuggestions, isGenerating } = useAISuggestions();
+  const {
+    location,
+    requestLocation,
+    isLoading: locationLoading
+  } = useUnifiedGeolocation();
+  const {
+    reverseGeocode
+  } = useReverseGeocoding();
+  const {
+    uploadGalleryImage
+  } = useImageUpload();
+  const {
+    titleSuggestions,
+    generateSuggestions,
+    isGenerating
+  } = useAISuggestions();
 
   // Auto-set location on mount
   useEffect(() => {
@@ -88,9 +95,11 @@ export default function CreaMomento() {
               address: result.formatted_address
             }
           }));
-          
+
           // Generate suggestions based on location
-          generateSuggestions({ location: result.formatted_address });
+          generateSuggestions({
+            location: result.formatted_address
+          });
         }
       });
     }
@@ -102,13 +111,11 @@ export default function CreaMomento() {
       const startDateTime = new Date(startDate);
       const [hours, minutes] = startTime.split(':').map(Number);
       startDateTime.setHours(hours, minutes, 0, 0);
-      
+
       // Add 4 hours
       const endDateTime = new Date(startDateTime.getTime() + 4 * 60 * 60 * 1000);
-      
       setEndDate(endDateTime);
       setEndTime(format(endDateTime, 'HH:mm'));
-      
       setMomentData(prev => ({
         ...prev,
         when_at: startDateTime,
@@ -116,7 +123,6 @@ export default function CreaMomento() {
       }));
     }
   }, [startDate, startTime, endDate, endTime]);
-
   const handlePhotoCapture = useCallback(async (file: File) => {
     try {
       setIsUploading(true);
@@ -143,27 +149,23 @@ export default function CreaMomento() {
       setIsUploading(false);
     }
   }, [uploadGalleryImage, toast]);
-
   const handleLocationSelect = useCallback((locationData: any) => {
     setMomentData(prev => ({
       ...prev,
       place: locationData
     }));
   }, []);
-
   const handleDateTimeChange = useCallback(() => {
     if (startDate && startTime) {
       const startDateTime = new Date(startDate);
       const [hours, minutes] = startTime.split(':').map(Number);
       startDateTime.setHours(hours, minutes, 0, 0);
-
       let endDateTime = null;
       if (endDate && endTime) {
         endDateTime = new Date(endDate);
         const [endHours, endMinutes] = endTime.split(':').map(Number);
         endDateTime.setHours(endHours, endMinutes, 0, 0);
       }
-
       setMomentData(prev => ({
         ...prev,
         when_at: startDateTime,
@@ -171,13 +173,11 @@ export default function CreaMomento() {
       }));
     }
   }, [startDate, startTime, endDate, endTime]);
-
   const handleQuickTimeSelect = useCallback((type: 'tonight' | 'tomorrow' | 'weekend') => {
     const now = new Date();
     let date: Date;
     let startTimeStr: string;
     let endTimeStr: string;
-
     switch (type) {
       case 'tonight':
         date = new Date();
@@ -197,13 +197,11 @@ export default function CreaMomento() {
         endTimeStr = '19:00';
         break;
     }
-
     setStartDate(date);
     setEndDate(date);
     setStartTime(startTimeStr);
     setEndTime(endTimeStr);
   }, []);
-
   const handleAddTag = useCallback((tag: string) => {
     if (tag && !momentData.tags.includes(tag)) {
       setMomentData(prev => ({
@@ -212,18 +210,15 @@ export default function CreaMomento() {
       }));
     }
   }, [momentData.tags]);
-
   const handleRemoveTag = useCallback((tagToRemove: string) => {
     setMomentData(prev => ({
       ...prev,
       tags: prev.tags.filter((tag: string) => tag !== tagToRemove)
     }));
   }, []);
-
   useEffect(() => {
     handleDateTimeChange();
   }, [handleDateTimeChange]);
-
   const handleCreateMoment = useCallback(async () => {
     if (!momentData.title.trim()) {
       toast({
@@ -233,7 +228,6 @@ export default function CreaMomento() {
       });
       return;
     }
-
     if (!momentData.when_at || !momentData.end_at) {
       toast({
         title: "Data e ora richieste",
@@ -242,7 +236,6 @@ export default function CreaMomento() {
       });
       return;
     }
-
     if (momentData.end_at <= momentData.when_at) {
       toast({
         title: "Data fine non valida",
@@ -251,13 +244,14 @@ export default function CreaMomento() {
       });
       return;
     }
-
     try {
       setIsUploading(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
-
       const momentToCreate = {
         title: momentData.title,
         description: momentData.description,
@@ -272,20 +266,15 @@ export default function CreaMomento() {
         host_id: user.id,
         participants: [user.id]
       };
-
-      const { data: newMoment, error } = await supabase
-        .from('moments')
-        .insert([momentToCreate])
-        .select()
-        .single();
-
+      const {
+        data: newMoment,
+        error
+      } = await supabase.from('moments').insert([momentToCreate]).select().single();
       if (error) throw error;
-
       toast({
         title: "Momento creato!",
         description: "Il tuo momento è stato pubblicato con successo"
       });
-
       navigate(`/moment/${newMoment.id}`);
     } catch (error) {
       console.error('Create moment error:', error);
@@ -298,25 +287,17 @@ export default function CreaMomento() {
       setIsUploading(false);
     }
   }, [momentData, toast, navigate]);
-
   if (step === 'camera') {
-    return (
-      <>
+    return <>
         <Helmet>
           <title>Crea Nuovo Momento | LiveMoment</title>
           <meta name="description" content="Crea e condividi un nuovo momento speciale con la community LiveMoment" />
         </Helmet>
-        <InstagramCameraInterface
-          onPhotoCapture={handlePhotoCapture}
-          onCancel={() => navigate(-1)}
-        />
-      </>
-    );
+        <InstagramCameraInterface onPhotoCapture={handlePhotoCapture} onCancel={() => navigate(-1)} />
+      </>;
   }
-
   if (step === 'form') {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Helmet>
           <title>Dettagli Momento | LiveMoment</title>
           <meta name="description" content="Aggiungi dettagli al tuo momento" />
@@ -324,20 +305,9 @@ export default function CreaMomento() {
         
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
           <div className="flex items-center justify-between p-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setStep('camera')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Indietro
-            </Button>
-            <h1 className="font-semibold">Nuovo Momento</h1>
-            <Button
-              onClick={handleCreateMoment}
-              disabled={isUploading || !momentData.title.trim()}
-              size="sm"
-            >
+            
+            
+            <Button onClick={handleCreateMoment} disabled={isUploading || !momentData.title.trim()} size="sm">
               {isUploading ? "Creando..." : "Pubblica"}
             </Button>
           </div>
@@ -345,113 +315,71 @@ export default function CreaMomento() {
 
         <div className="max-w-2xl mx-auto p-4 space-y-6">
           {/* Photo Preview */}
-          {momentData.photos.length > 0 && (
-            <div className="space-y-2">
+          {momentData.photos.length > 0 && <div className="space-y-2">
               <Label>Anteprima</Label>
               <div className="aspect-[1080/1350] max-w-sm mx-auto rounded-lg overflow-hidden bg-muted">
-                <img 
-                  src={momentData.photos[0]} 
-                  alt="Preview" 
-                  className="w-full h-full object-cover"
-                />
+                <img src={momentData.photos[0]} alt="Preview" className="w-full h-full object-cover" />
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Title */}
           <div className="space-y-3">
             <Label htmlFor="title" className="text-base font-semibold">Cosa stai facendo? *</Label>
-            <Input
-              id="title"
-              value={momentData.title}
-              onChange={(e) => setMomentData(prev => ({...prev, title: e.target.value}))}
-              placeholder="Scrivi il titolo del momento..."
-              className="text-lg font-medium"
-            />
+            <Input id="title" value={momentData.title} onChange={e => setMomentData(prev => ({
+            ...prev,
+            title: e.target.value
+          }))} placeholder="Scrivi il titolo del momento..." className="text-lg font-medium" />
             
             {/* Title Suggestions */}
-            {titleSuggestions.length > 0 && (
-              <div className="space-y-2">
+            {titleSuggestions.length > 0 && <div className="space-y-2">
                 <Label className="text-sm text-muted-foreground">Suggerimenti rapidi:</Label>
                 <div className="flex flex-wrap gap-2">
-                  {titleSuggestions.map((suggestion) => (
-                    <Badge
-                      key={suggestion}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-accent"
-                      onClick={() => setMomentData(prev => ({...prev, title: suggestion}))}
-                    >
+                  {titleSuggestions.map(suggestion => <Badge key={suggestion} variant="outline" className="cursor-pointer hover:bg-accent" onClick={() => setMomentData(prev => ({
+                ...prev,
+                title: suggestion
+              }))}>
                       {suggestion}
-                    </Badge>
-                  ))}
+                    </Badge>)}
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm">Aggiungi una descrizione</Label>
-            <Textarea
-              id="description"
-              value={momentData.description}
-              onChange={(e) => setMomentData(prev => ({...prev, description: e.target.value}))}
-              placeholder="Racconta qualcosa in più..."
-              rows={3}
-              className="text-sm"
-            />
+            <Textarea id="description" value={momentData.description} onChange={e => setMomentData(prev => ({
+            ...prev,
+            description: e.target.value
+          }))} placeholder="Racconta qualcosa in più..." rows={3} className="text-sm" />
           </div>
 
           {/* Max Participants */}
           <div className="space-y-2">
             <Label htmlFor="maxParticipants">Massimo partecipanti</Label>
-            <Input
-              id="maxParticipants"
-              type="number"
-              min="2"
-              max="50"
-              value={momentData.max_participants || 8}
-              onChange={(e) => setMomentData(prev => ({...prev, max_participants: parseInt(e.target.value) || 8}))}
-              className="w-24"
-            />
+            <Input id="maxParticipants" type="number" min="2" max="50" value={momentData.max_participants || 8} onChange={e => setMomentData(prev => ({
+            ...prev,
+            max_participants: parseInt(e.target.value) || 8
+          }))} className="w-24" />
           </div>
 
           {/* Categories */}
           <div className="space-y-3">
             <Label>Categorie</Label>
             <div className="flex flex-wrap gap-2">
-              {popularCategories.map((category) => (
-                <Badge
-                  key={category}
-                  variant={momentData.tags.includes(category) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => handleAddTag(category)}
-                >
+              {popularCategories.map(category => <Badge key={category} variant={momentData.tags.includes(category) ? "default" : "outline"} className="cursor-pointer" onClick={() => handleAddTag(category)}>
                   {category}
-                </Badge>
-              ))}
+                </Badge>)}
             </div>
             
             {/* Selected Categories */}
-            {momentData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {momentData.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
+            {momentData.tags.length > 0 && <div className="flex flex-wrap gap-2">
+                {momentData.tags.map(tag => <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                     {tag}
-                    <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 hover:text-destructive"
-                    >
+                    <button onClick={() => handleRemoveTag(tag)} className="ml-1 hover:text-destructive">
                       ×
                     </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
+                  </Badge>)}
+              </div>}
           </div>
 
           {/* Date and Time */}
@@ -460,28 +388,13 @@ export default function CreaMomento() {
             
             {/* Quick Time Buttons */}
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickTimeSelect('tonight')}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => handleQuickTimeSelect('tonight')}>
                 Stasera
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickTimeSelect('tomorrow')}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => handleQuickTimeSelect('tomorrow')}>
                 Domani
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickTimeSelect('weekend')}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => handleQuickTimeSelect('weekend')}>
                 Nel weekend
               </Button>
             </div>
@@ -490,35 +403,21 @@ export default function CreaMomento() {
             <div className="grid grid-cols-2 gap-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
+                  <Button variant="outline" className={cn("justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "dd MMM yyyy", { locale: it }) : "Data inizio"}
+                    {startDate ? format(startDate, "dd MMM yyyy", {
+                    locale: it
+                  }) : "Data inizio"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
+                  <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
                 </PopoverContent>
               </Popover>
 
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="pl-10"
-                />
+                <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="pl-10" />
               </div>
             </div>
 
@@ -526,35 +425,21 @@ export default function CreaMomento() {
             <div className="grid grid-cols-2 gap-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
+                  <Button variant="outline" className={cn("justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "dd MMM yyyy", { locale: it }) : "Data fine"}
+                    {endDate ? format(endDate, "dd MMM yyyy", {
+                    locale: it
+                  }) : "Data fine"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    initialFocus
-                  />
+                  <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
                 </PopoverContent>
               </Popover>
 
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="pl-10"
-                />
+                <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="pl-10" />
               </div>
             </div>
           </div>
@@ -565,15 +450,10 @@ export default function CreaMomento() {
               <MapPin className="inline h-4 w-4 mr-1" />
               Posizione
             </Label>
-            <EnhancedLocationSearch
-              onLocationSelect={handleLocationSelect}
-              placeholder="Dove ti trovi?"
-            />
+            <EnhancedLocationSearch onLocationSelect={handleLocationSelect} placeholder="Dove ti trovi?" />
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   return null;
 }
