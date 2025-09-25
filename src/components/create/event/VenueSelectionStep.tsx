@@ -12,21 +12,17 @@ interface VenueSelectionStepProps {
   onChange: (data: any) => void;
   onNext: () => void;
 }
-
 export default function VenueSelectionStep({
   data,
   onChange,
   onNext
 }: VenueSelectionStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: venues, isLoading } = useVenues();
-  
-  const filteredVenues = venues?.filter(venue => 
-    venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()))
-  ) || [];
+  const {
+    data: venues,
+    isLoading
+  } = useVenues();
+  const filteredVenues = venues?.filter(venue => venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()))) || [];
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -41,31 +37,18 @@ export default function VenueSelectionStep({
     return venues?.filter(venue => data.selectedVenues.includes(venue.id)) || [];
   };
   return <div className="space-y-6">
-      <div>
-        <Label className="text-base font-medium">Seleziona location</Label>
-        <p className="text-sm text-muted-foreground mt-1">
-          Cerca e seleziona le location per il tuo evento
-        </p>
-      </div>
+      
 
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input 
-          value={searchQuery} 
-          onChange={e => handleSearch(e.target.value)} 
-          placeholder="Cerca location per nome, tipo o servizi..." 
-          className="pl-10" 
-          disabled={isLoading}
-        />
+        <Input value={searchQuery} onChange={e => handleSearch(e.target.value)} placeholder="Cerca location per nome, tipo o servizi..." className="pl-10" disabled={isLoading} />
       </div>
 
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
+      {isLoading && <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           <span className="ml-2 text-muted-foreground">Caricamento location...</span>
-        </div>
-      )}
+        </div>}
 
       {/* Selected venues */}
       {data.selectedVenues.length > 0 && !isLoading && <div>
@@ -76,10 +59,7 @@ export default function VenueSelectionStep({
                   <div className="flex items-center justify-between">
                     <div className="flex items-start gap-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage 
-                          src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} 
-                          alt={venue.name} 
-                        />
+                        <AvatarImage src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} alt={venue.name} />
                         <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground rounded-lg">
                           <MapPin className="h-5 w-5" />
                         </AvatarFallback>
@@ -91,12 +71,10 @@ export default function VenueSelectionStep({
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                           <span>{venue.venue_type}</span>
-                          {venue.capacity && (
-                            <>
+                          {venue.capacity && <>
                               <Users className="h-3 w-3 ml-2" />
                               <span>{venue.capacity} persone</span>
-                            </>
-                          )}
+                            </>}
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {venue.amenities?.slice(0, 3).map(amenity => <Badge key={amenity} variant="outline" className="text-xs">
@@ -123,10 +101,7 @@ export default function VenueSelectionStep({
                   <div className="flex items-center justify-between">
                     <div className="flex items-start gap-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage 
-                          src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} 
-                          alt={venue.name} 
-                        />
+                        <AvatarImage src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} alt={venue.name} />
                         <AvatarFallback className="bg-gradient-to-br from-muted to-muted/70 text-muted-foreground rounded-lg">
                           <MapPin className="h-5 w-5" />
                         </AvatarFallback>
@@ -138,12 +113,10 @@ export default function VenueSelectionStep({
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                           <span>{venue.venue_type}</span>
-                          {venue.capacity && (
-                            <>
+                          {venue.capacity && <>
                               <Users className="h-3 w-3 ml-2" />
                               <span>{venue.capacity} persone</span>
-                            </>
-                          )}
+                            </>}
                         </div>
                         {venue.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{venue.description}</p>}
                         <div className="flex flex-wrap gap-1">
