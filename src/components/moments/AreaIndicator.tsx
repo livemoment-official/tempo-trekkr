@@ -87,14 +87,13 @@ export function AreaIndicator() {
 
   return (
     <Badge variant="secondary" className="text-xs">
-      <MapPin className="h-3 w-3 mr-1" />
       {isReverseGeocoding ? (
         <>
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
           Rilevamento area...
         </>
       ) : (
-        <>Area: {areaName} (5 km)</>
+        <>{areaName} (5 km)</>
       )}
     </Badge>
   );
