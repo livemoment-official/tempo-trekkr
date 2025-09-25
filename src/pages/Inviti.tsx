@@ -15,12 +15,13 @@ import InviteCard from "@/components/invites/InviteCard";
 import { InviteSwipeInterface } from "@/components/invites/InviteSwipeInterface";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { SwipeInterface } from "@/components/profile/SwipeInterface";
-import { getRandomUserProfiles } from "@/utils/enhancedMockData";
 import { toast } from "sonner";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useNavigate } from "react-router-dom";
 import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAllUsers } from "@/hooks/useAllUsers";
+import { QuickInviteModal } from "@/components/invites/QuickInviteModal";
 import { cn } from "@/lib/utils";
 export default function Inviti() {
   const location = useLocation();
@@ -33,6 +34,9 @@ export default function Inviti() {
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [inviteViewMode, setInviteViewMode] = useState<"swipe" | "list">("list");
   const [friendsViewMode, setFriendsViewMode] = useState<"swipe" | "list">("list");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -73,21 +77,26 @@ export default function Inviti() {
     isLoading: nearbyLoading
   } = useNearbyUsers(userLocation, radiusKm);
 
-  // Get mock data for nearby users display
-  const mockUsers = getRandomUserProfiles(12);
-  const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : mockUsers;
+  // Get all users as fallback
+  const {
+    data: allUsers = [],
+    isLoading: allUsersLoading
+  } = useAllUsers(userLocation);
 
-  // Transform mock users to have the right structure for UserDiscoveryCard
-  const transformedUsers = mockUsers.map(user => ({
+  // Use nearby users first, then all users as fallback
+  const displayUsers = nearbyUsers.length > 0 ? nearbyUsers : allUsers.slice(0, 12);
+
+  // Transform users to have the right structure for UserDiscoveryCard
+  const transformedUsers = displayUsers.map(user => ({
     id: user.id,
     name: user.name,
-    avatar_url: user.avatar_url,
-    city: user.city,
-    availability: user.is_available ? "available" : "busy",
-    preferred_moments: user.preferred_moments,
-    age: user.age,
+    avatar_url: user.avatar_url || '/placeholder.svg',
+    city: "Città", // Could be extracted from location if needed
+    availability: user.distance_km !== null ? "available" : "busy",
+    preferred_moments: user.interests || [],
+    age: 25, // Mock age since it's not in the database
     distance_km: user.distance_km,
-    is_available: user.is_available
+    is_available: user.distance_km !== null
   }));
 
   // Filtra utenti per ricerca e filtri
@@ -116,9 +125,19 @@ export default function Inviti() {
   }));
   const handleInvite = (userId: string, userName?: string) => {
     const user = transformedUsers.find(u => u.id === userId);
-    const name = userName || user?.name;
-    if (name) {
-      toast.success(`Invito inviato a ${name}!`);
+    if (user) {
+      setSelectedUser({
+        id: user.id,
+        name: user.name,
+        username: user.name.toLowerCase().replace(/\s+/g, ''),
+        avatar_url: user.avatar_url,
+        mood: '',
+        distance_km: user.distance_km || 0,
+        availability_id: '',
+        job_title: '',
+        interests: user.preferred_moments || []
+      });
+      setInviteModalOpen(true);
     }
   };
   const handlePass = (userId: string) => {
@@ -231,9 +250,9 @@ export default function Inviti() {
           {/* Only show filters when not in swipe mode on mobile */}
           {!(isMobile && friendsViewMode === "swipe") && <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />}
           
-          {locationLoading ? <div className="text-center py-12">
+          {locationLoading || nearbyLoading || allUsersLoading ? <div className="text-center py-12">
               <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">Ottenendo la tua posizione...</p>
+              <p className="text-muted-foreground">Caricamento utenti...</p>
             </div> : filteredUsers.length > 0 ? <>
               {/* Swipe Interface for Friends */}
               {friendsViewMode === "swipe" ? <div className="h-[calc(100vh-280px)] min-h-[600px] relative">
@@ -269,5 +288,14 @@ export default function Inviti() {
             </div>}
         </TabsContent>
       </Tabs>
+
+      {/* Quick Invite Modal */}
+      {selectedUser && (
+        <QuickInviteModal
+          open={inviteModalOpen}
+          onOpenChange={setInviteModalOpen}
+          targetUser={selectedUser}
+        />
+      )}
     </div>;
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +11,11 @@ import { CalendarIcon, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useCreateInvite } from "@/hooks/useInvites";
+import { useChat } from "@/hooks/useChat";
+import { toast } from "sonner";
 
 interface NearbyUser {
-  id: string; // Changed from user_id to id for consistency
+  id: string;
   name: string;
   username: string;
   avatar_url: string;
@@ -29,11 +32,12 @@ interface QuickInviteModalProps {
   targetUser: NearbyUser;
 }
 
-export default function QuickInviteModal({ 
+export function QuickInviteModal({ 
   open, 
   onOpenChange, 
   targetUser 
 }: QuickInviteModalProps) {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>();
@@ -41,34 +45,49 @@ export default function QuickInviteModal({
   const [location, setLocation] = useState("");
   
   const createInvite = useCreateInvite();
+  const { createOrGetConversation } = useChat();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim()) return;
 
-    let when_at: Date | undefined;
-    if (date && time) {
-      const [hours, minutes] = time.split(':').map(Number);
-      when_at = new Date(date);
-      when_at.setHours(hours, minutes, 0, 0);
+    try {
+      let when_at: Date | undefined;
+      if (date && time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        when_at = new Date(date);
+        when_at.setHours(hours, minutes, 0, 0);
+      }
+
+      await createInvite.mutateAsync({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        participants: [targetUser.id],
+        when_at,
+        place: location.trim() ? { name: location.trim() } : undefined
+      });
+
+      // Create or get conversation and redirect to private chat
+      const conversation = await createOrGetConversation(targetUser.id);
+      if (conversation) {
+        navigate(`/chat/conversation/${conversation.id}`);
+        toast.success(`Invito inviato a ${targetUser.name}! Inizia a chattare.`);
+      } else {
+        toast.success(`Invito inviato a ${targetUser.name}!`);
+      }
+
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setDate(undefined);
+      setTime("");
+      setLocation("");
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      toast.error("Errore nell'invio dell'invito. Riprova.");
     }
-
-    await createInvite.mutateAsync({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      participants: [targetUser.id], // Changed from user_id to id
-      when_at,
-      place: location.trim() ? { name: location.trim() } : undefined
-    });
-
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setDate(undefined);
-    setTime("");
-    setLocation("");
-    onOpenChange(false);
   };
 
   return (
@@ -174,3 +193,5 @@ export default function QuickInviteModal({
     </Dialog>
   );
 }
+
+export default QuickInviteModal;
