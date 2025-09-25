@@ -23,9 +23,12 @@ import { PollMessage } from "@/components/chat/PollMessage";
 import { MediaMessage } from "@/components/chat/MediaMessage";
 import { VoiceRecorder } from "@/components/chat/VoiceRecorder";
 import { useChatMedia } from "@/hooks/useChatMedia";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { useAvailabilityStatus } from "@/hooks/useAvailabilityStatus";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ChatFullscreen() {
-  const { type, id } = useParams(); // type: 'moment', 'event', 'city', 'conversation'
+  const { type, id } = useParams(); // type: 'moment', 'event', 'city', 'conversation', 'friend'
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -34,10 +37,14 @@ export default function ChatFullscreen() {
   const { uploadMediaFile, uploadAudioBlob, createPoll } = useChatMedia();
   
   const [message, setMessage] = useState("");
+  const [targetUser, setTargetUser] = useState<any>(null);
+  const [currentConversation, setCurrentConversation] = useState<any>(null);
+  const [targetUserAvailability, setTargetUserAvailability] = useState<any>(null);
   
   // Handle different chat types
   const isGroupChat = type === 'moment' || type === 'event' || type === 'city';
   const isConversation = type === 'conversation';
+  const isFriendChat = type === 'friend';
   
   // Group chat hook
   const groupChatType = (type === 'moment' || type === 'event' || type === 'city') ? type : 'moment';
@@ -49,15 +56,16 @@ export default function ChatFullscreen() {
     sendMessage: sendGroupMessage
   } = useGroupChat(groupChatType, isGroupChat ? (id || '') : '');
   
-  // Private conversation hook
+  // Private conversation hook  
   const {
     messages: conversationMessages,
     conversations,
     isLoading: conversationLoading,
     isSending: conversationSending,
     loadMessages,
-    sendMessage: sendConversationMessage
-  } = useChat(isConversation ? id : undefined);
+    sendMessage: sendConversationMessage,
+    createOrGetConversation
+  } = useChat(isConversation || isFriendChat ? (currentConversation?.id || id) : undefined);
 
   // Determine which data to use
   const messages = isGroupChat ? groupMessages : conversationMessages;
@@ -65,29 +73,77 @@ export default function ChatFullscreen() {
   const isSending = isGroupChat ? groupSending : conversationSending;
   
   // Get conversation info for private chats
-  const conversation = conversations.find(conv => conv.id === id);
+  const conversation = conversations.find(conv => conv.id === (currentConversation?.id || id));
   const chatInfo = isGroupChat 
     ? groupInfo 
-    : conversation 
+    : isFriendChat && targetUser
       ? {
-          id: conversation.id,
-          title: conversation.other_participant?.name || 'Conversazione',
-          subtitle: 'Chat privata',
-          type: 'conversation' as const
+          id: targetUser.id,
+          title: targetUser.name || 'Utente',
+          subtitle: targetUserAvailability?.is_on && targetUserAvailability?.shareable ? 'Disponibile' : 'Online',
+          type: 'friend' as const,
+          avatar: targetUser.avatar_url
         }
-      : null;
+      : conversation 
+        ? {
+            id: conversation.id,
+            title: conversation.other_participant?.name || 'Conversazione',
+            subtitle: 'Chat privata',
+            type: 'conversation' as const,
+            avatar: conversation.other_participant?.avatar_url
+          }
+        : null;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load conversation messages if it's a private chat
+  // Load target user info and create/get conversation for friend chat
   useEffect(() => {
-    if (isConversation && id) {
+    if (isFriendChat && id && user) {
+      const loadFriendChat = async () => {
+        try {
+          // Get target user info
+          const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('id, name, avatar_url')
+            .eq('id', id)
+            .single();
+
+          if (userError) throw userError;
+          setTargetUser(userData);
+
+          // Get target user availability
+          const { data: availabilityData } = await supabase
+            .from('availability')
+            .select('*')
+            .eq('user_id', id)
+            .maybeSingle();
+            
+          setTargetUserAvailability(availabilityData);
+
+          // Create or get conversation
+          const conversation = await createOrGetConversation(id);
+          if (conversation) {
+            setCurrentConversation(conversation);
+            loadMessages(conversation.id);
+          }
+        } catch (error) {
+          console.error('Error loading friend chat:', error);
+          toast({
+            title: "Errore",
+            description: "Errore nel caricamento della chat",
+            variant: "destructive"
+          });
+        }
+      };
+
+      loadFriendChat();
+    } else if (isConversation && id) {
       loadMessages(id);
     }
-  }, [isConversation, id, loadMessages]);
+  }, [isFriendChat, isConversation, id, user, createOrGetConversation, loadMessages]);
 
   // Handle sending enhanced message
   const handleSendMessage = async () => {
@@ -96,8 +152,11 @@ export default function ChatFullscreen() {
     try {
       if (isGroupChat) {
         await sendGroupMessage(message);
-      } else if (isConversation && id) {
-        await sendConversationMessage(message, id);
+      } else if ((isConversation && id) || (isFriendChat && currentConversation)) {
+        const convId = isFriendChat ? currentConversation?.id : id;
+        if (convId) {
+          await sendConversationMessage(message, convId);
+        }
       }
       setMessage("");
     } catch (error) {
@@ -114,8 +173,11 @@ export default function ChatFullscreen() {
         // Regular text message
         if (isGroupChat) {
           await sendGroupMessage(content);
-        } else if (isConversation && id) {
-          await sendConversationMessage(content, id);
+        } else if ((isConversation && id) || (isFriendChat && currentConversation)) {
+          const convId = isFriendChat ? currentConversation?.id : id;
+          if (convId) {
+            await sendConversationMessage(content, convId);
+          }
         }
       } else {
         // Enhanced message types
@@ -128,8 +190,11 @@ export default function ChatFullscreen() {
             // For now, send as text. Later we'll extend the hooks to handle poll_id
             if (isGroupChat) {
               await sendGroupMessage(messageContent);
-            } else if (isConversation && id) {
-              await sendConversationMessage(messageContent, id);
+            } else if ((isConversation && id) || (isFriendChat && currentConversation)) {
+              const convId = isFriendChat ? currentConversation?.id : id;
+              if (convId) {
+                await sendConversationMessage(messageContent, convId);
+              }
             }
           }
         } else if ((type === 'image' || type === 'video' || type === 'audio') && data?.file) {
@@ -139,8 +204,11 @@ export default function ChatFullscreen() {
             // For now, send as text. Later we'll extend the hooks to handle file URLs
             if (isGroupChat) {
               await sendGroupMessage(messageContent);
-            } else if (isConversation && id) {
-              await sendConversationMessage(messageContent, id);
+            } else if ((isConversation && id) || (isFriendChat && currentConversation)) {
+              const convId = isFriendChat ? currentConversation?.id : id;
+              if (convId) {
+                await sendConversationMessage(messageContent, convId);
+              }
             }
           }
         } else if (type === 'audio' && data?.audioBlob) {
@@ -150,8 +218,11 @@ export default function ChatFullscreen() {
             // For now, send as text. Later we'll extend the hooks to handle file URLs
             if (isGroupChat) {
               await sendGroupMessage(messageContent);
-            } else if (isConversation && id) {
-              await sendConversationMessage(messageContent, id);
+            } else if ((isConversation && id) || (isFriendChat && currentConversation)) {
+              const convId = isFriendChat ? currentConversation?.id : id;
+              if (convId) {
+                await sendConversationMessage(messageContent, convId);
+              }
             }
           }
         }
@@ -204,33 +275,34 @@ export default function ChatFullscreen() {
     <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>Chat · {chatInfo?.title || "LiveMoment"}</title>
-        <meta name="description" content={`Chat di gruppo per ${chatInfo?.title || "LiveMoment"}`} />
+        <meta name="description" content={`Chat ${isFriendChat ? 'privata' : 'di gruppo'} per ${chatInfo?.title || "LiveMoment"}`} />
       </Helmet>
 
-      {/* Header Extension for Chat */}
-      <div className="border-b bg-background">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-muted-foreground">{chatInfo?.subtitle}</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {chatInfo?.type === 'moment' && (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleShare}
-                aria-label="Condividi"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            )}
-            <Button variant="ghost" size="icon" aria-label="Altre opzioni">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Chat Header */}
+      {chatInfo && (
+        <ChatHeader
+          title={chatInfo.title}
+          subtitle={chatInfo.subtitle}
+          avatar={
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={(chatInfo as any).avatar || (conversation?.other_participant?.avatar_url)} />
+              <AvatarFallback>
+                {chatInfo.title?.slice(0, 2).toUpperCase() || 'CH'}
+              </AvatarFallback>
+            </Avatar>
+          }
+          chatType={isFriendChat ? 'friend' : isConversation ? 'conversation' : chatInfo.type === 'event' ? 'moment' : chatInfo.type}
+          onBack={() => navigate(-1)}
+          onShowParticipants={() => {}}
+          onShowSettings={() => {}}
+          showCreateMoment={chatInfo.type === 'moment'}
+          onCreateMoment={chatInfo.type === 'moment' ? handleShare : undefined}
+          eventDate={groupInfo?.date}
+          eventTime={groupInfo?.time}
+          location={groupInfo?.location}
+          participantCount={groupInfo?.memberCount}
+        />
+      )}
 
       {/* Info Banner per momenti */}
       {(groupInfo?.type === 'moment' || groupInfo?.type === 'event') && (

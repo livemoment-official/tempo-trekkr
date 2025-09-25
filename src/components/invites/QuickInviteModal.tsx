@@ -71,7 +71,7 @@ export function QuickInviteModal({
       // Create or get conversation and redirect to private chat
       const conversation = await createOrGetConversation(targetUser.id);
       if (conversation) {
-        navigate(`/chat/conversation/${conversation.id}`);
+        navigate(`/chat/friend/${targetUser.id}`);
         toast.success(`Invito inviato a ${targetUser.name}! Inizia a chattare.`);
       } else {
         toast.success(`Invito inviato a ${targetUser.name}!`);
