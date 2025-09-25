@@ -214,7 +214,7 @@ export default function Profilo() {
                 )}
               </div>
               
-              {profile?.bio && <div className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              {profile?.bio && <div className="text-sm text-muted-foreground mb-3 line-clamp-2 break-words max-w-full">
                   {profile.bio}
                 </div>}
               

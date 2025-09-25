@@ -136,7 +136,7 @@ export function MomentCard({
       {/* Unified Responsive Layout */}
       <div className="w-full h-screen md:h-auto flex flex-col bg-background rounded-xl md:shadow-card md:hover:shadow-elevated overflow-hidden">
         {/* Hero Image Section */}
-        <div className="relative w-full h-[65vh] md:h-80 lg:h-96 overflow-hidden md:rounded-t-xl">
+        <div className="relative w-full h-[50vh] md:h-80 lg:h-96 overflow-hidden md:rounded-t-xl">
           {hasVideo && videoUrl ? (
             <video
               ref={videoRef}
@@ -162,7 +162,7 @@ export function MomentCard({
           )}
           
           {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
 
           {/* Top Section */}
           <div className="absolute top-0 left-0 right-0 z-20 p-4">
@@ -264,11 +264,11 @@ export function MomentCard({
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
             <Button 
-              size="sm"
+              size={isMobile ? "default" : "sm"}
               variant={paymentRequired ? "default" : "default"}
               className={paymentRequired 
-                ? "flex-1 bg-gradient-to-r from-brand to-brand-accent hover:from-brand-accent hover:to-brand text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
-                : "flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                ? `flex-1 ${isMobile ? "h-12 text-base" : "h-9"} bg-gradient-to-r from-brand to-brand-accent hover:from-brand-accent hover:to-brand text-white font-medium shadow-md hover:shadow-lg transition-all duration-200`
+                : `flex-1 ${isMobile ? "h-12 text-base" : "h-9"} bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200`
               }
               onClick={(e) => {
                 e.stopPropagation();
