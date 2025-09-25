@@ -151,16 +151,7 @@ export default function CreaEvento() {
 
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container flex h-14 items-center">
-          
-          <div className="flex items-center gap-2">
-            
-            <Button variant="outline" size="sm" onClick={handleManualSave} className="ml-auto">
-              <Save className="h-4 w-4 mr-1" />
-              Salva
-            </Button>
-          </div>
-        </div>
+        
       </header>
 
       {/* Main Content */}
@@ -191,7 +182,11 @@ export default function CreaEvento() {
                     </Button> : <Button onClick={async () => {
                   try {
                     // Get current user first
-                    const { data: { user } } = await supabase.auth.getUser();
+                    const {
+                      data: {
+                        user
+                      }
+                    } = await supabase.auth.getUser();
                     if (!user) {
                       throw new Error('Utente non autenticato');
                     }
@@ -200,10 +195,9 @@ export default function CreaEvento() {
                     const eventToSave = {
                       title: eventData.title,
                       description: eventData.description,
-                      host_id: user.id, // CRITICAL: Add missing host_id
-                      when_at: eventData.date && eventData.startTime 
-                        ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
-                        : null,
+                      host_id: user.id,
+                      // CRITICAL: Add missing host_id
+                      when_at: eventData.date && eventData.startTime ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString() : null,
                       place: eventData.location.coordinates ? {
                         name: eventData.location.name,
                         address: eventData.location.name,
@@ -220,45 +214,34 @@ export default function CreaEvento() {
                       ticketing: eventData.ticketing,
                       discovery_on: true
                     };
-
-                    const { data, error } = await supabase
-                      .from('events')
-                      .insert(eventToSave)
-                      .select()
-                      .single();
-
+                    const {
+                      data,
+                      error
+                    } = await supabase.from('events').insert(eventToSave).select().single();
                     if (error) throw error;
 
                     // Save artist and venue selections
                     if (eventData.selectedArtists.length > 0) {
-                      const { error: artistError } = await supabase
-                        .from('event_artists')
-                        .insert(
-                          eventData.selectedArtists.map(artistId => ({
-                            event_id: data.id,
-                            artist_id: artistId,
-                            status: 'invited',
-                            invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`
-                          }))
-                        );
-                      
+                      const {
+                        error: artistError
+                      } = await supabase.from('event_artists').insert(eventData.selectedArtists.map(artistId => ({
+                        event_id: data.id,
+                        artist_id: artistId,
+                        status: 'invited',
+                        invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`
+                      })));
                       if (artistError) console.error('Error saving artist invitations:', artistError);
                     }
-
                     if (eventData.selectedVenues.length > 0) {
-                      const { error: venueError } = await supabase
-                        .from('event_venues')
-                        .insert(
-                          eventData.selectedVenues.map(venueId => ({
-                            event_id: data.id,
-                            venue_id: venueId,
-                            status: 'contacted',
-                            contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`
-                          }))
-                        );
-                      
+                      const {
+                        error: venueError
+                      } = await supabase.from('event_venues').insert(eventData.selectedVenues.map(venueId => ({
+                        event_id: data.id,
+                        venue_id: venueId,
+                        status: 'contacted',
+                        contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`
+                      })));
                       if (venueError) console.error('Error saving venue contacts:', venueError);
-
                     }
 
                     // Send notifications to artists and venues (non-blocking)
@@ -278,7 +261,6 @@ export default function CreaEvento() {
                         // Don't block event creation if notifications fail
                       }
                     }
-
                     handleAutoSave(eventData);
                     toast({
                       title: "Evento pubblicato!",
