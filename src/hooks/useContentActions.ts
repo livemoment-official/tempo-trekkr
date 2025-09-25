@@ -35,26 +35,30 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
       
       console.log(`🗑️ [DELETE] Authenticated user:`, user.id);
       
-      // Soft delete: set deleted_at timestamp instead of hard delete
-      const { data, error } = await supabase
+      // Soft delete: set deleted_at timestamp and ensure user owns the content
+      const { count, error } = await supabase
         .from(contentType)
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', contentId)
-        .select('*');
+        .eq('host_id', user.id);
 
-      console.log(`🗑️ [DELETE] Result:`, { data, error });
+      console.log(`🗑️ [DELETE] Result:`, { count, error });
       
       if (error) {
         console.error(`🗑️ [DELETE] Error details:`, error);
-        throw error;
+        // Handle specific RLS error
+        if (error.code === '42501') {
+          throw new Error('Non hai i permessi per eliminare questo contenuto');
+        }
+        throw new Error(error.message || 'Errore durante l\'eliminazione');
       }
       
-      if (!data || data.length === 0) {
-        console.error(`🗑️ [DELETE] No rows affected - permission denied or item not found`);
-        throw new Error('Permessi insufficienti per eliminare questo contenuto');
+      if (count === 0) {
+        console.error(`🗑️ [DELETE] No rows affected - content not found or already deleted`);
+        throw new Error('Contenuto non trovato o già eliminato');
       }
       
-      console.log(`🗑️ [DELETE] Successfully deleted:`, data);
+      console.log(`🗑️ [DELETE] Successfully deleted ${count} row(s)`);
     },
     onSuccess: () => {
       toast({
