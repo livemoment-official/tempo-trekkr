@@ -40,7 +40,7 @@ export default function InviteCard({
     if (onCreateMoment) {
       onCreateMoment(invite.id);
     } else {
-      navigate(`/crea/momento-da-invito/${invite.id}`);
+      navigate(`/crea/momento?fromInvite=${invite.id}`);
     }
   };
   const handleViewProfile = () => {

@@ -20,6 +20,7 @@ import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 interface MomentData {
   title: string;
   description: string;
@@ -47,6 +48,7 @@ export default function CreaMomento() {
     is_public: true,
     max_participants: 8
   });
+  
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [startDate, setStartDate] = useState<Date>();
@@ -57,6 +59,9 @@ export default function CreaMomento() {
   } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  // Check if creating from invite
+  const inviteId = searchParams.get('fromInvite');
   const {
     location,
     requestLocation,
@@ -74,12 +79,60 @@ export default function CreaMomento() {
     isGenerating
   } = useAISuggestions();
 
+  // Fetch invite data if creating from invite
+  const { data: invite } = useQuery({
+    queryKey: ['invite', inviteId],
+    queryFn: async () => {
+      if (!inviteId) return null;
+      
+      const { data, error } = await supabase
+        .from('invites')
+        .select('*')
+        .eq('id', inviteId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!inviteId,
+  });
+
   // Auto-set location on mount
   useEffect(() => {
     if (!location && !locationLoading) {
       requestLocation();
     }
   }, [location, locationLoading, requestLocation]);
+
+  // Pre-populate data when invite loads
+  useEffect(() => {
+    if (invite) {
+      const place = invite.place as any;
+      setMomentData(prev => ({
+        ...prev,
+        title: invite.title || '',
+        description: invite.description || '',
+        place: place ? {
+          lat: place.lat || place.coordinates?.lat,
+          lng: place.lng || place.coordinates?.lng,
+          name: place.name || '',
+          address: place.address || place.formatted_address || ''
+        } : null,
+      }));
+      
+      // Set date if available
+      if (invite.when_at) {
+        const inviteDate = new Date(invite.when_at);
+        setStartDate(inviteDate);
+        setStartTime(format(inviteDate, 'HH:mm'));
+        
+        // Set end date 4 hours later
+        const endDate = new Date(inviteDate.getTime() + 4 * 60 * 60 * 1000);
+        setEndDate(endDate);
+        setEndTime(format(endDate, 'HH:mm'));
+      }
+    }
+  }, [invite]);
 
   // Auto-fill location when available
   useEffect(() => {
@@ -271,9 +324,21 @@ export default function CreaMomento() {
         error
       } = await supabase.from('moments').insert([momentToCreate]).select().single();
       if (error) throw error;
+
+      // If created from invite, update the invite status
+      if (inviteId && invite) {
+        await supabase
+          .from('invites')
+          .update({ 
+            can_be_public: true,
+            status: 'accepted'
+          })
+          .eq('id', inviteId);
+      }
+
       toast({
-        title: "Momento creato!",
-        description: "Il tuo momento è stato pubblicato con successo"
+        title: inviteId ? "Momento creato da invito! 🎉" : "Momento creato!",
+        description: inviteId ? "L'invito è stato trasformato in un momento pubblico" : "Il tuo momento è stato pubblicato con successo"
       });
       navigate(`/moment/${newMoment.id}`);
     } catch (error) {
@@ -305,7 +370,16 @@ export default function CreaMomento() {
         
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
           <div className="flex items-center justify-between p-4">
-            
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              {inviteId && (
+                <Badge variant="secondary" className="text-xs">
+                  Da invito: {invite?.title}
+                </Badge>
+              )}
+            </div>
             
             <Button onClick={handleCreateMoment} disabled={isUploading || !momentData.title.trim()} size="sm">
               {isUploading ? "Creando..." : "Pubblica"}
