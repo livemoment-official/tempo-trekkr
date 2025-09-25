@@ -149,11 +149,18 @@ export default function InviteCard({
           {/* Azioni per inviti ricevuti */}
           {type === 'received' && (
             <div className="space-y-3 pt-2">
-              {/* Bottone principale "Creaci il Momento" - sempre visibile per inviti ricevuti */}
-              <Button onClick={handleCreateMoment} className={`w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Creaci il Momento
-              </Button>
+              {/* Bottoni principali */}
+              <div className="flex gap-3">
+                <Button onClick={handleCreateMoment} className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Crea il Momento
+                </Button>
+                
+                <Button onClick={() => navigate(`/chat/private/${invite.sender?.id}`)} variant="outline" className={`border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium ${isMobile ? "h-11 px-4" : "h-12 px-5"} rounded-xl transition-all`}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Chatta
+                </Button>
+              </div>
               
               {/* Bottoni secondari - solo per inviti pending */}
               {invite.status === 'pending' && (
