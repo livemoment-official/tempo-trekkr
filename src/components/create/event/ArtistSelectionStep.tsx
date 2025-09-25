@@ -12,21 +12,17 @@ interface ArtistSelectionStepProps {
   onChange: (data: any) => void;
   onNext: () => void;
 }
-
 export default function ArtistSelectionStep({
   data,
   onChange,
   onNext
 }: ArtistSelectionStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: artists, isLoading } = useArtists();
-  
-  const filteredArtists = artists?.filter(artist => 
-    artist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const {
+    data: artists,
+    isLoading
+  } = useArtists();
+  const filteredArtists = artists?.filter(artist => artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase())) || [];
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -41,31 +37,18 @@ export default function ArtistSelectionStep({
     return artists?.filter(artist => data.selectedArtists.includes(artist.id)) || [];
   };
   return <div className="space-y-6">
-      <div>
-        <Label className="text-base font-medium">Seleziona artisti</Label>
-        <p className="text-sm text-muted-foreground mt-1">
-          Cerca e invita artisti per il tuo evento
-        </p>
-      </div>
+      
 
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input 
-          value={searchQuery} 
-          onChange={e => handleSearch(e.target.value)} 
-          placeholder="Cerca artisti per nome, genere o tipo..." 
-          className="pl-10" 
-          disabled={isLoading}
-        />
+        <Input value={searchQuery} onChange={e => handleSearch(e.target.value)} placeholder="Cerca artisti per nome, genere o tipo..." className="pl-10" disabled={isLoading} />
       </div>
 
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
+      {isLoading && <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           <span className="ml-2 text-muted-foreground">Caricamento artisti...</span>
-        </div>
-      )}
+        </div>}
 
       {/* Selected artists */}
       {data.selectedArtists.length > 0 && !isLoading && <div>
