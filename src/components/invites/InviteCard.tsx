@@ -94,11 +94,11 @@ export default function InviteCard({
                 <div className="flex items-center gap-1 flex-wrap">
                   <span 
                     onClick={handleViewProfile} 
-                    className={`font-medium cursor-pointer hover:text-primary transition-colors ${isMobile ? "text-sm" : "text-base"}`}
+                    className={`font-medium cursor-pointer hover:text-primary transition-colors text-xs`}
                   >
                     {invite.sender?.name}
                   </span>
-                  <span className={`text-muted-foreground ${isMobile ? "text-xs" : "text-sm"}`}>
+                  <span className={`text-muted-foreground text-xs`}>
                     ti ha invitato a:
                   </span>
                 </div>
