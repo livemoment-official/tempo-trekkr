@@ -182,11 +182,11 @@ export default function Inviti() {
       
 
       <Tabs defaultValue="ricevuti" className="px-4">
-        <TabsList className="grid grid-cols-2 w-full mb-6">
-          <TabsTrigger value="ricevuti" className="text-sm font-medium">
+        <TabsList className={cn("grid grid-cols-2 w-full", isMobile ? "mb-3" : "mb-6")}>
+          <TabsTrigger value="ricevuti" className={cn("font-medium", isMobile ? "text-xs px-2 py-1.5" : "text-sm")}>
             Inviti Ricevuti
           </TabsTrigger>
-          <TabsTrigger value="amici" className="text-sm font-medium">
+          <TabsTrigger value="amici" className={cn("font-medium", isMobile ? "text-xs px-2 py-1.5" : "text-sm")}>
             Invita
           </TabsTrigger>
         </TabsList>
@@ -212,11 +212,11 @@ export default function Inviti() {
                         Non hai inviti in attesa al momento.
                       </p>
                     </div> : <>
-                      <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-muted-foreground">
+                      <div className={cn("flex items-center justify-between", isMobile ? "mb-2" : "mb-4")}>
+                        <p className={cn("text-muted-foreground", isMobile ? "text-xs" : "text-sm")}>
                           {(inviteData?.received || []).filter(i => i.status === 'pending').length} inviti in attesa
                         </p>
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className={isMobile ? "text-xs px-2 py-0.5" : ""}>
                           {(inviteData?.received || []).length} totali
                         </Badge>
                       </div>
@@ -260,7 +260,7 @@ export default function Inviti() {
                 </div> : (/* List View for Friends */
           <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
+                    <p className={cn("text-muted-foreground", isMobile ? "text-xs" : "text-sm")}>
                       {filteredUsers.length} person{filteredUsers.length > 1 ? 'e' : 'a'} nelle vicinanze
                     </p>
                   </div>
