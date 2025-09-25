@@ -82,7 +82,7 @@ export const FriendsSearchFilters = ({
               className="flex items-center gap-2 whitespace-nowrap"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filtri Avanzati
+              Filtri
               {activeFiltersCount() > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 min-w-5 text-xs">
                   {activeFiltersCount()}

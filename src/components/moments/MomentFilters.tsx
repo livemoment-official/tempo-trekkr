@@ -198,7 +198,7 @@ export const MomentFilters = ({
                 className="flex items-center gap-2"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Filtri Avanzati
+                Filtri
                 {activeFiltersCount > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 min-w-5 text-xs">
                     {activeFiltersCount}
@@ -209,7 +209,7 @@ export const MomentFilters = ({
             
             <SheetContent side="right" className="w-[400px] sm:w-[540px]">
               <SheetHeader>
-                <SheetTitle>Filtri Avanzati</SheetTitle>
+                <SheetTitle>Filtri</SheetTitle>
                 <SheetDescription>
                   Personalizza la tua ricerca con filtri dettagliati
                 </SheetDescription>
