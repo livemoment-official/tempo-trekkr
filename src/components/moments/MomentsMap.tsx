@@ -44,6 +44,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
   const { location, permission, requestLocation, updateLocationInProfile } = useUnifiedGeolocation();
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // Get Mapbox token from Edge Function
   useEffect(() => {
@@ -101,27 +102,33 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
       'top-right'
     );
 
-    // Add user location marker if available
-    if (location) {
-      new mapboxgl.Marker({
-        color: '#3b82f6'
-      })
-      .setLngLat([location.lng, location.lat])
-      .setPopup(
-        new mapboxgl.Popup({ offset: 25 })
-        .setHTML('<div class="text-sm font-medium">La tua posizione</div>')
-      )
-      .addTo(map.current);
-    }
+    // Wait for map to load before adding any markers
+    map.current.on('load', () => {
+      setIsMapLoaded(true);
+      
+      // Add user location marker if available
+      if (location) {
+        new mapboxgl.Marker({
+          color: '#3b82f6'
+        })
+        .setLngLat([location.lng, location.lat])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 })
+          .setHTML('<div class="text-sm font-medium">La tua posizione</div>')
+        )
+        .addTo(map.current!);
+      }
+    });
 
     return () => {
+      setIsMapLoaded(false);
       map.current?.remove();
     };
   }, [mapboxToken, location]);
 
   // Add moment markers
   useEffect(() => {
-    if (!map.current || !moments.length) return;
+    if (!map.current || !moments.length || !isMapLoaded) return;
 
     // Clear existing markers (in real implementation, you'd manage markers better)
     const markers: mapboxgl.Marker[] = [];
@@ -157,7 +164,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
     return () => {
       markers.forEach(marker => marker.remove());
     };
-  }, [moments, onMomentClick]);
+  }, [moments, isMapLoaded, onMomentClick]);
 
   const getMoodEmoji = (mood?: string) => {
     const moods: Record<string, string> = {
