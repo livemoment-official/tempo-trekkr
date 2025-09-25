@@ -57,7 +57,7 @@ export default function InviteCard({
       case 'postponed':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
-        return 'bg-amber-50 text-amber-800 border-amber-200';
+        return 'bg-white text-gray-700 border-gray-200';
     }
   };
   const getStatusText = (status: string) => {
