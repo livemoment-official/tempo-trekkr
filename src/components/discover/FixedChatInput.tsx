@@ -41,7 +41,7 @@ export const FixedChatInput: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-screen-sm z-30 px-4">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-screen-sm z-30 px-4">
       <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 border border-border/50 rounded-2xl shadow-lg">
         <form onSubmit={handleSubmit} className="flex gap-2 p-3">
           <Input
