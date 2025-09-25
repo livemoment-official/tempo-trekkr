@@ -14,6 +14,7 @@ import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 import { FixedChatInput } from "@/components/discover/FixedChatInput";
+import { useIsMobile } from "@/hooks/use-mobile";
 import liveMomentLogo from "@/assets/livemoment-logo.png";
 const Header = ({
   onOpenSearch,
@@ -43,7 +44,7 @@ const Header = ({
       ? "bg-transparent border-transparent" 
       : "border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light"
   )}>
-      <div className="mx-auto flex h-16 w-full max-w-screen-sm items-center justify-between px-5">
+      <div className="mx-auto flex h-16 w-full max-w-screen-sm md:max-w-screen-lg items-center justify-between px-5 md:px-8">
         {/* LiveMoment Logo - Top Left */}
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
           <EnhancedImage src={liveMomentLogo} alt="LiveMoment Logo" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-10 w-10 object-contain" />
@@ -84,7 +85,7 @@ const BottomTabBar = () => {
   const active = "text-primary font-medium";
   const idle = "text-muted-foreground";
   return <nav className="sticky bottom-0 z-40 border-t border-border/50 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 shadow-ios-elevated">
-      <div className="mx-auto grid max-w-screen-sm grid-cols-4 px-3 py-1">
+      <div className="mx-auto grid max-w-screen-sm md:max-w-screen-lg grid-cols-4 px-3 md:px-8 py-1">
         <NavLink to="/inviti" className={cn(base, isActive("/inviti") ? active : idle)}>
           <div className={cn("flex flex-col items-center", isActive("/inviti") && "pill-active")}>
             <MessageSquareText className="h-6 w-6 mb-1.5" strokeWidth={1.5} />
@@ -121,6 +122,7 @@ export default function AppLayout() {
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
@@ -130,25 +132,21 @@ export default function AppLayout() {
   useEffect(() => {
     // Focus management or analytics could go here
   }, [pathname]);
-  return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm flex-col">
+  return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm md:max-w-screen-lg flex-col">
       {!isCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
       {!isAuthenticated && !isCreatePage && <GuestBanner />}
       {!isCreatePage && <UnconfirmedUserBanner />}
-      <main className={isCreatePage ? "flex-1" : "flex-1 px-5 pb-28 pt-4 animate-fade-in"}>
+      <main className={isCreatePage ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
         <Outlet />
       </main>
 
-      {/* Apple-style Floating Create Button - hidden on create page */}
-      {!isCreatePage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
-          <AuthGuard title="Accedi per creare" description="Accedi per creare momenti, eventi o inviti" fallback={<Button className="shadow-ios-floating opacity-80 rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20">
-                <Plus className="h-6 w-6" strokeWidth={2.5} />
-              </Button>}>
-            <NavLink to="/crea" aria-label="Crea">
-              <Button className="shadow-ios-floating rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
-                <Plus className="h-6 w-6" strokeWidth={2.5} />
-              </Button>
-            </NavLink>
-          </AuthGuard>
+      {/* Apple-style Floating Create Button - hidden on create page and for unauthenticated users */}
+      {!isCreatePage && isAuthenticated && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
+          <NavLink to="/crea" aria-label="Crea">
+            <Button className="shadow-ios-floating rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
+              <Plus className="h-6 w-6" strokeWidth={2.5} />
+            </Button>
+          </NavLink>
         </div>}
 
       {!isCreatePage && <BottomTabBar />}
