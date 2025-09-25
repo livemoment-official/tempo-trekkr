@@ -7,7 +7,7 @@ import { List, MapPin, Loader2 } from "lucide-react";
 import { MomentFilters } from "@/components/moments/MomentFilters";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
-import { LocationPermissionCard } from "@/components/location/LocationPermissionCard";
+
 import { useMoments } from "@/hooks/useMoments";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/contexts/AuthContext";
@@ -109,7 +109,7 @@ export default function MomentiEventi() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <LocationPermissionCard />
+      
       
       <div className="space-y-4">
         <MomentFilters

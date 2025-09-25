@@ -157,10 +157,18 @@ export function useUnifiedGeolocation() {
       // Save to profile
       await updateLocationInProfile(location);
       
-      toast({
-        title: "Posizione ottenuta",
-        description: "La tua posizione è stata aggiornata con successo"
-      });
+      // Show success notification only on first activation or reactivation after denial
+      const hasShownLocationSuccess = localStorage.getItem('hasShownLocationSuccess');
+      const wasPermissionDenied = localStorage.getItem('locationPermissionDenied') === 'true';
+      
+      if (!hasShownLocationSuccess || wasPermissionDenied) {
+        toast({
+          title: "✅ Posizione attivata!",
+          description: "Ora puoi vedere eventi nelle vicinanze"
+        });
+        localStorage.setItem('hasShownLocationSuccess', 'true');
+        localStorage.removeItem('locationPermissionDenied');
+      }
 
       retryCount.current = 0;
       return location;
@@ -174,6 +182,8 @@ export function useUnifiedGeolocation() {
       if (error.code === 1) {
         errorMessage = "Permesso di geolocalizzazione negato";
         permission = 'denied';
+        // Track that permission was denied to show success toast on reactivation
+        localStorage.setItem('locationPermissionDenied', 'true');
       } else if (error.code === 2) {
         errorMessage = "Posizione non disponibile";
       } else if (error.code === 3) {
