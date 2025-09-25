@@ -152,7 +152,6 @@ export default function InviteCard({
               {/* Bottoni principali */}
               <div className="flex gap-3">
                 <Button onClick={handleCreateMoment} className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}>
-                  <Sparkles className="h-4 w-4 mr-2" />
                   Crea il Momento
                 </Button>
                 
