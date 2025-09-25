@@ -36,7 +36,6 @@ export default function Inviti() {
   const [friendsViewMode, setFriendsViewMode] = useState<"swipe" | "list">("list");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -91,10 +90,12 @@ export default function Inviti() {
     id: user.id,
     name: user.name,
     avatar_url: user.avatar_url || '/placeholder.svg',
-    city: "Città", // Could be extracted from location if needed
+    city: "Città",
+    // Could be extracted from location if needed
     availability: user.distance_km !== null ? "available" : "busy",
     preferred_moments: user.interests || [],
-    age: 25, // Mock age since it's not in the database
+    age: 25,
+    // Mock age since it's not in the database
     distance_km: user.distance_km,
     is_available: user.distance_km !== null
   }));
@@ -235,16 +236,7 @@ export default function Inviti() {
             
             
             {/* Toggle between list and swipe view for friends */}
-            <div className="bg-muted/50 backdrop-blur-sm p-1 rounded-lg border border-muted-foreground/20 shadow-sm">
-              <div className="flex items-center gap-1">
-                <Button size="sm" variant={friendsViewMode === "list" ? "default" : "ghost"} onClick={() => setFriendsViewMode("list")} className={`h-8 w-8 p-0 transition-all duration-200 ${friendsViewMode === "list" ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
-                  <LayoutGrid size={16} />
-                </Button>
-                <Button size="sm" variant={friendsViewMode === "swipe" ? "default" : "ghost"} onClick={() => setFriendsViewMode("swipe")} className={`h-8 w-8 p-0 transition-all duration-200 ${friendsViewMode === "swipe" ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg scale-105" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
-                  <Heart size={16} />
-                </Button>
-              </div>
-            </div>
+            
           </div>
 
           {/* Only show filters when not in swipe mode on mobile */}
@@ -290,12 +282,6 @@ export default function Inviti() {
       </Tabs>
 
       {/* Quick Invite Modal */}
-      {selectedUser && (
-        <QuickInviteModal
-          open={inviteModalOpen}
-          onOpenChange={setInviteModalOpen}
-          targetUser={selectedUser}
-        />
-      )}
+      {selectedUser && <QuickInviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} targetUser={selectedUser} />}
     </div>;
 }
