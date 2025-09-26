@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriendship } from "@/hooks/useFriendship";
 import { toast } from 'sonner';
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
 const fetchUserProfileById = async (userId: string) => {
   console.log('🔍 Fetching profile for user ID:', userId);
   const {
@@ -83,10 +84,11 @@ export default function UserDetailById() {
   const {
     user
   } = useAuth();
-  const {
+const {
     sendFriendRequest,
     friends,
-    pendingRequests
+    pendingRequests,
+    removeFriend
   } = useFriendship();
   const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'friends'>('none');
   console.log('🔍 UserDetailById loaded with ID:', id);
@@ -236,6 +238,32 @@ export default function UserDetailById() {
     // In a real app, this would send a notification to the user
   };
 
+  const handleRemoveFriend = async () => {
+    if (!profile || !user || !friends) return;
+    
+    const friendshipRecord = friends.find(
+      f => f.friend?.id === profile.id
+    );
+    
+    if (friendshipRecord) {
+      await removeFriend(friendshipRecord.id);
+      setFriendshipStatus('none');
+      toast.success('Amicizia rimossa');
+    }
+  };
+
+  const handleBlockUser = () => {
+    toast.info('Funzione non ancora implementata', {
+      description: 'La funzionalità di blocco utente sarà disponibile presto.',
+    });
+  };
+
+  const handleReportUser = () => {
+    toast.info('Funzione non ancora implementata', {
+      description: 'La funzionalità di segnalazione sarà disponibile presto.',
+    });
+  };
+
   const getOnlineStatusBadge = () => {
     if (availabilityStatus === 'available') {
       return (
@@ -316,7 +344,17 @@ export default function UserDetailById() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 pb-6 max-w-2xl space-y-6">
+        {/* Profile Header */}
+        <ProfileHeader
+          userName={profile.name || profile.username || 'Utente'}
+          userId={profile.id}
+          isFriend={friendshipStatus === 'friends'}
+          onRemoveFriend={handleRemoveFriend}
+          onBlockUser={handleBlockUser}
+          onReportUser={handleReportUser}
+        />
+
+        <div className="container mx-auto px-4 pb-6 pt-20 max-w-2xl space-y-6">
           {/* Enhanced Profile Header */}
           <Card className="shadow-card">
             <CardContent className="p-6">
