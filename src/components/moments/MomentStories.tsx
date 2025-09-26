@@ -7,12 +7,10 @@ import { Plus, Camera, Video, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useImageUpload } from "@/hooks/useImageUpload";
-
 interface MomentStoriesProps {
   momentId: string;
   canContribute: boolean;
 }
-
 interface Story {
   id: string;
   user_id: string;
@@ -22,39 +20,46 @@ interface Story {
   media_type: 'image' | 'video';
   created_at: string;
 }
-
-export function MomentStories({ momentId, canContribute }: MomentStoriesProps) {
-  const { toast } = useToast();
-  const { uploadGalleryImage, isUploading } = useImageUpload();
+export function MomentStories({
+  momentId,
+  canContribute
+}: MomentStoriesProps) {
+  const {
+    toast
+  } = useToast();
+  const {
+    uploadGalleryImage,
+    isUploading
+  } = useImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stories, setStories] = useState<Story[]>([
-    // Mock stories for now
-    {
-      id: '1',
-      user_id: 'user1',
-      user_name: 'Marco',
-      user_avatar: '',
-      media_url: '/api/placeholder/300/400',
-      media_type: 'image',
-      created_at: '2 min fa'
-    },
-    {
-      id: '2',
-      user_id: 'user2',
-      user_name: 'Sofia',
-      user_avatar: '',
-      media_url: '/api/placeholder/300/400',
-      media_type: 'image',
-      created_at: '5 min fa'
-    }
-  ]);
-
+  // Mock stories for now
+  {
+    id: '1',
+    user_id: 'user1',
+    user_name: 'Marco',
+    user_avatar: '',
+    media_url: '/api/placeholder/300/400',
+    media_type: 'image',
+    created_at: '2 min fa'
+  }, {
+    id: '2',
+    user_id: 'user2',
+    user_name: 'Sofia',
+    user_avatar: '',
+    media_url: '/api/placeholder/300/400',
+    media_type: 'image',
+    created_at: '5 min fa'
+  }]);
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: "Errore",
@@ -63,7 +68,6 @@ export function MomentStories({ momentId, canContribute }: MomentStoriesProps) {
         });
         return;
       }
-
       const mediaUrl = await uploadGalleryImage(file);
       if (!mediaUrl) {
         throw new Error("Failed to upload media");
@@ -79,9 +83,7 @@ export function MomentStories({ momentId, canContribute }: MomentStoriesProps) {
         media_type: file.type.startsWith('video/') ? 'video' : 'image',
         created_at: 'Ora'
       };
-
       setStories(prev => [newStory, ...prev]);
-
       toast({
         title: "Story aggiunta!",
         description: "Il tuo contenuto è stato condiviso"
@@ -95,56 +97,27 @@ export function MomentStories({ momentId, canContribute }: MomentStoriesProps) {
       });
     }
   };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Stories del Momento</CardTitle>
-      </CardHeader>
+  return <Card>
+      
       <CardContent>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {/* Add Story Button */}
-          {canContribute && (
-            <div className="flex-shrink-0">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-16 h-20 border-2 border-dashed border-primary/25 rounded-lg flex flex-col items-center justify-center text-primary hover:bg-primary/5 transition-colors"
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <div className="animate-spin w-4 h-4 border border-primary border-t-transparent rounded-full" />
-                ) : (
-                  <>
+          {canContribute && <div className="flex-shrink-0">
+              <button onClick={() => fileInputRef.current?.click()} className="w-16 h-20 border-2 border-dashed border-primary/25 rounded-lg flex flex-col items-center justify-center text-primary hover:bg-primary/5 transition-colors" disabled={isUploading}>
+                {isUploading ? <div className="animate-spin w-4 h-4 border border-primary border-t-transparent rounded-full" /> : <>
                     <Plus className="h-5 w-5 mb-1" />
                     <span className="text-xs">Aggiungi</span>
-                  </>
-                )}
+                  </>}
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
-          )}
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
+            </div>}
 
           {/* Stories */}
-          {stories.map((story) => (
-            <div key={story.id} className="flex-shrink-0">
+          {stories.map(story => <div key={story.id} className="flex-shrink-0">
               <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 border">
-                {story.media_type === 'video' ? (
-                  <div className="w-full h-full flex items-center justify-center">
+                {story.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center">
                     <Play className="h-6 w-6 text-primary" />
-                  </div>
-                ) : (
-                  <img 
-                    src={story.media_url} 
-                    alt="Story"
-                    className="w-full h-full object-cover"
-                  />
-                )}
+                  </div> : <img src={story.media_url} alt="Story" className="w-full h-full object-cover" />}
                 
                 {/* User Avatar */}
                 <div className="absolute -bottom-1 -right-1">
@@ -165,17 +138,13 @@ export function MomentStories({ momentId, canContribute }: MomentStoriesProps) {
                   {story.created_at}
                 </p>
               </div>
-            </div>
-          ))}
+            </div>)}
         </div>
 
-        {stories.length === 0 && !canContribute && (
-          <div className="text-center py-8 text-muted-foreground">
+        {stories.length === 0 && !canContribute && <div className="text-center py-8 text-muted-foreground">
             <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Nessuna story ancora</p>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
