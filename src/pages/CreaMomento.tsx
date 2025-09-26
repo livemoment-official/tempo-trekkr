@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { CalendarIcon, Clock, MapPin, Camera, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, Camera, ArrowLeft, Euro } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -21,6 +21,18 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { TicketingSystem } from "@/components/TicketingSystem";
+interface TicketingData {
+  enabled: boolean;
+  price: number;
+  currency: string;
+  maxTickets?: number;
+  ticketType: "standard" | "vip" | "early_bird";
+  description?: string;
+  livemomentFeePercentage?: number;
+  organizerFeePercentage?: number;
+}
+
 interface MomentData {
   title: string;
   description: string;
@@ -32,6 +44,7 @@ interface MomentData {
   place: any;
   is_public: boolean;
   max_participants?: number;
+  ticketing?: TicketingData;
 }
 const popularCategories = ["Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"];
 export default function CreaMomento() {
@@ -53,6 +66,14 @@ export default function CreaMomento() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [isUploading, setIsUploading] = useState(false);
+  const [ticketingData, setTicketingData] = useState<TicketingData>({
+    enabled: false,
+    price: 0,
+    currency: 'EUR',
+    ticketType: 'standard',
+    livemomentFeePercentage: 5,
+    organizerFeePercentage: 0
+  });
   const {
     toast
   } = useToast();
@@ -315,7 +336,13 @@ export default function CreaMomento() {
         is_public: momentData.is_public,
         max_participants: momentData.max_participants,
         host_id: user.id,
-        participants: [user.id]
+        participants: [user.id],
+        payment_required: ticketingData.enabled,
+        price_cents: ticketingData.enabled ? Math.round(ticketingData.price * 100) : 0,
+        currency: ticketingData.currency,
+        livemoment_fee_percentage: ticketingData.livemomentFeePercentage || 5,
+        organizer_fee_percentage: ticketingData.organizerFeePercentage || 0,
+        ticketing: ticketingData.enabled ? ticketingData as any : null
       };
       const {
         data: newMoment,
@@ -523,6 +550,19 @@ export default function CreaMomento() {
               Posizione
             </Label>
             <EnhancedLocationSearch onLocationSelect={handleLocationSelect} placeholder="Dove ti trovi?" />
+          </div>
+
+          {/* Ticketing System */}
+          <div className="space-y-2">
+            <Label>
+              <Euro className="inline h-4 w-4 mr-1" />
+              Biglietti
+            </Label>
+            <TicketingSystem 
+              data={ticketingData} 
+              onChange={setTicketingData}
+              maxParticipants={momentData.max_participants}
+            />
           </div>
         </div>
       </div>;
