@@ -56,11 +56,10 @@ export function TicketPurchaseModal({
     }
   }, [open, user, checkPendingPayments]);
 
-  // Calculate fees
-  const basePrice = moment.price_cents;
-  const livemomentFee = Math.round(basePrice * (moment.livemoment_fee_percentage / 100));
-  const organizerFee = Math.round(basePrice * (moment.organizer_fee_percentage / 100));
-  const totalAmount = basePrice + livemomentFee + organizerFee;
+  // Price breakdown (fees are included in the ticket price, not added)
+  const ticketPrice = moment.price_cents;
+  const livemomentFee = Math.round(ticketPrice * (moment.livemoment_fee_percentage / 100));
+  const organizerRevenue = ticketPrice - livemomentFee;
 
   const formatPrice = (cents: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('it-IT', {
@@ -119,9 +118,9 @@ export function TicketPurchaseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Ticket className="h-5 w-5 text-brand" />
             Acquista Biglietto
           </DialogTitle>
@@ -130,8 +129,8 @@ export function TicketPurchaseModal({
         <div className="space-y-4">
           {/* Moment Info */}
           <Card>
-            <CardContent className="p-4 space-y-3">
-              <h3 className="font-semibold text-lg leading-tight">{moment.title}</h3>
+            <CardContent className="p-3 sm:p-4 space-y-3">
+              <h3 className="font-semibold text-base sm:text-lg leading-tight">{moment.title}</h3>
               
               {moment.description && (
                 <p className="text-sm text-muted-foreground line-clamp-2">
@@ -139,33 +138,35 @@ export function TicketPurchaseModal({
                 </p>
               )}
               
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>{formatDate(moment.when_at)}</span>
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex items-start gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span className="break-words">{formatDate(moment.when_at)}</span>
                 </div>
                 
                 {moment.place && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span className="truncate">
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span className="break-words">
                       {moment.place.name}
                       {moment.place.address && `, ${moment.place.address}`}
                     </span>
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>
-                    {moment.participant_count || 0}
-                    {moment.max_participants && `/${moment.max_participants}`} partecipanti
-                  </span>
-                  {availableSpots !== null && (
-                    <Badge variant={availableSpots > 0 ? "secondary" : "destructive"} className="text-xs">
-                      {availableSpots > 0 ? `${availableSpots} posti disponibili` : 'Sold Out'}
-                    </Badge>
-                  )}
+                <div className="flex items-start gap-2 text-muted-foreground">
+                  <Users className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <span>
+                      {moment.participant_count || 0}
+                      {moment.max_participants && `/${moment.max_participants}`} partecipanti
+                    </span>
+                    {availableSpots !== null && (
+                      <Badge variant={availableSpots > 0 ? "secondary" : "destructive"} className="text-xs w-fit">
+                        {availableSpots > 0 ? `${availableSpots} posti disponibili` : 'Sold Out'}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -173,37 +174,30 @@ export function TicketPurchaseModal({
 
           {/* Price Breakdown */}
           <Card>
-            <CardContent className="p-4 space-y-3">
-              <h4 className="font-semibold flex items-center gap-2">
+            <CardContent className="p-3 sm:p-4 space-y-3">
+              <h4 className="font-semibold flex items-center gap-2 text-sm sm:text-base">
                 <Euro className="h-4 w-4" />
-                Dettaglio Prezzo
+                Prezzo del biglietto
               </h4>
               
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Prezzo base</span>
-                  <span>{formatPrice(basePrice, moment.currency)}</span>
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>Prezzo finale</span>
+                  <span>{formatPrice(ticketPrice, moment.currency)}</span>
                 </div>
-                
-                {livemomentFee > 0 && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Fee LiveMoment ({moment.livemoment_fee_percentage}%)</span>
-                    <span>{formatPrice(livemomentFee, moment.currency)}</span>
-                  </div>
-                )}
-                
-                {organizerFee > 0 && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Fee organizzatore ({moment.organizer_fee_percentage}%)</span>
-                    <span>{formatPrice(organizerFee, moment.currency)}</span>
-                  </div>
-                )}
                 
                 <Separator />
                 
-                <div className="flex justify-between font-semibold text-base">
-                  <span>Totale</span>
-                  <span>{formatPrice(totalAmount, moment.currency)}</span>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium">Come viene suddiviso il prezzo:</p>
+                  <div className="flex justify-between">
+                    <span>• All'organizzatore (95%)</span>
+                    <span>{formatPrice(organizerRevenue, moment.currency)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>• A LiveMoment (5%)</span>
+                    <span>{formatPrice(livemomentFee, moment.currency)}</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -235,10 +229,15 @@ export function TicketPurchaseModal({
           <div className="pt-2">
             {!user ? (
               <div className="text-center py-4">
-                <p className="text-muted-foreground mb-3">Devi effettuare l'accesso per acquistare un biglietto</p>
+                <p className="text-muted-foreground mb-3 text-sm">Devi effettuare l'accesso per acquistare un biglietto</p>
                 <Button 
                   variant="outline" 
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => {
+                    onOpenChange(false);
+                    // Navigate to login - assuming you have a router context or navigation function
+                    window.location.href = '/auth';
+                  }}
+                  className="w-full sm:w-auto"
                 >
                   Accedi
                 </Button>
@@ -269,7 +268,7 @@ export function TicketPurchaseModal({
                 ) : (
                   <>
                     <CreditCard className="h-4 w-4 mr-2" />
-                    Acquista per {formatPrice(totalAmount, moment.currency)}
+                    Acquista per {formatPrice(ticketPrice, moment.currency)}
                   </>
                 )}
               </Button>

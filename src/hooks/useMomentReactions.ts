@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export type ReactionType = 'heart' | 'idea' | 'like';
+export type ReactionType = 'idea' | 'star_eyes' | 'yellow_heart';
 
 interface MomentReaction {
   id: string;
@@ -46,7 +46,7 @@ export function useMomentReactions(momentId: string) {
 
   // Get reaction counts
   const reactionCounts: ReactionCount[] = [
-    'heart', 'idea', 'like'
+    'idea', 'star_eyes', 'yellow_heart'
   ].map(type => ({
     reaction_type: type as ReactionType,
     count: reactions.filter(r => r.reaction_type === type).length

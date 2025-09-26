@@ -3,9 +3,9 @@ import { useMomentReactions, ReactionType } from "@/hooks/useMomentReactions";
 import { cn } from "@/lib/utils";
 
 const reactionEmojis = {
-  heart: "❤️",
-  idea: "💡", 
-  like: "👍",
+  idea: "💡",
+  star_eyes: "🤩", 
+  yellow_heart: "💛",
 } as const;
 
 interface ReactionBarProps {
