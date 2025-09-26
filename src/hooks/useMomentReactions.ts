@@ -115,15 +115,22 @@ export function useMomentReactions(momentId: string) {
 
   // Toggle reaction
   const toggleReaction = (reactionType: ReactionType) => {
+    if (!user?.id) return;
+    
     if (userReaction) {
       if (userReaction.reaction_type === reactionType) {
+        // Remove current reaction
         removeReactionMutation.mutate();
       } else {
-        // Remove old reaction and add new one
-        removeReactionMutation.mutate();
-        setTimeout(() => addReactionMutation.mutate(reactionType), 100);
+        // First remove current reaction, then add new one
+        removeReactionMutation.mutate(undefined, {
+          onSuccess: () => {
+            addReactionMutation.mutate(reactionType);
+          }
+        });
       }
     } else {
+      // Add new reaction
       addReactionMutation.mutate(reactionType);
     }
   };

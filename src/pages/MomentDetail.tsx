@@ -24,7 +24,8 @@ import {
   Edit,
   Share2,
   Euro,
-  CreditCard
+  CreditCard,
+  Navigation
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,10 +34,12 @@ import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { MomentStories } from "@/components/moments/MomentStories";
 import { MomentHeader } from "@/components/moments/MomentHeader";
 import { ReactionBar } from "@/components/moments/ReactionBar";
+import { MapPreviewDialog } from "@/components/moments/MapPreviewDialog";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
 import { useMomentTickets } from "@/hooks/useMomentTickets";
+import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -51,9 +54,17 @@ export default function MomentDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [hasUserPaid, setHasUserPaid] = useState(false);
+  const [locationInfo, setLocationInfo] = useState<{
+    street: string;
+    city: string;
+    formatted_address: string;
+  } | null>(null);
+  
+  const { reverseGeocode } = useReverseGeocoding();
 
   // Ticket purchase functionality
   const { hasUserPaidForMoment } = useMomentTickets();
@@ -118,6 +129,21 @@ export default function MomentDetail() {
       supabase.removeChannel(channel);
     };
   }, [moment?.id]);
+
+  // Load location info when moment is loaded
+  useEffect(() => {
+    if (moment?.place?.coordinates?.lat && moment?.place?.coordinates?.lng && !locationInfo) {
+      reverseGeocode(moment.place.coordinates.lat, moment.place.coordinates.lng)
+        .then(result => {
+          if (result) {
+            setLocationInfo(result);
+          }
+        })
+        .catch(error => {
+          console.error('Error getting location info:', error);
+        });
+    }
+  }, [moment, locationInfo, reverseGeocode]);
 
   if (isLoading) {
     return (
@@ -277,13 +303,11 @@ export default function MomentDetail() {
           </div>
         </div>
 
-        {/* Stories Section - only visible to participants */}
-        {(isParticipating || moment.can_edit || (moment.participants && user && moment.participants.includes(user.id))) && (
-          <MomentStories 
-            momentId={moment.id} 
-            canContribute={isParticipating || moment.can_edit || (moment.participants && user && moment.participants.includes(user.id))}
-          />
-        )}
+        {/* Stories Section - Always visible */}
+        <MomentStories 
+          momentId={moment.id} 
+          canContribute={isParticipating || moment.can_edit || (moment.participants && user && moment.participants.includes(user.id))}
+        />
 
         {/* Main Info */}
         <Card>
@@ -325,8 +349,25 @@ export default function MomentDetail() {
               {moment.place && (
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">{moment.place.name}</p>
+                    {locationInfo && (
+                      <div className="space-y-1 mt-1">
+                        <p className="text-sm text-muted-foreground">{locationInfo.street}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-muted-foreground">{locationInfo.city}</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowMapModal(true)}
+                            className="text-xs"
+                          >
+                            <Navigation className="h-3 w-3 mr-1" />
+                            Mappa
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -592,6 +633,20 @@ export default function MomentDetail() {
             moment={moment}
             onSuccess={refreshMoment}
             onDelete={handleDeleteSuccess}
+          />
+        )}
+
+        {/* Map Preview Modal */}
+        {moment?.place?.coordinates?.lat && moment?.place?.coordinates?.lng && (
+          <MapPreviewDialog
+            open={showMapModal}
+            onOpenChange={setShowMapModal}
+            location={{
+              lat: moment.place.coordinates.lat,
+              lng: moment.place.coordinates.lng,
+              name: moment.place.name,
+              address: locationInfo?.formatted_address
+            }}
           />
         )}
       </div>

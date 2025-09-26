@@ -121,6 +121,9 @@ export function useMomentTickets() {
           variant: "default"
         });
       } else if (data?.status === 'unpaid' || data?.status === 'canceled') {
+        // Clear pending session if payment failed/canceled
+        localStorage.removeItem('pending_payment_session');
+        
         toast({
           title: "Pagamento non completato",
           description: "Il pagamento non è stato completato. Puoi riprovare quando vuoi.",

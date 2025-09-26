@@ -164,15 +164,17 @@ export function MomentStories({
       </CardHeader>
       
       <CardContent>
-        {!canContribute && <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+        {!canContribute && (
+          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-start gap-2">
               <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-blue-800">
-                <p className="font-medium">Solo per partecipanti</p>
-                <p>Le stories possono essere condivise solo dai partecipanti al momento per presentarsi agli altri.</p>
+                <p className="font-medium">Storie del momento</p>
+                <p>Puoi vedere le stories del momento appena dichiari di partecipare</p>
               </div>
             </div>
-          </div>}
+          </div>
+        )}
 
         <div className="flex gap-3 overflow-x-auto pb-2">
           {/* Add Story Button */}
