@@ -6,6 +6,7 @@ import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { MapPin, Heart, MessageCircle, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuickInviteModal from "@/components/invites/QuickInviteModal";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   id: string;
@@ -26,9 +27,14 @@ interface UserProfileCardProps {
 
 export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCardProps) {
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const navigate = useNavigate();
 
   const handleInvite = () => {
     setShowInviteModal(true);
+  };
+
+  const handleViewProfile = () => {
+    navigate(`/user/${user.id}`);
   };
 
   // Transform user to NearbyUser format for the modal
@@ -66,9 +72,9 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
 
   return (
     <Card className={cn(
-      "relative bg-background border border-border/50 hover:border-primary/30 transition-all duration-200 hover-scale overflow-hidden",
+      "relative bg-background border border-border/50 hover:border-primary/30 transition-all duration-200 hover-scale overflow-hidden cursor-pointer",
       className
-    )}>
+    )} onClick={handleViewProfile}>
       {/* Availability Badge - positioned at top right */}
       <div className="absolute top-3 right-3 z-10">
         <Badge 
@@ -127,7 +133,10 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
           <Button 
-            onClick={handleInvite}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleInvite();
+            }}
             className="flex-1 bg-background border border-border/30 hover:bg-secondary text-foreground font-medium h-8 text-xs"
           >
             Invita
@@ -136,6 +145,10 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 border-border/50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Handle add friend action
+            }}
           >
             <UserPlus className="h-3 w-3" />
           </Button>

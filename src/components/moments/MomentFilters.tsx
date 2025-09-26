@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { SlidersHorizontal, X, List, MapPin } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AreaIndicator } from "./AreaIndicator";
+import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
 
 interface MomentFiltersProps {
   onFiltersChange: (filters: any) => void;
@@ -15,51 +16,51 @@ interface MomentFiltersProps {
   onViewChange?: (view: 'list' | 'map') => void;
 }
 
-// Category data
-const mainCategories = [
-  { 
-    id: 'sport', 
-    name: 'Sport', 
-    emoji: '⚽',
-    subcategories: ['Calcio', 'Pallavolo', 'Tennis', 'Basket', 'Nuoto', 'Running', 'Padel', 'Golf']
-  },
-  { 
-    id: 'food_drinks', 
-    name: 'Food & Drinks', 
-    emoji: '🍺',
-    subcategories: ['Aperitivo', 'Cena', 'Pranzo', 'Cocktail', 'Wine Tasting', 'Street Food', 'Cooking Class']
-  },
-  { 
-    id: 'cultura', 
-    name: 'Cultura', 
-    emoji: '🏛️',
-    subcategories: ['Musei', 'Mostre', 'Teatro', 'Cinema', 'Concerti', 'Libri', 'Arte', 'Storia']
-  },
-  { 
-    id: 'natura', 
-    name: 'Natura', 
-    emoji: '🌿',
-    subcategories: ['Trekking', 'Parchi', 'Mare', 'Montagna', 'Picnic', 'Birdwatching', 'Giardinaggio']
-  },
-  { 
-    id: 'social', 
-    name: 'Social', 
-    emoji: '🎉',
-    subcategories: ['Feste', 'Karaoke', 'Giochi da Tavolo', 'Speed Dating', 'Networking', 'Meet & Greet']
-  },
-  { 
-    id: 'relax', 
-    name: 'Relax', 
-    emoji: '🧘',
-    subcategories: ['Spa', 'Yoga', 'Meditazione', 'Massage', 'Terme', 'Benessere', 'Lettura']
-  },
-  { 
-    id: 'casa', 
-    name: 'In Casa', 
-    emoji: '🏠',
-    subcategories: ['Film Night', 'Cena a Casa', 'Giochi', 'Studio Together', 'Netflix & Chill']
-  }
-];
+// Category data aligned with unified tags
+const mainCategories = MOMENT_CATEGORIES.map(category => ({
+  id: category.toLowerCase().replace(/\s+/g, '_'),
+  name: category,
+  emoji: getCategoryEmoji(category),
+  subcategories: getSubcategoriesForCategory(category)
+}));
+
+function getCategoryEmoji(category: string): string {
+  const emojiMap: { [key: string]: string } = {
+    'Socializzazione': '🎉',
+    'Sport': '⚽',
+    'Cibo': '🍺',
+    'Cultura': '🏛️',
+    'Outdoor': '🌿',
+    'Relax': '🧘',
+    'Famiglia': '👨‍👩‍👧‍👦',
+    'Lavoro': '💼',
+    'Spontaneo': '✨',
+    'Arte': '🎨',
+    'Musica': '🎵',
+    'Gaming': '🎮',
+    'Viaggio': '✈️',
+    'Shopping': '🛍️',
+    'Fotografia': '📸',
+    'Fitness': '💪',
+    'Studio': '📚',
+    'Tecnologia': '💻',
+    'Benessere': '🧘‍♀️',
+    'Volontariato': '🤝'
+  };
+  return emojiMap[category] || '📍';
+}
+
+function getSubcategoriesForCategory(category: string): string[] {
+  // Simplified subcategories based on main category
+  const subcategoriesMap: { [key: string]: string[] } = {
+    'Sport': ['Calcio', 'Tennis', 'Pallavolo', 'Running', 'Palestra', 'Nuoto'],
+    'Cibo': ['Aperitivo', 'Cena', 'Pranzo', 'Colazione', 'Street Food'],
+    'Cultura': ['Musei', 'Teatro', 'Cinema', 'Concerti', 'Mostre'],
+    'Outdoor': ['Parchi', 'Trekking', 'Mare', 'Montagna', 'Picnic'],
+    'Socializzazione': ['Feste', 'Karaoke', 'Meet & Greet', 'Networking']
+  };
+  return subcategoriesMap[category] || [];
+}
 
 const moods = [
   'Rilassato', 'Energico', 'Creativo', 'Sociale', 

@@ -90,7 +90,7 @@ export default function Inviti() {
     id: user.id,
     name: user.name,
     avatar_url: user.avatar_url || '/placeholder.svg',
-    city: "Città",
+    city: "Milano", // Simplified to avoid build errors - could implement reverse geocoding later
     // Could be extracted from location if needed
     availability: user.distance_km !== null ? "available" : "busy",
     preferred_moments: user.interests || [],

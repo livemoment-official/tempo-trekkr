@@ -34,11 +34,10 @@ export function useAISuggestions() {
       baseSuggestions.push("Weekend speciale", "Gita fuori porta", "Brunch domenicale");
     }
 
-    if (location) {
-      baseSuggestions.push(`Ci vediamo ${location}`, `Incontro ${location}`);
-    }
+    // Remove location-based suggestions as they can be too long
+    // Focus only on activity-based suggestions
 
-    return baseSuggestions.slice(0, 5);
+    return baseSuggestions.slice(0, 3);
   };
 
   const getLocationBasedCategories = (location?: string): string[] => {

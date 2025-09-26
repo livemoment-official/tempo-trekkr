@@ -13,12 +13,16 @@ import { it } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { useEventValidation } from "@/hooks/useEventValidation";
 import { Progress } from "@/components/ui/progress";
+import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
+
 interface EnhancedEventDetailsStepProps {
   data: any;
   onChange: (data: any) => void;
   onNext: () => void;
 }
-const eventCategories = ["Concerto", "Festival", "Teatro", "Arte", "Sport", "Conferenza", "Workshop", "Networking", "Food & Drink", "Danza", "Cinema", "Moda"];
+
+// Use unified categories for events to match moments
+const eventCategories = MOMENT_CATEGORIES;
 const smartPlaceholders = {
   concert: "Es. Concerto di [Artista] - Una serata indimenticabile di musica dal vivo...",
   festival: "Es. Festival estivo con i migliori artisti della scena musicale italiana...",
