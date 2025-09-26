@@ -30,6 +30,11 @@ export interface MomentDetail {
   age_range_min?: number;
   age_range_max?: number;
   ticketing?: any;
+  payment_required?: boolean;
+  price_cents?: number;
+  currency?: string;
+  livemoment_fee_percentage?: number;
+  organizer_fee_percentage?: number;
   created_at: string;
   updated_at: string;
   participant_count: number;
@@ -111,6 +116,11 @@ export function useMomentDetail(momentId: string) {
         age_range_min: momentData.age_range_min,
         age_range_max: momentData.age_range_max,
         ticketing: momentData.ticketing,
+        payment_required: momentData.payment_required,
+        price_cents: momentData.price_cents,
+        currency: momentData.currency,
+        livemoment_fee_percentage: momentData.livemoment_fee_percentage,
+        organizer_fee_percentage: momentData.organizer_fee_percentage,
         created_at: momentData.created_at,
         updated_at: momentData.updated_at,
         participant_count: participantCount || 0,

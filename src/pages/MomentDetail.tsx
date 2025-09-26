@@ -22,7 +22,9 @@ import {
   Info,
   Settings,
   Edit,
-  Share2
+  Share2,
+  Euro,
+  CreditCard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,7 +32,9 @@ import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModa
 import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { MomentStories } from "@/components/moments/MomentStories";
 import { ShareModal } from "@/components/shared/ShareModal";
+import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
+import { useMomentTickets } from "@/hooks/useMomentTickets";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -43,14 +47,31 @@ export default function MomentDetail() {
   const [isParticipating, setIsParticipating] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
+  const [hasUserPaid, setHasUserPaid] = useState(false);
+
+  // Ticket purchase functionality
+  const { hasUserPaidForMoment } = useMomentTickets();
 
   // Fetch real moment data
   const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
 
   // Check if user is host
   const isHost = user && moment && user.id === moment.host_id;
+
+  // Check if user has paid for this moment
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (moment?.id && user && moment.payment_required) {
+        const hasPaid = await hasUserPaidForMoment(moment.id);
+        setHasUserPaid(hasPaid);
+      }
+    };
+    
+    checkPaymentStatus();
+  }, [moment?.id, user, hasUserPaidForMoment, moment?.payment_required]);
 
   // Set up real-time participant count updates
   useEffect(() => {
@@ -154,16 +175,30 @@ export default function MomentDetail() {
   };
 
   const handleParticipate = () => {
+    // Check if moment requires payment
+    if (moment?.payment_required && !hasUserPaid) {
+      setShowTicketModal(true);
+      return;
+    }
+
+    // For free moments or already paid users
     if (!isParticipating) {
       setIsParticipating(true);
       setShowConfirmModal(true);
     } else {
       setIsParticipating(false);
       toast({
-        title: "Partecipazione rimossa",
+        title: "Partecipazione rimossa", 
         description: "Non parteciperai più a questo momento"
       });
     }
+  };
+
+  const formatPrice = (priceInCents: number, currency: string = 'EUR') => {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: currency
+    }).format(priceInCents / 100);
   };
 
   const handleReaction = (reactionType: string) => {
@@ -322,6 +357,21 @@ export default function MomentDetail() {
                   )}
                 </div>
               </div>
+
+              {/* Price Information */}
+              {moment.payment_required && moment.price_cents && moment.price_cents > 0 && (
+                <div className="flex items-center gap-3">
+                  <Euro className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">
+                      {formatPrice(moment.price_cents, moment.currency)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Biglietto richiesto per partecipare
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Separator />
@@ -347,6 +397,26 @@ export default function MomentDetail() {
             )}
           </CardContent>
         </Card>
+
+        {/* Host Ticketing Info Banner */}
+        {isHost && moment.payment_required && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium">Ticketing Attivo</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Prezzo: {formatPrice(moment.price_cents || 0, moment.currency)} 
+                    • Fee Livemoment: {moment.livemoment_fee_percentage || 5}%
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Organizer */}
         <Card>
@@ -414,26 +484,82 @@ export default function MomentDetail() {
             ) : (
               /* Participant Actions */
               <>
-                <Button 
-                  size="lg" 
-                  className="flex-1"
-                  onClick={handleParticipate}
-                  variant={isParticipating ? "outline" : "default"}
-                >
-                  {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
-                </Button>
-                
-                {/* Chat icon - only visible after participation */}
-                {isParticipating && (
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="p-3"
-                    onClick={() => navigate(`/chat/moment/${moment.id}`)}
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                  </Button>
-                )}
+                {(() => {
+                  // Check if sold out
+                  const isSoldOut = moment.max_participants && participantCount >= moment.max_participants;
+                  
+                  // If payment required
+                  if (moment.payment_required) {
+                    if (hasUserPaid) {
+                      return (
+                        <>
+                          <Button 
+                            size="lg" 
+                            className="flex-1"
+                            onClick={() => navigate(`/chat/moment/${moment.id}`)}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Entra in Chat
+                          </Button>
+                          <Badge className="px-3 py-2 bg-green-50 text-green-700 border-green-200">
+                            Pagato
+                          </Badge>
+                        </>
+                      );
+                    } else if (isSoldOut) {
+                      return (
+                        <Button size="lg" className="flex-1" disabled>
+                          Sold Out
+                        </Button>
+                      );
+                    } else {
+                      return (
+                        <Button 
+                          size="lg" 
+                          className="flex-1"
+                          onClick={handleParticipate}
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Acquista Biglietto - {formatPrice(moment.price_cents || 0, moment.currency)}
+                        </Button>
+                      );
+                    }
+                  } else {
+                    // Free moments
+                    if (isSoldOut) {
+                      return (
+                        <Button size="lg" className="flex-1" disabled>
+                          Sold Out
+                        </Button>
+                      );
+                    } else {
+                      return (
+                        <>
+                          <Button 
+                            size="lg" 
+                            className="flex-1"
+                            onClick={handleParticipate}
+                            variant={isParticipating ? "outline" : "default"}
+                          >
+                            {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
+                          </Button>
+                          
+                          {/* Chat icon - only visible after participation */}
+                          {isParticipating && (
+                            <Button
+                              variant="outline"
+                              size="lg"
+                              className="p-3"
+                              onClick={() => navigate(`/chat/moment/${moment.id}`)}
+                            >
+                              <MessageCircle className="h-5 w-5" />
+                            </Button>
+                          )}
+                        </>
+                      );
+                    }
+                  }
+                })()}
               </>
             )}
           </div>
@@ -449,6 +575,27 @@ export default function MomentDetail() {
           momentTitle={moment.title}
           momentId={moment.id}
         />
+
+        {/* Ticket Purchase Modal */}
+        {moment.payment_required && (
+          <TicketPurchaseModal
+            open={showTicketModal}
+            onOpenChange={setShowTicketModal}
+            moment={{
+              id: moment.id,
+              title: moment.title,
+              description: moment.description || '',
+              when_at: moment.when_at || '',
+              place: moment.place,
+              price_cents: moment.price_cents || 0,
+              currency: moment.currency || 'EUR',
+              livemoment_fee_percentage: moment.livemoment_fee_percentage || 5,
+              organizer_fee_percentage: moment.organizer_fee_percentage || 0,
+              participant_count: participantCount,
+              max_participants: moment.max_participants || null
+            }}
+          />
+        )}
 
         {/* Edit Modal */}
         {moment.can_edit && (
