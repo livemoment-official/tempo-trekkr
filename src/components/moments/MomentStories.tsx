@@ -164,12 +164,10 @@ export function MomentStories({
       </CardHeader>
       
       <CardContent>
-        {!canContribute && (
-          <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-r from-muted/50 to-muted/30 backdrop-blur-sm">
+        {!canContribute && <div className="relative overflow-hidden rounded-xl border border-border/40 bg-gradient-to-r from-muted/50 to-muted/30 backdrop-blur-sm">
             {/* Mockup Stories Background */}
             <div className="absolute inset-0 flex gap-3 p-4 opacity-30">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex-shrink-0">
+              {[1, 2, 3, 4].map(i => <div key={i} className="flex-shrink-0">
                   <div className="w-16 h-20 rounded-lg bg-muted-foreground/20 relative overflow-hidden">
                     <div className="absolute inset-2 rounded-md bg-muted-foreground/30" />
                     <div className="absolute -bottom-1 -right-1">
@@ -180,8 +178,7 @@ export function MomentStories({
                     <div className="h-2 w-12 bg-muted-foreground/20 rounded mx-auto" />
                     <div className="h-1.5 w-8 bg-muted-foreground/15 rounded mx-auto" />
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
 
             {/* Content Overlay */}
@@ -193,13 +190,9 @@ export function MomentStories({
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 Puoi vedere le stories del momento appena dichiari di partecipare
               </p>
-              <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                <span>Contenuti condivisi dai partecipanti</span>
-              </div>
+              
             </div>
-          </div>
-        )}
+          </div>}
 
         <div className="flex gap-3 overflow-x-auto pb-2">
           {/* Add Story Button */}
