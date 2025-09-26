@@ -365,7 +365,15 @@ export default function CreaMomento() {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-2">
-              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="p-2"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg font-semibold">Crea il momento</h1>
               {inviteId && <Badge variant="secondary" className="text-xs">
                   Da invito: {invite?.title}
                 </Badge>}
