@@ -48,7 +48,6 @@ export default function CreaMomento() {
     is_public: true,
     max_participants: 8
   });
-  
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [startDate, setStartDate] = useState<Date>();
@@ -59,7 +58,7 @@ export default function CreaMomento() {
   } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   // Check if creating from invite
   const inviteId = searchParams.get('fromInvite');
   const {
@@ -80,21 +79,20 @@ export default function CreaMomento() {
   } = useAISuggestions();
 
   // Fetch invite data if creating from invite
-  const { data: invite } = useQuery({
+  const {
+    data: invite
+  } = useQuery({
     queryKey: ['invite', inviteId],
     queryFn: async () => {
       if (!inviteId) return null;
-      
-      const { data, error } = await supabase
-        .from('invites')
-        .select('*')
-        .eq('id', inviteId)
-        .maybeSingle();
-
+      const {
+        data,
+        error
+      } = await supabase.from('invites').select('*').eq('id', inviteId).maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: !!inviteId,
+    enabled: !!inviteId
   });
 
   // Auto-set location on mount
@@ -117,15 +115,15 @@ export default function CreaMomento() {
           lng: place.lng || place.coordinates?.lng,
           name: place.name || '',
           address: place.address || place.formatted_address || ''
-        } : null,
+        } : null
       }));
-      
+
       // Set date if available
       if (invite.when_at) {
         const inviteDate = new Date(invite.when_at);
         setStartDate(inviteDate);
         setStartTime(format(inviteDate, 'HH:mm'));
-        
+
         // Set end date 4 hours later
         const endDate = new Date(inviteDate.getTime() + 4 * 60 * 60 * 1000);
         setEndDate(endDate);
@@ -327,15 +325,11 @@ export default function CreaMomento() {
 
       // If created from invite, update the invite status
       if (inviteId && invite) {
-        await supabase
-          .from('invites')
-          .update({ 
-            can_be_public: true,
-            status: 'accepted'
-          })
-          .eq('id', inviteId);
+        await supabase.from('invites').update({
+          can_be_public: true,
+          status: 'accepted'
+        }).eq('id', inviteId);
       }
-
       toast({
         title: inviteId ? "Momento creato da invito! 🎉" : "Momento creato!",
         description: inviteId ? "L'invito è stato trasformato in un momento pubblico" : "Il tuo momento è stato pubblicato con successo"
@@ -374,11 +368,9 @@ export default function CreaMomento() {
               <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              {inviteId && (
-                <Badge variant="secondary" className="text-xs">
+              {inviteId && <Badge variant="secondary" className="text-xs">
                   Da invito: {invite?.title}
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
             <Button onClick={handleCreateMoment} disabled={isUploading || !momentData.title.trim()} size="sm">
@@ -406,7 +398,7 @@ export default function CreaMomento() {
             
             {/* Title Suggestions */}
             {titleSuggestions.length > 0 && <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Suggerimenti rapidi:</Label>
+                
                 <div className="flex flex-wrap gap-2">
                   {titleSuggestions.map(suggestion => <Badge key={suggestion} variant="outline" className="cursor-pointer hover:bg-accent" onClick={() => setMomentData(prev => ({
                 ...prev,
