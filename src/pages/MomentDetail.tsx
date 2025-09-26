@@ -25,7 +25,8 @@ import {
   Share2,
   Euro,
   CreditCard,
-  Navigation
+  Navigation,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -566,21 +567,25 @@ export default function MomentDetail() {
                           <Button 
                             size="lg" 
                             className="flex-1"
-                            onClick={handleParticipate}
-                            variant={isParticipating ? "outline" : "default"}
+                            onClick={isParticipating ? () => navigate(`/chat/moment/${moment.id}`) : handleParticipate}
                           >
-                            {isParticipating ? "Annulla Partecipazione" : "Partecipa al Momento"}
+                            {isParticipating ? (
+                              <>
+                                <MessageCircle className="h-4 w-4 mr-2" />
+                                Entra in Chat
+                              </>
+                            ) : "Partecipa al Momento"}
                           </Button>
                           
-                          {/* Chat icon - only visible after participation */}
+                          {/* Cancel participation button - only visible after participation */}
                           {isParticipating && (
                             <Button
                               variant="outline"
                               size="lg"
                               className="p-3"
-                              onClick={() => navigate(`/chat/moment/${moment.id}`)}
+                              onClick={handleParticipate}
                             >
-                              <MessageCircle className="h-5 w-5" />
+                              <X className="h-5 w-5" />
                             </Button>
                           )}
                         </>
