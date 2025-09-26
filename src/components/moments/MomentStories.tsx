@@ -164,8 +164,7 @@ export function MomentStories({
       </CardHeader>
       
       <CardContent>
-        {!canContribute && (
-          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+        {!canContribute && <div className="mb-3 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-start gap-2">
               <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-blue-800">
@@ -173,8 +172,7 @@ export function MomentStories({
                 <p>Puoi vedere le stories del momento appena dichiari di partecipare</p>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
         <div className="flex gap-3 overflow-x-auto pb-2">
           {/* Add Story Button */}
@@ -217,11 +215,7 @@ export function MomentStories({
             </div>)}
         </div>
 
-        {stories.length === 0 && !canContribute && <div className="text-center py-8 text-muted-foreground">
-            <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Nessuna story ancora</p>
-            
-          </div>}
+        {stories.length === 0 && !canContribute}
 
         {stories.length === 0 && canContribute && <div className="text-center py-4 text-muted-foreground">
             <p className="text-sm">Sii il primo a condividere una story!</p>
