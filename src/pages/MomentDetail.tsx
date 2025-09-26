@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModal";
 import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { MomentStories } from "@/components/moments/MomentStories";
+import { MomentHeader } from "@/components/moments/MomentHeader";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
@@ -48,6 +49,7 @@ export default function MomentDetail() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [hasUserPaid, setHasUserPaid] = useState(false);
@@ -216,9 +218,23 @@ export default function MomentDetail() {
         <meta name="description" content={moment.description} />
       </Helmet>
 
-      {/* Header is handled by MinimalLayout */}
+      {/* Moment Header */}
+      <MomentHeader
+        title={moment.title}
+        isHost={moment.can_edit || false}
+        isParticipant={isParticipating}
+        onBack={() => navigate(-1)}
+        onEdit={() => setShowEditModal(true)}
+        onShare={() => setShowShareModal(true)}
+        onDelete={() => handleDeleteSuccess()}
+        onReport={() => toast({ title: "Segnalazione inviata", description: "Grazie per aver segnalato questo momento" })}
+        onLeave={() => {
+          setIsParticipating(false);
+          toast({ title: "Momento abbandonato", description: "Non parteciperai più a questo momento" });
+        }}
+      />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 pt-20 pb-6 space-y-6">{/* Added pt-20 for header spacing */}
         {/* Hero Image with organizer and mood */}
         <div className="relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden rounded-lg">
           {/* Organizer avatar - top left */}
