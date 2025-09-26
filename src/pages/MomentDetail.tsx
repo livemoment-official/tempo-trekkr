@@ -535,8 +535,7 @@ export default function MomentDetail() {
                           className="flex-1"
                           onClick={handleParticipate}
                         >
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Acquista Biglietto - {formatPrice(moment.price_cents || 0, moment.currency)}
+                          Partecipa - {formatPrice(moment.price_cents || 0, moment.currency)}
                         </Button>
                       );
                     }
