@@ -392,7 +392,7 @@ export default function CreaMomento() {
             <Input id="title" value={momentData.title} onChange={e => setMomentData(prev => ({
             ...prev,
             title: e.target.value
-          }))} placeholder="Scrivi il titolo del momento..." className="text-lg font-medium" />
+          }))} placeholder="Scrivi il titolo del momento..." />
             
             {/* Title Suggestions */}
             {titleSuggestions.length > 0 && <div className="space-y-2">
