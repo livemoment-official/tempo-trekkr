@@ -201,14 +201,14 @@ export default function Profilo() {
               </div>
               
               {/* Status badges - mood multi-select */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-start gap-1.5 sm:gap-2 mb-3 flex-wrap">
                 {profile?.mood && profile.mood.split(', ').filter(m => m.length > 0).map((moodItem: string) => (
-                  <Badge key={moodItem} variant="outline">
+                  <Badge key={moodItem} variant="outline" className="text-xs sm:text-sm">
                     {moodItem}
                   </Badge>
                 ))}
                 {profile?.gender && (
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="text-xs sm:text-sm">
                     {profile.gender}
                   </Badge>
                 )}
