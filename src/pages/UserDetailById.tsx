@@ -222,16 +222,7 @@ export default function UserDetailById() {
                   </div>
                   
                   {/* Status badges */}
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      <div className="h-2 w-2 bg-green-500 rounded-full mr-1" />
-                      Online
-                    </Badge>
-                    {profile.mood && <Badge variant="outline">
-                        <Heart className="h-3 w-3 mr-1" />
-                        {profile.mood}
-                      </Badge>}
-                  </div>
+                  
                   
                   {profile.job_title && <p className="text-foreground font-medium">{profile.job_title}</p>}
                   
