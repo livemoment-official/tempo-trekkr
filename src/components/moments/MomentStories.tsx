@@ -25,9 +25,16 @@ export function MomentStories({
   momentId,
   canContribute
 }: MomentStoriesProps) {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { uploadGalleryImage, isUploading } = useImageUpload();
+  const {
+    toast
+  } = useToast();
+  const {
+    user
+  } = useAuth();
+  const {
+    uploadGalleryImage,
+    isUploading
+  } = useImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stories, setStories] = useState<Story[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,24 +43,21 @@ export function MomentStories({
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        const { data, error } = await supabase
-          .from('moment_stories')
-          .select('*')
-          .eq('moment_id', momentId)
-          .order('created_at', { ascending: false });
-
+        const {
+          data,
+          error
+        } = await supabase.from('moment_stories').select('*').eq('moment_id', momentId).order('created_at', {
+          ascending: false
+        });
         if (error) throw error;
 
         // Fetch user profiles for the stories
         if (data && data.length > 0) {
           const userIds = [...new Set(data.map(story => story.user_id))];
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, name, avatar_url')
-            .in('id', userIds);
-
+          const {
+            data: profiles
+          } = await supabase.from('profiles').select('id, name, avatar_url').in('id', userIds);
           const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
           const formattedStories: Story[] = data.map(story => {
             const profile = profileMap.get(story.user_id);
             return {
@@ -66,7 +70,6 @@ export function MomentStories({
               created_at: formatTimeAgo(story.created_at)
             };
           });
-
           setStories(formattedStories);
         } else {
           setStories([]);
@@ -78,15 +81,12 @@ export function MomentStories({
         setIsLoading(false);
       }
     };
-
     fetchStories();
   }, [momentId]);
-
   const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
     if (diffInMinutes < 1) return 'Ora';
     if (diffInMinutes < 60) return `${diffInMinutes} min fa`;
     const diffInHours = Math.floor(diffInMinutes / 60);
@@ -97,7 +97,6 @@ export function MomentStories({
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
     try {
       if (!user) {
         toast({
@@ -107,22 +106,20 @@ export function MomentStories({
         });
         return;
       }
-
       const mediaUrl = await uploadGalleryImage(file);
       if (!mediaUrl) {
         throw new Error("Failed to upload media");
       }
 
       // Save story to database
-      const { error } = await supabase
-        .from('moment_stories')
-        .insert({
-          moment_id: momentId,
-          user_id: user.id,
-          media_url: mediaUrl,
-          media_type: file.type.startsWith('video/') ? 'video' : 'image'
-        });
-
+      const {
+        error
+      } = await supabase.from('moment_stories').insert({
+        moment_id: momentId,
+        user_id: user.id,
+        media_url: mediaUrl,
+        media_type: file.type.startsWith('video/') ? 'video' : 'image'
+      });
       if (error) throw error;
 
       // Add to local state immediately for instant UI update
@@ -134,9 +131,7 @@ export function MomentStories({
         media_type: file.type.startsWith('video/') ? 'video' : 'image',
         created_at: 'Ora'
       };
-      
       setStories(prev => [newStory, ...prev]);
-      
       toast({
         title: "Story aggiunta!",
         description: "Il tuo contenuto è stato condiviso con gli altri partecipanti"
@@ -151,20 +146,16 @@ export function MomentStories({
     }
   };
   if (isLoading) {
-    return (
-      <Card>
+    return <Card>
         <CardContent className="p-4">
           <div className="flex gap-3">
             <div className="w-16 h-20 bg-muted animate-pulse rounded-lg" />
             <div className="w-16 h-20 bg-muted animate-pulse rounded-lg" />
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Camera className="h-4 w-4" />
@@ -173,8 +164,7 @@ export function MomentStories({
       </CardHeader>
       
       <CardContent>
-        {!canContribute && (
-          <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+        {!canContribute && <div className="mb-3 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-start gap-2">
               <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-xs text-blue-800">
@@ -182,48 +172,26 @@ export function MomentStories({
                 <p>Le stories possono essere condivise solo dai partecipanti al momento per presentarsi agli altri.</p>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
         <div className="flex gap-3 overflow-x-auto pb-2">
           {/* Add Story Button */}
-          {canContribute && (
-            <div className="flex-shrink-0">
-              <button 
-                onClick={() => fileInputRef.current?.click()} 
-                className="w-16 h-20 border-2 border-dashed border-primary/25 rounded-lg flex flex-col items-center justify-center text-primary hover:bg-primary/5 transition-colors" 
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <div className="animate-spin w-4 h-4 border border-primary border-t-transparent rounded-full" />
-                ) : (
-                  <>
+          {canContribute && <div className="flex-shrink-0">
+              <button onClick={() => fileInputRef.current?.click()} className="w-16 h-20 border-2 border-dashed border-primary/25 rounded-lg flex flex-col items-center justify-center text-primary hover:bg-primary/5 transition-colors" disabled={isUploading}>
+                {isUploading ? <div className="animate-spin w-4 h-4 border border-primary border-t-transparent rounded-full" /> : <>
                     <Plus className="h-5 w-5 mb-1" />
                     <span className="text-xs">Aggiungi</span>
-                  </>
-                )}
+                  </>}
               </button>
-              <input 
-                ref={fileInputRef} 
-                type="file" 
-                accept="image/*,video/*" 
-                onChange={handleFileSelect} 
-                className="hidden" 
-              />
-            </div>
-          )}
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileSelect} className="hidden" />
+            </div>}
 
           {/* Stories */}
-          {stories.map(story => (
-            <div key={story.id} className="flex-shrink-0">
+          {stories.map(story => <div key={story.id} className="flex-shrink-0">
               <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 border">
-                {story.media_type === 'video' ? (
-                  <div className="w-full h-full flex items-center justify-center">
+                {story.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center">
                     <Play className="h-6 w-6 text-primary" />
-                  </div>
-                ) : (
-                  <img src={story.media_url} alt="Story" className="w-full h-full object-cover" />
-                )}
+                  </div> : <img src={story.media_url} alt="Story" className="w-full h-full object-cover" />}
                 
                 {/* User Avatar */}
                 <div className="absolute -bottom-1 -right-1">
@@ -244,25 +212,19 @@ export function MomentStories({
                   {story.created_at}
                 </p>
               </div>
-            </div>
-          ))}
+            </div>)}
         </div>
 
-        {stories.length === 0 && !canContribute && (
-          <div className="text-center py-8 text-muted-foreground">
+        {stories.length === 0 && !canContribute && <div className="text-center py-8 text-muted-foreground">
             <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Nessuna story ancora</p>
-            <p className="text-xs mt-1">Solo i partecipanti possono condividere stories</p>
-          </div>
-        )}
+            
+          </div>}
 
-        {stories.length === 0 && canContribute && (
-          <div className="text-center py-4 text-muted-foreground">
+        {stories.length === 0 && canContribute && <div className="text-center py-4 text-muted-foreground">
             <p className="text-sm">Sii il primo a condividere una story!</p>
             <p className="text-xs mt-1">Presentati agli altri partecipanti</p>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
