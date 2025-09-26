@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export type ReactionType = 'idea' | 'star_eyes' | 'yellow_heart';
 
@@ -24,15 +25,18 @@ export function useMomentReactions(momentId: string) {
   const queryClient = useQueryClient();
 
   // Get all reactions for a moment
-  const { data: reactions = [], isLoading } = useQuery({
+  const { data: reactions = [], isLoading, error: selectError } = useQuery({
     queryKey: ['moment-reactions', momentId],
     queryFn: async (): Promise<MomentReaction[]> => {
       const { data, error } = await supabase
         .from('moment_reactions')
-        .select('*')
+        .select('id, moment_id, user_id, reaction_type, created_at')
         .eq('moment_id', momentId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reactions:', error);
+        throw error;
+      }
       return (data || []).map(reaction => ({
         ...reaction,
         reaction_type: reaction.reaction_type as ReactionType
@@ -40,6 +44,31 @@ export function useMomentReactions(momentId: string) {
     },
     enabled: !!momentId,
   });
+
+  // Real-time subscription for reactions
+  useEffect(() => {
+    if (!momentId) return;
+
+    const channel = supabase
+      .channel(`moment-reactions:${momentId}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'moment_reactions', 
+          filter: `moment_id=eq.${momentId}` 
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['moment-reactions', momentId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [momentId, queryClient]);
 
   // Get user's reaction for this moment
   const userReaction = reactions.find(r => r.user_id === user?.id);
@@ -52,7 +81,7 @@ export function useMomentReactions(momentId: string) {
     count: reactions.filter(r => r.reaction_type === type).length
   }));
 
-  // Add reaction mutation
+  // Add reaction mutation with optimistic updates
   const addReactionMutation = useMutation({
     mutationFn: async (reactionType: ReactionType) => {
       if (!user?.id) throw new Error('User not authenticated');
@@ -67,49 +96,92 @@ export function useMomentReactions(momentId: string) {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['moment-reactions', momentId] });
-      toast({
-        title: "Reazione aggiunta",
-        description: "La tua reazione è stata aggiunta al momento"
-      });
+    onMutate: async (reactionType: ReactionType) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['moment-reactions', momentId] });
+
+      // Snapshot previous value
+      const previousReactions = queryClient.getQueryData<MomentReaction[]>(['moment-reactions', momentId]);
+
+      // Optimistically update
+      if (user?.id) {
+        const newReaction: MomentReaction = {
+          id: `temp-${Date.now()}`,
+          moment_id: momentId,
+          user_id: user.id,
+          reaction_type: reactionType,
+          created_at: new Date().toISOString()
+        };
+
+        queryClient.setQueryData<MomentReaction[]>(['moment-reactions', momentId], (old = []) => {
+          const filtered = old.filter(r => r.user_id !== user.id);
+          return [...filtered, newReaction];
+        });
+      }
+
+      return { previousReactions };
     },
-    onError: (error) => {
+    onError: (error, reactionType, context) => {
+      // Rollback on error
+      if (context?.previousReactions) {
+        queryClient.setQueryData(['moment-reactions', momentId], context.previousReactions);
+      }
+      
       console.error('Add reaction error:', error);
       toast({
         title: "Errore",
-        description: "Non è stato possibile aggiungere la reazione",
+        description: error instanceof Error ? error.message : "Non è stato possibile aggiungere la reazione",
         variant: "destructive"
       });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['moment-reactions', momentId] });
     }
   });
 
-  // Remove reaction mutation
+  // Remove reaction mutation with optimistic updates
   const removeReactionMutation = useMutation({
-    mutationFn: async () => {
-      if (!user?.id || !userReaction) throw new Error('No reaction to remove');
+    mutationFn: async (reactionId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
 
       const { error } = await supabase
         .from('moment_reactions')
         .delete()
-        .eq('id', userReaction.id);
+        .eq('id', reactionId);
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['moment-reactions', momentId] });
-      toast({
-        title: "Reazione rimossa",
-        description: "La tua reazione è stata rimossa"
-      });
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['moment-reactions', momentId] });
+
+      // Snapshot previous value
+      const previousReactions = queryClient.getQueryData<MomentReaction[]>(['moment-reactions', momentId]);
+
+      // Optimistically update
+      if (user?.id) {
+        queryClient.setQueryData<MomentReaction[]>(['moment-reactions', momentId], (old = []) => 
+          old.filter(r => r.user_id !== user.id)
+        );
+      }
+
+      return { previousReactions };
     },
-    onError: (error) => {
+    onError: (error, reactionId, context) => {
+      // Rollback on error
+      if (context?.previousReactions) {
+        queryClient.setQueryData(['moment-reactions', momentId], context.previousReactions);
+      }
+      
       console.error('Remove reaction error:', error);
       toast({
         title: "Errore",
-        description: "Non è stato possibile rimuovere la reazione",
+        description: error instanceof Error ? error.message : "Non è stato possibile rimuovere la reazione",
         variant: "destructive"
       });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['moment-reactions', momentId] });
     }
   });
 
@@ -120,10 +192,10 @@ export function useMomentReactions(momentId: string) {
     if (userReaction) {
       if (userReaction.reaction_type === reactionType) {
         // Remove current reaction
-        removeReactionMutation.mutate();
+        removeReactionMutation.mutate(userReaction.id);
       } else {
-        // First remove current reaction, then add new one
-        removeReactionMutation.mutate(undefined, {
+        // Replace reaction: remove current, then add new
+        removeReactionMutation.mutate(userReaction.id, {
           onSuccess: () => {
             addReactionMutation.mutate(reactionType);
           }
@@ -140,6 +212,7 @@ export function useMomentReactions(momentId: string) {
     reactionCounts,
     userReaction,
     isLoading,
+    hasError: !!selectError,
     toggleReaction,
     isToggling: addReactionMutation.isPending || removeReactionMutation.isPending,
   };

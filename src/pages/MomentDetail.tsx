@@ -299,7 +299,7 @@ export default function MomentDetail() {
           )}
           
           {/* Reactions */}
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute bottom-4 right-4 z-20 pointer-events-auto">
             <ReactionBar momentId={moment.id} />
           </div>
         </div>
