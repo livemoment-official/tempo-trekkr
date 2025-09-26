@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useMomentTickets } from "@/hooks/useMomentTickets";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 interface TicketPurchaseModalProps {
   open: boolean;
@@ -48,6 +49,7 @@ export function TicketPurchaseModal({
   const { purchaseTicket, checkPendingPayments, isLoading } = useMomentTickets();
   const [feeBreakdown, setFeeBreakdown] = useState<any>(null);
   const [purchaseState, setPurchaseState] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Check for pending payments when modal opens
   useEffect(() => {
@@ -122,7 +124,7 @@ export function TicketPurchaseModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Ticket className="h-5 w-5 text-brand" />
-            Acquista Biglietto
+            Partecipa
           </DialogTitle>
         </DialogHeader>
 
@@ -228,20 +230,22 @@ export function TicketPurchaseModal({
           {/* Purchase Button */}
           <div className="pt-2">
             {!user ? (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground mb-3 text-sm">Devi effettuare l'accesso per acquistare un biglietto</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    onOpenChange(false);
-                    // Navigate to login - assuming you have a router context or navigation function
-                    window.location.href = '/auth';
-                  }}
-                  className="w-full sm:w-auto"
-                >
-                  Accedi
-                </Button>
-              </div>
+              <>
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground mb-3 text-sm">Devi effettuare l'accesso per acquistare un biglietto</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowAuthModal(true)}
+                    className="w-full sm:w-auto"
+                  >
+                    Accedi
+                  </Button>
+                </div>
+                <AuthModal 
+                  open={showAuthModal} 
+                  onOpenChange={(open) => setShowAuthModal(open)} 
+                />
+                </>
             ) : availableSpots === 0 ? (
               <Button disabled className="w-full">
                 Evento Sold Out

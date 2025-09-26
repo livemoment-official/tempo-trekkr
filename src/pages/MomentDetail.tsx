@@ -32,6 +32,7 @@ import { ParticipationConfirmModal } from "@/components/ParticipationConfirmModa
 import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { MomentStories } from "@/components/moments/MomentStories";
 import { MomentHeader } from "@/components/moments/MomentHeader";
+import { ReactionBar } from "@/components/moments/ReactionBar";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
@@ -63,10 +64,21 @@ export default function MomentDetail() {
   // Check if user is host
   const isHost = user && moment && user.id === moment.host_id;
 
-  // Check if user has paid for this moment
+  // Check if user has paid for this moment and handle payment verification
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (moment?.id && user && moment.payment_required) {
+        // Check URL for payment success/failure
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        
+        if (sessionId) {
+          // Verify payment status
+          await useMomentTickets().verifyPayment(sessionId);
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
         const hasPaid = await hasUserPaidForMoment(moment.id);
         setHasUserPaid(hasPaid);
       }
@@ -129,32 +141,7 @@ export default function MomentDetail() {
     );
   }
 
-  // Mock reactions for now - will be implemented later
-  const reactions = {
-    hearts: 24,
-    likes: 18,
-    stars: 15,
-    fire: 8
-  };
-
   // Mock chat messages for now - will be implemented later
-  const chatMessages = [
-    {
-      id: '1',
-      user: moment.host?.name?.split(' ')[0] + ' ' + (moment.host?.name?.split(' ')[1]?.charAt(0) || '') + '.',
-      message: 'Ciao a tutti! Non vedo l\'ora di incontrarvi 🎉',
-      time: '5 min fa',
-      isOrganizer: true
-    }
-  ];
-
-
-  const reactionIcons = {
-    hearts: Heart,
-    likes: ThumbsUp,
-    stars: Star,
-    fire: Flame
-  };
 
   const getCategoryEmoji = (tag: string) => {
     const categories: Record<string, string> = {
@@ -203,9 +190,6 @@ export default function MomentDetail() {
     }).format(priceInCents / 100);
   };
 
-  const handleReaction = (reactionType: string) => {
-    setUserReaction(userReaction === reactionType ? null : reactionType);
-  };
 
   const handleDeleteSuccess = () => {
     navigate('/momenti');
@@ -287,31 +271,19 @@ export default function MomentDetail() {
             </div>
           )}
           
-          {/* Reactions Overlay */}
-          <div className="absolute bottom-4 right-4 flex gap-2">
-            {Object.entries(reactions).map(([type, count]) => {
-              const Icon = reactionIcons[type as keyof typeof reactionIcons];
-              return (
-                <Button
-                  key={type}
-                  size="sm"
-                  variant={userReaction === type ? "default" : "secondary"}
-                  className="bg-background/90 backdrop-blur-sm hover:bg-background"
-                  onClick={() => handleReaction(type)}
-                >
-                  <Icon className="h-4 w-4 mr-1" />
-                  <span>{count}</span>
-                </Button>
-              );
-            })}
+          {/* Reactions */}
+          <div className="absolute bottom-4 right-4">
+            <ReactionBar momentId={moment.id} />
           </div>
         </div>
 
-        {/* Stories Section */}
-        <MomentStories 
-          momentId={moment.id} 
-          canContribute={isParticipating || moment.can_edit}
-        />
+        {/* Stories Section - only visible to participants */}
+        {(isParticipating || moment.can_edit || (moment.participants && user && moment.participants.includes(user.id))) && (
+          <MomentStories 
+            momentId={moment.id} 
+            canContribute={isParticipating || moment.can_edit || (moment.participants && user && moment.participants.includes(user.id))}
+          />
+        )}
 
         {/* Main Info */}
         <Card>

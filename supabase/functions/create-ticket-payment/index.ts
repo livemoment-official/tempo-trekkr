@@ -83,17 +83,16 @@ serve(async (req) => {
       throw new Error("This moment is full");
     }
 
-    // Calculate fees
+    // Calculate fees (fees are included in the base price, not added on top)
     const basePrice = moment.price_cents;
     const livemomentFee = Math.round(basePrice * (moment.livemoment_fee_percentage / 100));
-    const organizerFee = Math.round(basePrice * (moment.organizer_fee_percentage / 100));
-    const totalAmount = basePrice + livemomentFee + organizerFee;
+    const organizerFee = basePrice - livemomentFee;
 
     logStep("Fee calculation", {
       basePrice,
       livemomentFee,
       organizerFee,
-      totalAmount
+      totalAmount: basePrice
     });
 
     // Initialize Stripe
@@ -123,14 +122,14 @@ serve(async (req) => {
                 user_id: user.id
               }
             },
-            unit_amount: totalAmount,
+            unit_amount: basePrice,
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/momenti/${momentId}?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/momenti/${momentId}?payment=cancelled`,
+      success_url: `${req.headers.get("origin")}/moment/${momentId}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/moment/${momentId}?payment=cancelled`,
       metadata: {
         moment_id: momentId,
         user_id: user.id,
@@ -149,7 +148,7 @@ serve(async (req) => {
         user_id: user.id,
         moment_id: momentId,
         stripe_session_id: session.id,
-        amount_cents: totalAmount,
+        amount_cents: basePrice,
         currency: moment.currency,
         livemoment_fee_cents: livemomentFee,
         organizer_fee_cents: organizerFee,
@@ -167,7 +166,7 @@ serve(async (req) => {
         basePrice,
         livemomentFee,
         organizerFee,
-        totalAmount,
+        totalAmount: basePrice,
         currency: moment.currency
       }
     }), {
