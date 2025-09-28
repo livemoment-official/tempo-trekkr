@@ -268,7 +268,7 @@ export default function MomentChat() {
           eventDate={moment.when_at ? new Date(moment.when_at).toLocaleDateString('it-IT') : undefined}
           eventTime={moment.when_at ? new Date(moment.when_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : undefined}
           location={moment.place?.name}
-          participantCount={moment.participants.length}
+          participantCount={moment.participants?.length || 0}
           avatar={
             moment.photos?.[0] && (
               <div className="relative w-10 h-10 overflow-hidden rounded-lg">
@@ -289,7 +289,7 @@ export default function MomentChat() {
           contentTitle={moment.title}
           location={moment.place ? { name: moment.place.name } : undefined}
           when={moment.when_at}
-          participantCount={moment.participants.length}
+          participantCount={moment.participants?.length || 0}
           onShowParticipants={() => setShowParticipants(true)}
         />
 
