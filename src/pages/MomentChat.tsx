@@ -190,7 +190,48 @@ export default function MomentChat() {
     });
   };
 
-  const isUserInMoment = moment && (moment.host_id === user?.id || moment.participants.includes(user?.id || ''));
+  // Check if user has access to the moment chat
+  const [hasAccess, setHasAccess] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!moment?.id || !user) {
+        setHasAccess(false);
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      // Check if user is host
+      if (moment.host_id === user.id) {
+        setHasAccess(true);
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      // Check if user is a confirmed participant
+      const { data: participation } = await supabase
+        .from('moment_participants')
+        .select('id')
+        .eq('moment_id', moment.id)
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+        .maybeSingle();
+
+      setHasAccess(!!participation);
+      setIsCheckingAccess(false);
+    };
+
+    checkAccess();
+  }, [moment?.id, user]);
+
+  if (isCheckingAccess) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -200,11 +241,13 @@ export default function MomentChat() {
     );
   }
 
-  if (!moment || !isUserInMoment) {
+  if (!moment || !hasAccess) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <h1 className="text-xl font-bold mb-2">Momento non trovato</h1>
-        <p className="text-muted-foreground mb-4">Non hai accesso a questo momento.</p>
+        <p className="text-muted-foreground mb-4">
+          {!moment ? "Momento non trovato." : "Non hai accesso a questo momento."}
+        </p>
         <Button onClick={() => navigate('/momenti')}>
           Torna ai Momenti
         </Button>

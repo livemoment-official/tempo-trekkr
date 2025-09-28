@@ -41,6 +41,7 @@ import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { useMomentDetail } from "@/hooks/useMomentDetail";
 import { useMomentTickets } from "@/hooks/useMomentTickets";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
+import { useMoments } from "@/hooks/useMoments";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -50,7 +51,6 @@ export default function MomentDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isParticipating, setIsParticipating] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -59,6 +59,7 @@ export default function MomentDetail() {
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [hasUserPaid, setHasUserPaid] = useState(false);
+  const [isParticipating, setIsParticipating] = useState(false);
   const [locationInfo, setLocationInfo] = useState<{
     street: string;
     city: string;
@@ -72,6 +73,7 @@ export default function MomentDetail() {
 
   // Fetch real moment data
   const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
+  const { joinMoment, leaveMoment } = useMoments();
 
   // Check if user is host
   const isHost = user && moment && user.id === moment.host_id;
@@ -99,37 +101,49 @@ export default function MomentDetail() {
     checkPaymentStatus();
   }, [moment?.id, user, hasUserPaidForMoment, moment?.payment_required]);
 
-  // Set up real-time participant count updates
+  // Check participation status and set up real-time updates
   useEffect(() => {
-    if (!moment?.id) return;
+    if (!moment?.id || !user) return;
 
-    // Initial count
-    setParticipantCount(moment.participant_count || 0);
+    const checkParticipationAndCount = async () => {
+      // Check if user is participating
+      const { data: participation } = await supabase
+        .from('moment_participants')
+        .select('id')
+        .eq('moment_id', moment.id)
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+        .maybeSingle();
+      
+      setIsParticipating(!!participation);
+
+      // Get participant count
+      const { data, error } = await supabase
+        .from('moment_participants')
+        .select('*')
+        .eq('moment_id', moment.id)
+        .eq('status', 'confirmed');
+      
+      if (!error && data) {
+        setParticipantCount(data.length);
+      }
+    };
+
+    checkParticipationAndCount();
 
     // Real-time subscription
     const channel = supabase
       .channel(`moment_participants:${moment.id}`)
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'moment_participants', filter: `moment_id=eq.${moment.id}` },
-        async () => {
-          // Refresh participant count
-          const { data, error } = await supabase
-            .from('moment_participants')
-            .select('*')
-            .eq('moment_id', moment.id)
-            .eq('status', 'confirmed');
-          
-          if (!error && data) {
-            setParticipantCount(data.length);
-          }
-        }
+        () => checkParticipationAndCount()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [moment?.id]);
+  }, [moment?.id, user]);
 
   // Load location info when moment is loaded
   useEffect(() => {
@@ -190,7 +204,9 @@ export default function MomentDetail() {
     return categories[tag.toLowerCase()] || '✨';
   };
 
-  const handleParticipate = () => {
+  const handleParticipate = async () => {
+    if (!moment?.id) return;
+    
     // Check if moment requires payment
     if (moment?.payment_required && !hasUserPaid) {
       setShowTicketModal(true);
@@ -199,14 +215,12 @@ export default function MomentDetail() {
 
     // For free moments or already paid users
     if (!isParticipating) {
-      setIsParticipating(true);
-      setShowConfirmModal(true);
+      const success = await joinMoment(moment.id);
+      if (success) {
+        setShowConfirmModal(true);
+      }
     } else {
-      setIsParticipating(false);
-      toast({
-        title: "Partecipazione rimossa", 
-        description: "Non parteciperai più a questo momento"
-      });
+      await leaveMoment(moment.id);
     }
   };
 
