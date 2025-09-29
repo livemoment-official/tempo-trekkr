@@ -34,6 +34,7 @@ interface ValidationResult {
     details: StepValidation;
     artists: StepValidation;
     venue: StepValidation;
+    media: StepValidation;
     callToAction: StepValidation;
     preview: StepValidation;
   };
@@ -107,7 +108,15 @@ export function useEventValidation(data: EventData): ValidationResult {
       completionPercentage: venueCompletion
     };
 
-    // Step 4: Call to Action validation
+    // Step 4: Media validation (optional but scored)
+    const mediaCompletion = data.photos?.length > 0 ? 100 : 0;
+    const mediaStep: StepValidation = {
+      isValid: true, // Always valid since it's optional
+      errors: [],
+      completionPercentage: mediaCompletion
+    };
+
+    // Step 5: Call to Action validation
     const callToActionErrors: string[] = [];
     let callToActionCompletion = 50; // Base completion for having the step
 
@@ -127,7 +136,7 @@ export function useEventValidation(data: EventData): ValidationResult {
       completionPercentage: callToActionCompletion
     };
 
-    // Step 5: Preview validation
+    // Step 6: Preview validation
     const previewCompletion = 100; // Preview is always complete when reached
     const previewStep: StepValidation = {
       isValid: true,
@@ -136,7 +145,7 @@ export function useEventValidation(data: EventData): ValidationResult {
     };
 
     // Calculate overall validation
-    const stepValidations = [detailsStep, artistsStep, venueStep, callToActionStep, previewStep];
+    const stepValidations = [detailsStep, artistsStep, venueStep, mediaStep, callToActionStep, previewStep];
     const overallCompletion = Math.round(
       stepValidations.reduce((sum, step) => sum + step.completionPercentage, 0) / stepValidations.length
     );
@@ -149,6 +158,7 @@ export function useEventValidation(data: EventData): ValidationResult {
       detailsStep.completionPercentage,
       artistsStep.completionPercentage,
       venueStep.completionPercentage,
+      mediaStep.completionPercentage,
       callToActionStep.completionPercentage,
       previewStep.completionPercentage
     ];
@@ -165,6 +175,7 @@ export function useEventValidation(data: EventData): ValidationResult {
         details: detailsStep,
         artists: artistsStep,
         venue: venueStep,
+        media: mediaStep,
         callToAction: callToActionStep,
         preview: previewStep
       },

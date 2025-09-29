@@ -21,7 +21,7 @@ export default function SmartProgressIndicator({
 }: SmartProgressIndicatorProps) {
   const validation = useEventValidation(eventData);
   const getStepStatus = (stepId: number) => {
-    const stepKey = ['details', 'artists', 'venue', 'callToAction', 'preview'][stepId - 1] as keyof typeof validation.steps;
+    const stepKey = ['details', 'artists', 'venue', 'media', 'callToAction', 'preview'][stepId - 1] as keyof typeof validation.steps;
     const stepValidation = validation.steps[stepKey];
     if (stepValidation.completionPercentage === 100) {
       return {
@@ -49,7 +49,7 @@ export default function SmartProgressIndicator({
 
     // Can go to next step if current step has some progress
     if (stepId === currentStep + 1) {
-      const currentStepKey = ['details', 'artists', 'venue', 'callToAction', 'preview'][currentStep - 1] as keyof typeof validation.steps;
+      const currentStepKey = ['details', 'artists', 'venue', 'media', 'callToAction', 'preview'][currentStep - 1] as keyof typeof validation.steps;
       return validation.steps[currentStepKey]?.completionPercentage > 0;
     }
     return false;
