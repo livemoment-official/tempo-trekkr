@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -55,6 +55,14 @@ const Header = ({
           <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 rounded-full text-sm font-medium text-black border border-gray-200 transition-colors hover-scale press-scale">
             <UserPlus className="h-4 w-4" />
             <span className="hidden sm:inline">Aggiungi Amici</span>
+          </NavLink>
+          
+          {/* My Events with notification */}
+          <NavLink to="/my-events" className="relative">
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
+              <CalendarDays className="h-5 w-5" />
+            </Button>
+            <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
           {/* Agenda with notification */}
