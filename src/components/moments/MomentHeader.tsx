@@ -1,12 +1,12 @@
 import { ArrowLeft, MoreVertical, Edit, Share2, Trash2, Flag, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface MomentHeaderProps {
   title: string;
   isHost: boolean;
   isParticipant: boolean;
-  onBack: () => void;
   onEdit?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -18,18 +18,29 @@ export function MomentHeader({
   title,
   isHost,
   isParticipant,
-  onBack,
   onEdit,
   onShare,
   onDelete,
   onReport,
   onLeave
 }: MomentHeaderProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    // Check if we can go back in history safely
+    // If the user came from outside the app or directly to this page, go to home
+    if (window.history.length <= 1 || document.referrer === '' || !document.referrer.includes(window.location.origin)) {
+      navigate('/');
+    } else {
+      navigate(-1);
+    }
+  };
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="flex items-center justify-between p-4 max-w-md mx-auto">
         <div className="flex items-center gap-3 flex-1">
-          <Button variant="ghost" size="sm" onClick={onBack} className="shrink-0">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           

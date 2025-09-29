@@ -248,7 +248,6 @@ export default function MomentDetail() {
         title={moment.title}
         isHost={moment.can_edit || false}
         isParticipant={isParticipating}
-        onBack={() => navigate(-1)}
         onEdit={() => setShowEditModal(true)}
         onShare={() => setShowShareModal(true)}
         onDelete={() => handleDeleteSuccess()}
