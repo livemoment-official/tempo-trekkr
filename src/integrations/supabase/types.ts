@@ -294,11 +294,13 @@ export type Database = {
       }
       event_venues: {
         Row: {
+          accepted_at: string | null
           contact_message: string | null
           contacted_at: string
           created_at: string
           event_id: string
           id: string
+          priority_order: number | null
           responded_at: string | null
           response_message: string | null
           status: string
@@ -306,11 +308,13 @@ export type Database = {
           venue_id: string
         }
         Insert: {
+          accepted_at?: string | null
           contact_message?: string | null
           contacted_at?: string
           created_at?: string
           event_id: string
           id?: string
+          priority_order?: number | null
           responded_at?: string | null
           response_message?: string | null
           status?: string
@@ -318,11 +322,13 @@ export type Database = {
           venue_id: string
         }
         Update: {
+          accepted_at?: string | null
           contact_message?: string | null
           contacted_at?: string
           created_at?: string
           event_id?: string
           id?: string
+          priority_order?: number | null
           responded_at?: string | null
           response_message?: string | null
           status?: string
@@ -348,6 +354,7 @@ export type Database = {
       }
       events: {
         Row: {
+          advanced_ticketing: Json | null
           age_range_max: number | null
           age_range_min: number | null
           capacity: number | null
@@ -359,6 +366,7 @@ export type Database = {
           host_id: string | null
           id: string
           max_participants: number | null
+          max_venues: number | null
           mood_tag: string | null
           photos: string[] | null
           place: Json | null
@@ -370,6 +378,7 @@ export type Database = {
           when_at: string | null
         }
         Insert: {
+          advanced_ticketing?: Json | null
           age_range_max?: number | null
           age_range_min?: number | null
           capacity?: number | null
@@ -381,6 +390,7 @@ export type Database = {
           host_id?: string | null
           id?: string
           max_participants?: number | null
+          max_venues?: number | null
           mood_tag?: string | null
           photos?: string[] | null
           place?: Json | null
@@ -392,6 +402,7 @@ export type Database = {
           when_at?: string | null
         }
         Update: {
+          advanced_ticketing?: Json | null
           age_range_max?: number | null
           age_range_min?: number | null
           capacity?: number | null
@@ -403,6 +414,7 @@ export type Database = {
           host_id?: string | null
           id?: string
           max_participants?: number | null
+          max_venues?: number | null
           mood_tag?: string | null
           photos?: string[] | null
           place?: Json | null
