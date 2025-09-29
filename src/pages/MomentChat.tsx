@@ -89,20 +89,39 @@ export default function MomentChat() {
     if (!momentId) return;
 
     try {
-      const { data, error } = await supabase
+      // Load moment data without unsafe foreign key joins
+      const { data: momentData, error: momentError } = await supabase
         .from('moments')
-        .select(`
-          *,
-          host:profiles!moments_host_id_fkey(name, avatar_url)
-        `)
+        .select('*')
         .eq('id', momentId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (momentError) throw momentError;
+      
+      if (!momentData) {
+        toast({
+          title: "Errore",
+          description: "Momento non trovato.",
+          variant: "destructive",
+        });
+        navigate('/momenti');
+        return;
+      }
+
+      // Load host profile separately
+      const { data: hostData, error: hostError } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .eq('id', momentData.host_id)
+        .single();
+
+      if (hostError) {
+        console.error('Error loading host profile:', hostError);
+      }
 
       setMoment({
-        ...data,
-        host: Array.isArray(data.host) ? data.host[0] : data.host
+        ...momentData,
+        host: hostData || { id: momentData.host_id, name: 'Utente', avatar_url: null }
       });
     } catch (error) {
       console.error('Error loading moment:', error);

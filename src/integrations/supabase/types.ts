@@ -1649,6 +1649,10 @@ export type Database = {
         Args: { moment_id: string }
         Returns: boolean
       }
+      join_moment: {
+        Args: { target_moment_id: string }
+        Returns: string
+      }
       migrate_existing_moment_participants: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -421,86 +421,75 @@ export function useMoments() {
 
   // Join moment
   const joinMoment = useCallback(async (momentId: string) => {
-    if (!user) return false;
-
     try {
-      // Check if user is already a participant
-      const { data: existingParticipation } = await supabase
-        .from('moment_participants')
-        .select('id')
-        .eq('moment_id', momentId)
-        .eq('user_id', user.id)
-        .eq('status', 'confirmed')
-        .maybeSingle();
-
-      if (existingParticipation) {
+      if (!user) {
         toast({
-          title: "Già partecipante",
-          description: "Sei già registrato a questo momento"
+          title: "Accesso richiesto",
+          description: "Devi effettuare l'accesso per partecipare.",
+          variant: "destructive",
         });
         return false;
       }
 
-      // Check capacity
-      const { data: moment, error: fetchError } = await supabase
-        .from('moments')
-        .select('max_participants')
-        .eq('id', momentId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Get current participant count
-      const { count: currentCount } = await supabase
-        .from('moment_participants')
-        .select('*', { count: 'exact', head: true })
-        .eq('moment_id', momentId)
-        .eq('status', 'confirmed');
-
-      if (moment.max_participants && currentCount && currentCount >= moment.max_participants) {
-        toast({
-          title: "Momento completo",
-          description: "Questo momento ha raggiunto il numero massimo di partecipanti",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      // Add user as participant
-      const { error } = await supabase
-        .from('moment_participants')
-        .insert({
-          moment_id: momentId,
-          user_id: user.id,
-          status: 'confirmed',
-          payment_status: 'free'
-        });
+      // Use the secure RPC function to join the moment
+      const { data: result, error } = await supabase.rpc('join_moment', {
+        target_moment_id: momentId
+      });
 
       if (error) throw error;
 
-      // Update local state - the trigger will sync the participants array
-      setMoments(prev => prev.map(m => 
-        m.id === momentId 
-          ? { 
-              ...m, 
-              participants: [...m.participants, user.id],
-              participant_count: m.participant_count + 1
-            }
-          : m
-      ));
-
-      toast({
-        title: "Partecipazione confermata!",
-        description: "Ti sei unito al momento con successo"
-      });
-
-      return true;
+      switch (result) {
+        case 'joined':
+          // Update local state - the trigger will sync the participants array
+          setMoments(prev => prev.map(m => 
+            m.id === momentId 
+              ? { 
+                  ...m, 
+                  participants: [...(m.participants || []), user.id],
+                  participant_count: (m.participant_count || 0) + 1
+                }
+              : m
+          ));
+          
+          toast({
+            title: "Successo!",
+            description: "Ti sei unito al momento con successo!",
+          });
+          return true;
+        case 'already_joined':
+          toast({
+            title: "Già partecipante",
+            description: "Stai già partecipando a questo momento.",
+          });
+          return false;
+        case 'full':
+          toast({
+            title: "Momento completo",
+            description: "Questo momento ha raggiunto il numero massimo di partecipanti.",
+            variant: "destructive",
+          });
+          return false;
+        case 'not_found':
+          toast({
+            title: "Errore",
+            description: "Momento non trovato.",
+            variant: "destructive",
+          });
+          return false;
+        default:
+          toast({
+            title: "Errore",
+            description: "Risposta inaspettata dal server.",
+            variant: "destructive",
+          });
+          return false;
+      }
     } catch (error) {
       console.error('Error joining moment:', error);
       toast({
         title: "Errore",
-        description: "Errore nell'unirsi al momento",
-        variant: "destructive"
+        description: "Non è stato possibile partecipare al momento. Riprova più tardi.",
+        variant: "destructive",
       });
       return false;
     }
