@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, User, Plus, Loader2 } from "lucide-react";
-import { useArtists } from "@/hooks/useArtists";
+import { Switch } from "@/components/ui/switch";
+import { Search, User, Plus, Loader2, Filter } from "lucide-react";
+import { useQualityArtists } from "@/hooks/useQualityArtists";
+import { ProfileQualityBadge, CompletenessBar } from "@/components/ui/profile-quality-badge";
 interface ArtistSelectionStepProps {
   data: any;
   onChange: (data: any) => void;
@@ -18,10 +20,18 @@ export default function ArtistSelectionStep({
   onNext
 }: ArtistSelectionStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [onlyComplete, setOnlyComplete] = useState(true);
+  const [onlyVerified, setOnlyVerified] = useState(false);
+  const [minScore, setMinScore] = useState(50);
+  
   const {
     data: artists,
     isLoading
-  } = useArtists();
+  } = useQualityArtists({
+    onlyComplete,
+    onlyVerified,
+    minCompletenessScore: minScore
+  });
   const filteredArtists = artists?.filter(artist => artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase())) || [];
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -37,7 +47,43 @@ export default function ArtistSelectionStep({
     return artists?.filter(artist => data.selectedArtists.includes(artist.id)) || [];
   };
   return <div className="space-y-6">
-      
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Filtri Qualità</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="complete-only" className="text-sm">Solo profili completi</Label>
+            <Switch 
+              id="complete-only"
+              checked={onlyComplete} 
+              onCheckedChange={setOnlyComplete} 
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="verified-only" className="text-sm">Solo verificati</Label>
+            <Switch 
+              id="verified-only"
+              checked={onlyVerified} 
+              onCheckedChange={setOnlyVerified} 
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Punteggio minimo: {minScore}%</Label>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              step="10"
+              value={minScore}
+              onChange={(e) => setMinScore(Number(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* Search */}
       <div className="relative">
@@ -64,15 +110,24 @@ export default function ArtistSelectionStep({
                           {artist.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">{artist.name}</span>
                           {artist.stage_name && <span className="text-sm text-muted-foreground">({artist.stage_name})</span>}
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <ProfileQualityBadge 
+                            completenessScore={artist.completeness_score || 0}
+                            isComplete={artist.is_complete || false}
+                            isVerified={artist.verified}
+                            size="sm"
+                          />
                           {artist.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
-                        <p className="text-sm text-muted-foreground">{artist.artist_type}</p>
-                        <div className="flex gap-1 mt-1">
-                          {artist.genres?.map(genre => <Badge key={genre} variant="outline" className="text-xs">
+                        <p className="text-sm text-muted-foreground mb-2">{artist.artist_type}</p>
+                        <CompletenessBar score={artist.completeness_score || 0} className="mb-2" />
+                        <div className="flex gap-1 flex-wrap">
+                          {artist.genres?.slice(0, 3).map(genre => <Badge key={genre} variant="outline" className="text-xs">
                               {genre}
                             </Badge>)}
                         </div>
@@ -101,13 +156,22 @@ export default function ArtistSelectionStep({
                           {artist.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">{artist.name}</span>
                           {artist.stage_name && <span className="text-sm text-muted-foreground">({artist.stage_name})</span>}
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <ProfileQualityBadge 
+                            completenessScore={artist.completeness_score || 0}
+                            isComplete={artist.is_complete || false}
+                            isVerified={artist.verified}
+                            size="sm"
+                          />
                           {artist.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">{artist.artist_type}</p>
+                        <CompletenessBar score={artist.completeness_score || 0} className="mb-2" />
                         {artist.bio && <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{artist.bio}</p>}
                         <div className="flex gap-1 flex-wrap">
                           {artist.genres?.slice(0, 3).map(genre => <Badge key={genre} variant="outline" className="text-xs">
