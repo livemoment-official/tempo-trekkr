@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import EnhancedEventDetailsStep from "@/components/create/event/EnhancedEventDetailsStep";
 import ArtistSelectionStep from "@/components/create/event/ArtistSelectionStep";
 import VenueSelectionStep from "@/components/create/event/VenueSelectionStep";
+import EventPhotoUploadStep from "@/components/create/event/EventPhotoUploadStep";
 import CallToActionStep from "@/components/create/event/CallToActionStep";
 import EventPreviewStep from "@/components/create/event/EventPreviewStep";
 import SmartProgressIndicator from "@/components/create/event/SmartProgressIndicator";
@@ -27,6 +28,7 @@ interface EventData {
   };
   capacity: number | null;
   ticketing: any;
+  advancedTicketing?: any;
   selectedArtists: string[];
   selectedVenues: string[];
   callToAction: {
@@ -80,10 +82,14 @@ export default function CreaEvento() {
     component: VenueSelectionStep
   }, {
     id: 4,
+    title: "Media",
+    component: EventPhotoUploadStep
+  }, {
+    id: 5,
     title: "Call-to-Action",
     component: CallToActionStep
   }, {
-    id: 5,
+    id: 6,
     title: "Anteprima",
     component: EventPreviewStep
   }];
@@ -196,8 +202,8 @@ export default function CreaEvento() {
                       title: eventData.title,
                       description: eventData.description,
                       host_id: user.id,
-                      // CRITICAL: Add missing host_id
                       when_at: eventData.date && eventData.startTime ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString() : null,
+                      end_at: eventData.date && eventData.endTime ? new Date(`${eventData.date.toDateString()} ${eventData.endTime}`).toISOString() : null,
                       place: eventData.location.coordinates ? {
                         name: eventData.location.name,
                         address: eventData.location.name,
@@ -209,9 +215,11 @@ export default function CreaEvento() {
                         }
                       } : null,
                       max_participants: eventData.capacity,
+                      max_venues: 3,
                       tags: eventData.tags,
                       photos: eventData.photos,
                       ticketing: eventData.ticketing,
+                      advanced_ticketing: eventData.advancedTicketing || null,
                       discovery_on: true
                     };
                     const {
@@ -235,10 +243,11 @@ export default function CreaEvento() {
                     if (eventData.selectedVenues.length > 0) {
                       const {
                         error: venueError
-                      } = await supabase.from('event_venues').insert(eventData.selectedVenues.map(venueId => ({
+                      } = await supabase.from('event_venues').insert(eventData.selectedVenues.map((venueId, index) => ({
                         event_id: data.id,
                         venue_id: venueId,
                         status: 'contacted',
+                        priority_order: index + 1,
                         contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`
                       })));
                       if (venueError) console.error('Error saving venue contacts:', venueError);

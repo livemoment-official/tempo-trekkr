@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useEventValidation } from "@/hooks/useEventValidation";
 import { Progress } from "@/components/ui/progress";
 import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
+import { AdvancedTicketingSystem } from "./AdvancedTicketingSystem";
 
 interface EnhancedEventDetailsStepProps {
   data: any;
@@ -206,23 +207,6 @@ export default function EnhancedEventDetailsStep({
           })} placeholder={getSuggestedCapacity() || "Es. 100"} className="transition-all focus:border-primary" min="1" />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Switch id="ticketing" checked={hasTicketing} onCheckedChange={setHasTicketing} />
-              <Label htmlFor="ticketing" className="flex items-center gap-2">
-                <Euro className="h-4 w-4" />
-                Evento a pagamento
-              </Label>
-            </div>
-            
-            {hasTicketing && <Input type="number" value={data.ticketing?.price || ""} onChange={e => onChange({
-            ...data,
-            ticketing: {
-              ...data.ticketing,
-              price: parseFloat(e.target.value) || 0
-            }
-          })} placeholder="Es. 25.00" className="transition-all focus:border-primary" min="0" step="0.01" />}
-          </div>
         </div>
 
         {/* Date and Time with validation */}
@@ -275,6 +259,13 @@ export default function EnhancedEventDetailsStep({
           </Label>
           <LocationSearchInput value={data.location.name} onChange={handleLocationChange} placeholder="Dove si svolgerà l'evento..." />
         </div>
+
+        {/* Advanced Ticketing */}
+        <AdvancedTicketingSystem
+          data={data.advancedTicketing || { enabled: false, currency: 'EUR', phases: [] }}
+          onChange={(advancedTicketing) => onChange({ ...data, advancedTicketing })}
+          maxParticipants={data.capacity}
+        />
       </form>
     </div>;
 }

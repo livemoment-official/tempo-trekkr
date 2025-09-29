@@ -36,12 +36,28 @@ export default function VenueSelectionStep({
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
+  const maxVenues = 3; // Limite massimo venues
+
   const toggleVenueSelection = (venueId: string) => {
-    const selectedVenues = data.selectedVenues.includes(venueId) ? data.selectedVenues.filter((id: string) => id !== venueId) : [...data.selectedVenues, venueId];
-    onChange({
-      ...data,
-      selectedVenues
-    });
+    const isSelected = data.selectedVenues.includes(venueId);
+    
+    if (isSelected) {
+      // Rimuovi venue
+      const selectedVenues = data.selectedVenues.filter((id: string) => id !== venueId);
+      onChange({
+        ...data,
+        selectedVenues
+      });
+    } else {
+      // Aggiungi venue se non supera il limite
+      if (data.selectedVenues.length < maxVenues) {
+        const selectedVenues = [...data.selectedVenues, venueId];
+        onChange({
+          ...data,
+          selectedVenues
+        });
+      }
+    }
   };
   const getSelectedVenues = () => {
     return venues?.filter(venue => data.selectedVenues.includes(venue.id)) || [];
@@ -98,21 +114,32 @@ export default function VenueSelectionStep({
 
       {/* Selected venues */}
       {data.selectedVenues.length > 0 && !isLoading && <div>
-          <h4 className="font-medium mb-3">Location selezionate ({data.selectedVenues.length})</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium">Location selezionate ({data.selectedVenues.length}/{maxVenues})</h4>
+            <div className="text-sm text-muted-foreground">
+              Prima che accetta vince!
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-3">
-            {getSelectedVenues().map(venue => <Card key={venue.id} className="border-primary/50">
+            {getSelectedVenues().map((venue, index) => <Card key={venue.id} className="border-primary/50 relative">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} alt={venue.name} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground rounded-lg">
-                          <MapPin className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="relative">
+                        <Avatar className="w-12 h-12">
+                          <AvatarImage src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} alt={venue.name} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground rounded-lg">
+                            <MapPin className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -top-2 -left-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{venue.name}</span>
+                          <span className="font-medium truncate">{venue.name}</span>
+                          {index === 0 && <Badge variant="default" className="text-xs">Priorità Alta</Badge>}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <ProfileQualityBadge 
@@ -124,10 +151,10 @@ export default function VenueSelectionStep({
                           {venue.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                          <span>{venue.venue_type}</span>
+                          <span className="truncate">{venue.venue_type}</span>
                           {venue.capacity && <>
-                              <Users className="h-3 w-3 ml-2" />
-                              <span>{venue.capacity} persone</span>
+                              <Users className="h-3 w-3 ml-2 flex-shrink-0" />
+                              <span className="flex-shrink-0">{venue.capacity} persone</span>
                             </>}
                         </div>
                         <CompletenessBar score={venue.completeness_score || 0} className="mb-2" />
@@ -138,9 +165,16 @@ export default function VenueSelectionStep({
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => toggleVenueSelection(venue.id)}>
-                      Rimuovi
-                    </Button>
+                    <div className="flex sm:flex-col gap-2 sm:items-end">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => toggleVenueSelection(venue.id)}
+                        className="min-w-[80px]"
+                      >
+                        Rimuovi
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>)}
@@ -149,21 +183,33 @@ export default function VenueSelectionStep({
 
       {/* Available venues */}
       {!isLoading && <div>
-        <h4 className="font-medium mb-3">Location disponibili</h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-medium">Location disponibili</h4>
+          {data.selectedVenues.length >= maxVenues && (
+            <Badge variant="secondary" className="text-xs">
+              Limite raggiunto ({maxVenues})
+            </Badge>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-3">
-          {filteredVenues.filter(venue => !data.selectedVenues.includes(venue.id)).map(venue => <Card key={venue.id} className="hover:shadow-md transition-shadow cursor-pointer">
+          {filteredVenues.filter(venue => !data.selectedVenues.includes(venue.id)).map(venue => <Card 
+              key={venue.id} 
+              className={`hover:shadow-md transition-all cursor-pointer ${
+                data.selectedVenues.length >= maxVenues ? 'opacity-50' : ''
+              }`}
+            >
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-10 h-10">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <Avatar className="w-12 h-12 flex-shrink-0">
                         <AvatarImage src={(venue.images as string[] | null)?.[0] || '/livemoment-mascot.png'} alt={venue.name} />
                         <AvatarFallback className="bg-gradient-to-br from-muted to-muted/70 text-muted-foreground rounded-lg">
                           <MapPin className="h-5 w-5" />
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{venue.name}</span>
+                          <span className="font-medium truncate">{venue.name}</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <ProfileQualityBadge 
@@ -175,14 +221,14 @@ export default function VenueSelectionStep({
                           {venue.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                          <span>{venue.venue_type}</span>
+                          <span className="truncate">{venue.venue_type}</span>
                           {venue.capacity && <>
-                              <Users className="h-3 w-3 ml-2" />
-                              <span>{venue.capacity} persone</span>
+                              <Users className="h-3 w-3 ml-2 flex-shrink-0" />
+                              <span className="flex-shrink-0">{venue.capacity} persone</span>
                             </>}
                         </div>
                         <CompletenessBar score={venue.completeness_score || 0} className="mb-2" />
-                        {venue.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{venue.description}</p>}
+                        {venue.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{venue.description}</p>}
                         <div className="flex flex-wrap gap-1">
                           {venue.amenities?.slice(0, 3).map(amenity => <Badge key={amenity} variant="outline" className="text-xs">
                               {amenity}
@@ -190,9 +236,18 @@ export default function VenueSelectionStep({
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => toggleVenueSelection(venue.id)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    <div className="flex sm:flex-col gap-2 sm:items-end">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => toggleVenueSelection(venue.id)}
+                        disabled={data.selectedVenues.length >= maxVenues}
+                        className="min-w-[80px]"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Aggiungi
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>)}

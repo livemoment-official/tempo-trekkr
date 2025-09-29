@@ -133,9 +133,16 @@ export default function ArtistSelectionStep({
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => toggleArtistSelection(artist.id)}>
-                      Rimuovi
-                    </Button>
+                    <div className="flex sm:flex-col gap-2 sm:items-end">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => toggleArtistSelection(artist.id)}
+                        className="min-w-[80px]"
+                      >
+                        Rimuovi
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>)}
@@ -180,9 +187,17 @@ export default function ArtistSelectionStep({
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => toggleArtistSelection(artist.id)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    <div className="flex sm:flex-col gap-2 sm:items-end">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => toggleArtistSelection(artist.id)}
+                        className="min-w-[80px]"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Aggiungi
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>)}
