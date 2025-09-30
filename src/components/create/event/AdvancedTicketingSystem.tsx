@@ -139,5 +139,197 @@ export const AdvancedTicketingSystem = ({
     return total;
   };
   const currencySymbol = ticketingData.currency === 'EUR' ? '€' : ticketingData.currency === 'USD' ? '$' : '£';
-  return;
+  
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Sistema di Ticketing Avanzato</CardTitle>
+              <CardDescription>Configura fasi di vendita e divisione ricavi</CardDescription>
+            </div>
+            <Switch
+              checked={ticketingData.enabled}
+              onCheckedChange={(enabled) => updateData({ enabled })}
+            />
+          </div>
+        </CardHeader>
+
+        {ticketingData.enabled && (
+          <CardContent className="space-y-6">
+            {/* Currency Selection */}
+            <div className="space-y-2">
+              <Label>Valuta</Label>
+              <Select
+                value={ticketingData.currency}
+                onValueChange={(value: 'EUR' | 'USD' | 'GBP') => updateData({ currency: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                  <SelectItem value="USD">USD ($)</SelectItem>
+                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Separator />
+
+            {/* Ticket Phases */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">Fasi di Vendita</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Crea diverse fasi con prezzi e disponibilità
+                  </p>
+                </div>
+                <Button onClick={addPhase} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Aggiungi Fase
+                </Button>
+              </div>
+
+              {ticketingData.phases.map((phase, index) => (
+                <Card key={index}>
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Input
+                        value={phase.name}
+                        onChange={(e) => updatePhase(index, { name: e.target.value })}
+                        placeholder="Nome fase"
+                        className="max-w-xs"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePhase(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Prezzo ({currencySymbol})</Label>
+                        <Input
+                          type="number"
+                          value={phase.price}
+                          onChange={(e) => updatePhase(index, { price: Number(e.target.value) })}
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Biglietti Disponibili</Label>
+                        <Input
+                          type="number"
+                          value={phase.maxTickets}
+                          onChange={(e) => updatePhase(index, { maxTickets: Number(e.target.value) })}
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Artist Payment Splits */}
+            {selectedArtists.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold">Divisione Ricavi Artisti</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Configura come dividere i ricavi con gli artisti
+                    </p>
+                  </div>
+
+                  {selectedArtists.map((artist) => {
+                    const split = ticketingData.artistSplits?.find(s => s.artistId === artist.id);
+                    if (!split) return null;
+
+                    return (
+                      <Card key={artist.id}>
+                        <CardContent className="pt-6 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={artist.avatar_url} />
+                              <AvatarFallback>{artist.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{artist.stage_name || artist.name}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label>Tipo Pagamento</Label>
+                              <Select
+                                value={split.paymentType}
+                                onValueChange={(value: 'none' | 'percentage' | 'fixed') =>
+                                  updateArtistSplit(artist.id, { paymentType: value })
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Nessun Pagamento</SelectItem>
+                                  <SelectItem value="percentage">Percentuale</SelectItem>
+                                  <SelectItem value="fixed">Importo Fisso</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {split.paymentType === 'percentage' && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <Label>Percentuale</Label>
+                                  <span className="text-sm font-medium">{split.percentage}%</span>
+                                </div>
+                                <Slider
+                                  value={[split.percentage]}
+                                  onValueChange={([value]) =>
+                                    updateArtistSplit(artist.id, { percentage: value })
+                                  }
+                                  min={0}
+                                  max={100 - LIVEMOMENT_FEE}
+                                  step={1}
+                                />
+                              </div>
+                            )}
+
+                            {split.paymentType === 'fixed' && (
+                              <div className="space-y-2">
+                                <Label>Importo Fisso ({currencySymbol})</Label>
+                                <Input
+                                  type="number"
+                                  value={split.fixedAmount}
+                                  onChange={(e) =>
+                                    updateArtistSplit(artist.id, { fixedAmount: Number(e.target.value) })
+                                  }
+                                  min="0"
+                                  step="0.01"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    </div>
+  );
 };

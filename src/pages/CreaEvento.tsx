@@ -178,7 +178,7 @@ export default function CreaEvento() {
       </header>
 
       {/* Main Content */}
-      <main className="container py-6">
+      <main className="container py-6 pb-32">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader>
@@ -188,28 +188,42 @@ export default function CreaEvento() {
             
             <CardContent className="space-y-6">
               {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={setEventData} onNext={handleNext} />}
+            </CardContent>
+          </Card>
+        </div>
+      </main>
 
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between pt-6 border-t">
-                <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Indietro
-                </Button>
-                
-                <div className="flex items-center gap-2">
-                  
-                  
-                  {currentStep < steps.length ? <Button onClick={handleNext} disabled={!canProceedToNext()}>
-                      Avanti
-                      <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button> : <Button onClick={async () => {
+      {/* Fixed Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
+        <div className="container py-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            {/* Back Button - Icon Only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+
+            {/* Next/Publish Button - Prominent */}
+            {currentStep < steps.length ? (
+              <Button
+                onClick={handleNext}
+                disabled={!canProceedToNext()}
+                className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold h-12"
+              >
+                Avanti
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                onClick={async () => {
                   try {
                     // Get current user first
-                    const {
-                      data: {
-                        user
-                      }
-                    } = await supabase.auth.getUser();
+                    const { data: { user } } = await supabase.auth.getUser();
                     if (!user) {
                       throw new Error('Utente non autenticato');
                     }
@@ -219,54 +233,70 @@ export default function CreaEvento() {
                       title: eventData.title,
                       description: eventData.description,
                       host_id: user.id,
-                      when_at: eventData.date && eventData.startTime ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString() : null,
-                      end_at: eventData.date && eventData.endTime ? new Date(`${eventData.date.toDateString()} ${eventData.endTime}`).toISOString() : null,
-                      place: eventData.location.coordinates ? {
-                        name: eventData.location.name,
-                        address: eventData.location.name,
-                        lat: eventData.location.coordinates[1],
-                        lng: eventData.location.coordinates[0],
-                        coordinates: {
-                          lat: eventData.location.coordinates[1],
-                          lng: eventData.location.coordinates[0]
-                        }
-                      } : null,
+                      when_at: eventData.date && eventData.startTime
+                        ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
+                        : null,
+                      end_at: eventData.date && eventData.endTime
+                        ? new Date(`${eventData.date.toDateString()} ${eventData.endTime}`).toISOString()
+                        : null,
+                      place: eventData.location.coordinates
+                        ? {
+                            name: eventData.location.name,
+                            address: eventData.location.name,
+                            lat: eventData.location.coordinates[1],
+                            lng: eventData.location.coordinates[0],
+                            coordinates: {
+                              lat: eventData.location.coordinates[1],
+                              lng: eventData.location.coordinates[0],
+                            },
+                          }
+                        : null,
                       max_participants: eventData.capacity,
                       max_venues: 3,
                       tags: eventData.tags,
                       photos: eventData.photos,
                       ticketing: eventData.ticketing,
                       advanced_ticketing: eventData.advancedTicketing || null,
-                      discovery_on: true
+                      discovery_on: true,
                     };
-                    const {
-                      data,
-                      error
-                    } = await supabase.from('events').insert(eventToSave).select().single();
+
+                    const { data, error } = await supabase
+                      .from('events')
+                      .insert(eventToSave)
+                      .select()
+                      .single();
+
                     if (error) throw error;
 
                     // Save artist and venue selections
                     if (eventData.selectedArtists.length > 0) {
-                      const {
-                        error: artistError
-                      } = await supabase.from('event_artists').insert(eventData.selectedArtists.map(artistId => ({
-                        event_id: data.id,
-                        artist_id: artistId,
-                        status: 'invited',
-                        invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`
-                      })));
+                      const { error: artistError } = await supabase
+                        .from('event_artists')
+                        .insert(
+                          eventData.selectedArtists.map((artistId) => ({
+                            event_id: data.id,
+                            artist_id: artistId,
+                            status: 'invited',
+                            invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`,
+                          }))
+                        );
+
                       if (artistError) console.error('Error saving artist invitations:', artistError);
                     }
+
                     if (eventData.selectedVenues.length > 0) {
-                      const {
-                        error: venueError
-                      } = await supabase.from('event_venues').insert(eventData.selectedVenues.map((venueId, index) => ({
-                        event_id: data.id,
-                        venue_id: venueId,
-                        status: 'contacted',
-                        priority_order: index + 1,
-                        contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`
-                      })));
+                      const { error: venueError } = await supabase
+                        .from('event_venues')
+                        .insert(
+                          eventData.selectedVenues.map((venueId, index) => ({
+                            event_id: data.id,
+                            venue_id: venueId,
+                            status: 'contacted',
+                            priority_order: index + 1,
+                            contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`,
+                          }))
+                        );
+
                       if (venueError) console.error('Error saving venue contacts:', venueError);
                     }
 
@@ -278,8 +308,8 @@ export default function CreaEvento() {
                           body: {
                             eventId: data.id,
                             artistIds: eventData.selectedArtists,
-                            venueIds: eventData.selectedVenues
-                          }
+                            venueIds: eventData.selectedVenues,
+                          },
                         });
                         console.log('Notifications sent successfully');
                       } catch (notificationError) {
@@ -287,11 +317,12 @@ export default function CreaEvento() {
                         // Don't block event creation if notifications fail
                       }
                     }
+
                     handleAutoSave(eventData);
                     toast({
                       title: "Evento pubblicato!",
                       description: "Il tuo evento è ora visibile a tutti",
-                      duration: 3000
+                      duration: 3000,
                     });
                     navigate(`/event/${data.id}`);
                   } catch (error) {
@@ -299,17 +330,18 @@ export default function CreaEvento() {
                     toast({
                       title: "Errore",
                       description: "Errore nella pubblicazione dell'evento",
-                      variant: "destructive"
+                      variant: "destructive",
                     });
                   }
-                }} disabled={!validation.overall.isValid}>
-                      Pubblica Evento
-                    </Button>}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                }}
+                disabled={!validation.overall.isValid}
+                className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold h-12"
+              >
+                Pubblica Evento
+              </Button>
+            )}
+          </div>
         </div>
-      </main>
+      </div>
     </div>;
 }
