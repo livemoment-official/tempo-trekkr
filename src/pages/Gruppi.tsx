@@ -18,6 +18,7 @@ import { useMomentChats } from "@/hooks/useMomentChats";
 import { useChat } from "@/hooks/useChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useCityGroups } from "@/hooks/useCityGroups";
 
 // Province italiane
 const provincieItaliane = ["Agrigento", "Alessandria", "Ancona", "Aosta", "Arezzo", "Ascoli Piceno", "Asti", "Avellino", "Bari", "Barletta-Andria-Trani", "Belluno", "Benevento", "Bergamo", "Biella", "Bologna", "Bolzano", "Brescia", "Brindisi", "Cagliari", "Caltanissetta", "Campobasso", "Carbonia-Iglesias", "Caserta", "Catania", "Catanzaro", "Chieti", "Como", "Cosenza", "Cremona", "Crotone", "Cuneo", "Enna", "Fermo", "Ferrara", "Firenze", "Foggia", "Forlì-Cesena", "Frosinone", "Genova", "Gorizia", "Grosseto", "Imperia", "Isernia", "L'Aquila", "La Spezia", "Latina", "Lecce", "Lecco", "Livorno", "Lodi", "Lucca", "Macerata", "Mantova", "Massa-Carrara", "Matera", "Medio Campidano", "Messina", "Milano", "Modena", "Monza e Brianza", "Napoli", "Novara", "Nuoro", "Ogliastra", "Olbia-Tempio", "Oristano", "Padova", "Palermo", "Parma", "Pavia", "Perugia", "Pesaro e Urbino", "Pescara", "Piacenza", "Pisa", "Pistoia", "Pordenone", "Potenza", "Prato", "Ragusa", "Ravenna", "Reggio Calabria", "Reggio Emilia", "Rieti", "Rimini", "Roma", "Rovigo", "Salerno", "Sassari", "Savona", "Siena", "Siracusa", "Sondrio", "Taranto", "Teramo", "Terni", "Torino", "Trapani", "Trento", "Treviso", "Trieste", "Udine", "Varese", "Venezia", "Verbano-Cusio-Ossola", "Vercelli", "Verona", "Vibo Valentia", "Vicenza", "Viterbo"];
@@ -98,7 +99,8 @@ const GroupCard = ({
   onLeave,
   isJoining = false,
   isLeaving = false,
-  currentUserId
+  currentUserId,
+  cityGroupsMap
 }: {
   group: any;
   type?: "user" | "city" | "friend" | "moment";
@@ -107,9 +109,13 @@ const GroupCard = ({
   isJoining?: boolean;
   isLeaving?: boolean;
   currentUserId?: string;
+  cityGroupsMap?: Map<string, any>;
 }) => {
   const navigate = useNavigate();
   if (type === "city") {
+    const cityData = cityGroupsMap?.get(group);
+    const participantCount = cityData?.participant_count || 0;
+    
     return <Card className="mb-3">
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
@@ -118,7 +124,9 @@ const GroupCard = ({
             </div>
             <div>
               <h3 className="font-semibold">{group}</h3>
-              <p className="text-sm text-muted-foreground">Gruppo della provincia</p>
+              <p className="text-sm text-muted-foreground">
+                {participantCount} {participantCount === 1 ? 'partecipante' : 'partecipanti'}
+              </p>
             </div>
           </div>
           <AuthGuard fallback={<Button variant="outline" size="sm" disabled>
@@ -260,6 +268,7 @@ export default function Gruppi() {
   const { groups, userGroups, isLoading, joinGroup, leaveGroup, loadPublicGroups, loadUserGroups } = useGroups();
   const { momentChats, isLoading: isMomentChatsLoading } = useMomentChats();
   const { conversations, isLoading: isConversationsLoading, loadConversations } = useChat();
+  const { loadCityGroup, cityGroups } = useCityGroups();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [showBanner, setShowBanner] = useState(() => {
@@ -286,6 +295,13 @@ export default function Gruppi() {
   const filteredProvince = provincieItaliane.filter(provincia => 
     provincia.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Load city groups participant counts
+  useEffect(() => {
+    filteredProvince.forEach(city => {
+      loadCityGroup(city);
+    });
+  }, [filteredProvince.length]);
   
   const filteredGruppi = allGroups.filter(gruppo => 
     gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -462,7 +478,7 @@ export default function Gruppi() {
           </TabsContent>
 
           <TabsContent value="citta" className="space-y-4">
-            {filteredProvince.slice(0, 10).map(provincia => <GroupCard key={provincia} group={provincia} type="city" />)}
+            {filteredProvince.slice(0, 10).map(provincia => <GroupCard key={provincia} group={provincia} type="city" cityGroupsMap={cityGroups} />)}
             {filteredProvince.length > 10 && <p className="text-center text-sm text-muted-foreground">
                 Mostrando le prime 10 province. Usa la ricerca per trovarne altre.
               </p>}

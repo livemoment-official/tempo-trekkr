@@ -146,6 +146,33 @@ export type Database = {
         }
         Relationships: []
       }
+      city_groups: {
+        Row: {
+          city_name: string
+          created_at: string
+          description: string | null
+          id: string
+          participants: string[]
+          updated_at: string
+        }
+        Insert: {
+          city_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          participants?: string[]
+          updated_at?: string
+        }
+        Update: {
+          city_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          participants?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string | null
@@ -1619,6 +1646,10 @@ export type Database = {
         Args: { inviter_id?: string; target_user_id: string }
         Returns: number
       }
+      get_city_participant_count: {
+        Args: { target_city_name: string }
+        Returns: number
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1661,8 +1692,16 @@ export type Database = {
         Args: { moment_id: string }
         Returns: boolean
       }
+      join_city_group: {
+        Args: { target_city_name: string }
+        Returns: string
+      }
       join_moment: {
         Args: { target_moment_id: string }
+        Returns: string
+      }
+      leave_city_group: {
+        Args: { target_city_name: string }
         Returns: string
       }
       migrate_existing_moment_participants: {

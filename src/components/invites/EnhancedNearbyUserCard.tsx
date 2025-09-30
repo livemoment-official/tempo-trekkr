@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, MessageCircle, UserPlus, Clock, Heart } from "lucide-react";
 import QuickInviteModal from "./QuickInviteModal";
 import { useInviteCount } from "@/hooks/useNearbyUsers";
+import { useNavigate } from "react-router-dom";
 
 interface NearbyUser {
   id: string; // Changed from user_id to id for consistency
@@ -24,6 +25,7 @@ interface EnhancedNearbyUserCardProps {
 }
 
 export default function EnhancedNearbyUserCard({ user }: EnhancedNearbyUserCardProps) {
+  const navigate = useNavigate();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const { data: inviteCount = 0 } = useInviteCount(user.id);
   
@@ -119,6 +121,7 @@ export default function EnhancedNearbyUserCard({ user }: EnhancedNearbyUserCardP
                   size="sm"
                   variant="outline"
                   className="flex-1"
+                  onClick={() => navigate(`/chat/conversation/${user.id}`)}
                 >
                   <MessageCircle className="h-4 w-4 mr-1" />
                   Chat

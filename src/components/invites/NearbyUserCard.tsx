@@ -7,6 +7,7 @@ import { MapPin, Clock, UserPlus, MessageCircle } from "lucide-react";
 import { useInviteCount } from "@/hooks/useNearbyUsers";
 import QuickInviteModal from "./QuickInviteModal";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
+import { useNavigate } from "react-router-dom";
 
 interface NearbyUser {
   id: string; // Changed from user_id to id for consistency
@@ -25,6 +26,7 @@ interface NearbyUserCardProps {
 }
 
 export default function NearbyUserCard({ user }: NearbyUserCardProps) {
+  const navigate = useNavigate();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const { data: inviteCount = 0 } = useInviteCount(user.id);
   
@@ -109,7 +111,11 @@ export default function NearbyUserCard({ user }: NearbyUserCardProps) {
                   {canInvite ? `Invita (${remainingInvites})` : 'Limite raggiunto'}
                 </Button>
                 
-                <Button size="sm" variant="outline">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => navigate(`/chat/conversation/${user.id}`)}
+                >
                   <MessageCircle className="h-3 w-3" />
                 </Button>
               </div>

@@ -5,6 +5,8 @@ import { MapPin, MessageCircle, UserPlus, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserStats, useSharedFriends } from "@/hooks/useUserStats";
 interface UserProfile {
   id: string;
   name: string;
@@ -28,6 +30,11 @@ export function UserListItem({
   className
 }: UserListItemProps) {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+
+  // Get real stats
+  const { data: stats } = useUserStats(user.id);
+  const { data: sharedFriendsCount } = useSharedFriends(user.id, currentUser?.id || '');
 
   const handleFollow = () => {
     onFollow?.(user.id);
@@ -43,10 +50,11 @@ export function UserListItem({
     navigate(`/user/${user.id}`);
   };
 
-  // Simulate shared friends count
-  const sharedFriends = Math.floor(Math.random() * 15) + 1;
-  const totalFriends = Math.floor(Math.random() * 500) + 100;
-  const totalMoments = Math.floor(Math.random() * 50) + 5;
+  // Use real data or fallback
+  const displayAge = stats?.age || user.age || 25;
+  const sharedFriends = sharedFriendsCount || 0;
+  const totalFriends = stats?.friendsCount || 0;
+  const totalMoments = stats?.momentsCount || 0;
   return <div className={cn("flex items-center gap-4 p-4 bg-background rounded-xl border border-border/50 hover:shadow-sm transition-all duration-200 cursor-pointer", className)} onClick={handleProfileClick}>
       {/* Avatar */}
       <div className="relative flex-shrink-0">
@@ -61,7 +69,7 @@ export function UserListItem({
             {user.name}
           </h3>
           <Badge variant="secondary" className="text-xs px-2 py-0.5">
-            {user.age}
+            {displayAge}
           </Badge>
           {user.distance_km && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -78,9 +86,11 @@ export function UserListItem({
         )}
 
         <div className="space-y-1">
-          <p className="text-xs text-orange-500 font-medium">
-            {sharedFriends} amici in comune
-          </p>
+          {sharedFriends > 0 && (
+            <p className="text-xs text-orange-500 font-medium">
+              {sharedFriends} amici in comune
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             {totalFriends} Amici • {totalMoments} Momenti
           </p>

@@ -157,7 +157,7 @@ export default function InviteCard({
                 
                 <Button onClick={() => {
                   if (invite.sender?.id) {
-                    navigate(`/chat-fullscreen/conversation/${invite.sender.id}`);
+                    navigate(`/chat/conversation/${invite.sender.id}`);
                   }
                 }} variant="outline" className={`${isMobile ? "border border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-11 px-3" : "border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-12 px-5"} rounded-xl transition-all`}>
                   <MessageSquare className="h-4 w-4 mr-1" />

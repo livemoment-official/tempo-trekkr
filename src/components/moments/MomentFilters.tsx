@@ -45,7 +45,16 @@ function getCategoryEmoji(category: string): string {
     'Studio': '📚',
     'Tecnologia': '💻',
     'Benessere': '🧘‍♀️',
-    'Volontariato': '🤝'
+    'Volontariato': '🤝',
+    'Cinema': '🎬',
+    'Tea': '🍵',
+    'Teatro': '🎭',
+    'Concerti': '🎤',
+    'Bar': '🍸',
+    'Discoteca': '💃',
+    'Netflix': '📺',
+    'Lettura': '📖',
+    'Cucina': '👨‍🍳'
   };
   return emojiMap[category] || '📍';
 }
@@ -140,8 +149,8 @@ export const MomentFilters = ({
       <div className="space-y-4">
         {/* Main Categories - Horizontal Scrollable */}
         <div className="relative">
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex gap-2 px-1 pb-2">
+          <ScrollArea className="w-full whitespace-nowrap overflow-x-auto">
+            <div className="flex gap-2 px-1 pb-2 w-max">
               <Button
                 key="all"
                 variant={selectedCategory === "all" ? "default" : "outline"}

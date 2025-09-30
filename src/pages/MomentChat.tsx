@@ -86,19 +86,25 @@ export default function MomentChat() {
   }, [messages]);
 
   const loadMoment = async () => {
-    if (!momentId) return;
+    if (!momentId || !user) return;
 
     try {
-      // Load moment data without unsafe foreign key joins
+      console.log('Loading moment:', momentId, 'for user:', user.id);
+      
+      // Load moment data
       const { data: momentData, error: momentError } = await supabase
         .from('moments')
         .select('*')
         .eq('id', momentId)
         .maybeSingle();
 
-      if (momentError) throw momentError;
+      if (momentError) {
+        console.error('Error loading moment:', momentError);
+        throw momentError;
+      }
       
       if (!momentData) {
+        console.error('Moment not found');
         toast({
           title: "Errore",
           description: "Momento non trovato.",
@@ -108,21 +114,53 @@ export default function MomentChat() {
         return;
       }
 
+      console.log('Moment loaded:', momentData);
+
+      // Check if user has access (host or in participants array or confirmed participant)
+      const isHost = momentData.host_id === user.id;
+      const isInParticipantsArray = momentData.participants?.includes(user.id);
+      
+      // Also check moment_participants table for confirmed status
+      const { data: participantData } = await supabase
+        .from('moment_participants')
+        .select('id, status')
+        .eq('moment_id', momentId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const isConfirmedParticipant = participantData?.status === 'confirmed';
+
+      console.log('Access check:', { 
+        isHost, 
+        isInParticipantsArray, 
+        isConfirmedParticipant,
+        participantData 
+      });
+
+      if (!isHost && !isInParticipantsArray && !isConfirmedParticipant) {
+        console.error('User does not have access to this moment');
+        setHasAccess(false);
+        setIsCheckingAccess(false);
+        setIsLoading(false);
+        return;
+      }
+
       // Load host profile separately
-      const { data: hostData, error: hostError } = await supabase
+      const { data: hostData } = await supabase
         .from('profiles')
         .select('id, name, avatar_url')
         .eq('id', momentData.host_id)
-        .single();
-
-      if (hostError) {
-        console.error('Error loading host profile:', hostError);
-      }
+        .maybeSingle();
 
       setMoment({
         ...momentData,
         host: hostData || { id: momentData.host_id, name: 'Utente', avatar_url: null }
       });
+      
+      setHasAccess(true);
+      setIsCheckingAccess(false);
+      
+      console.log('Moment and access loaded successfully');
     } catch (error) {
       console.error('Error loading moment:', error);
       toast({
@@ -130,7 +168,8 @@ export default function MomentChat() {
         description: "Non è stato possibile caricare il momento.",
         variant: "destructive",
       });
-      navigate('/momenti');
+      setIsCheckingAccess(false);
+      setIsLoading(false);
     }
   };
 
@@ -209,42 +248,11 @@ export default function MomentChat() {
     });
   };
 
-  // Check if user has access to the moment chat
+  // State for access control
   const [hasAccess, setHasAccess] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      if (!moment?.id || !user) {
-        setHasAccess(false);
-        setIsCheckingAccess(false);
-        return;
-      }
-
-      // Check if user is host
-      if (moment.host_id === user.id) {
-        setHasAccess(true);
-        setIsCheckingAccess(false);
-        return;
-      }
-
-      // Check if user is a confirmed participant
-      const { data: participation } = await supabase
-        .from('moment_participants')
-        .select('id')
-        .eq('moment_id', moment.id)
-        .eq('user_id', user.id)
-        .eq('status', 'confirmed')
-        .maybeSingle();
-
-      setHasAccess(!!participation);
-      setIsCheckingAccess(false);
-    };
-
-    checkAccess();
-  }, [moment?.id, user]);
-
-  if (isCheckingAccess) {
+  if (isCheckingAccess || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -252,20 +260,26 @@ export default function MomentChat() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!moment || !hasAccess) {
+  if (!moment) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-xl font-bold mb-2">Momento non trovato</h1>
+        <h1 className="text-xl font-bold mb-2">Errore</h1>
         <p className="text-muted-foreground mb-4">
-          {!moment ? "Momento non trovato." : "Non hai accesso a questo momento."}
+          Momento non trovato o non hai accesso.
+        </p>
+        <Button onClick={() => navigate('/momenti')}>
+          Torna ai Momenti
+        </Button>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <h1 className="text-xl font-bold mb-2">Accesso negato</h1>
+        <p className="text-muted-foreground mb-4">
+          Solo i partecipanti confermati possono accedere a questa chat.
         </p>
         <Button onClick={() => navigate('/momenti')}>
           Torna ai Momenti
