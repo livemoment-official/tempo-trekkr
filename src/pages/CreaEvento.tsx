@@ -157,7 +157,19 @@ export default function CreaEvento() {
 
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        
+        <div className="container flex items-center justify-between py-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/crea')}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
+            Crea Evento
+          </h1>
+        </div>
       </header>
 
       {/* Main Content */}
