@@ -23,6 +23,16 @@ export default function SmartProgressIndicator({
   const getStepStatus = (stepId: number) => {
     const stepKey = ['details', 'artists', 'venue', 'ticketing', 'media', 'callToAction', 'preview'][stepId - 1] as keyof typeof validation.steps;
     const stepValidation = validation.steps[stepKey];
+    
+    // Defensive check for undefined stepValidation
+    if (!stepValidation) {
+      return {
+        status: 'incomplete',
+        icon: Circle,
+        color: 'text-muted-foreground'
+      };
+    }
+    
     if (stepValidation.completionPercentage === 100) {
       return {
         status: 'complete',

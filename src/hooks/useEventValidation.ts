@@ -34,6 +34,7 @@ interface ValidationResult {
     details: StepValidation;
     artists: StepValidation;
     venue: StepValidation;
+    ticketing: StepValidation;
     media: StepValidation;
     callToAction: StepValidation;
     preview: StepValidation;
@@ -108,7 +109,28 @@ export function useEventValidation(data: EventData): ValidationResult {
       completionPercentage: venueCompletion
     };
 
-    // Step 4: Media validation (optional but scored)
+    // Step 4: Ticketing validation (optional but scored)
+    const ticketingErrors: string[] = [];
+    let ticketingCompletion = 0;
+    
+    if (data.ticketing?.enabled) {
+      if (data.ticketing.phases?.length > 0) {
+        ticketingCompletion = 100;
+      } else {
+        ticketingErrors.push("Aggiungi almeno una fase di biglietteria");
+        ticketingCompletion = 50;
+      }
+    } else {
+      ticketingCompletion = 100; // If disabled, consider it complete
+    }
+
+    const ticketingStep: StepValidation = {
+      isValid: ticketingErrors.length === 0,
+      errors: ticketingErrors,
+      completionPercentage: ticketingCompletion
+    };
+
+    // Step 5: Media validation (optional but scored)
     const mediaCompletion = data.photos?.length > 0 ? 100 : 0;
     const mediaStep: StepValidation = {
       isValid: true, // Always valid since it's optional
@@ -116,7 +138,7 @@ export function useEventValidation(data: EventData): ValidationResult {
       completionPercentage: mediaCompletion
     };
 
-    // Step 5: Call to Action validation
+    // Step 6: Call to Action validation
     const callToActionErrors: string[] = [];
     let callToActionCompletion = 50; // Base completion for having the step
 
@@ -136,7 +158,7 @@ export function useEventValidation(data: EventData): ValidationResult {
       completionPercentage: callToActionCompletion
     };
 
-    // Step 6: Preview validation
+    // Step 7: Preview validation
     const previewCompletion = 100; // Preview is always complete when reached
     const previewStep: StepValidation = {
       isValid: true,
@@ -145,12 +167,12 @@ export function useEventValidation(data: EventData): ValidationResult {
     };
 
     // Calculate overall validation
-    const stepValidations = [detailsStep, artistsStep, venueStep, mediaStep, callToActionStep, previewStep];
+    const stepValidations = [detailsStep, artistsStep, venueStep, ticketingStep, mediaStep, callToActionStep, previewStep];
     const overallCompletion = Math.round(
       stepValidations.reduce((sum, step) => sum + step.completionPercentage, 0) / stepValidations.length
     );
 
-    const requiredStepsValid = detailsStep.isValid && callToActionStep.isValid;
+    const requiredStepsValid = detailsStep.isValid && ticketingStep.isValid && callToActionStep.isValid;
     
     // Find next incomplete step
     let nextIncompleteStep: number | null = null;
@@ -158,6 +180,7 @@ export function useEventValidation(data: EventData): ValidationResult {
       detailsStep.completionPercentage,
       artistsStep.completionPercentage,
       venueStep.completionPercentage,
+      ticketingStep.completionPercentage,
       mediaStep.completionPercentage,
       callToActionStep.completionPercentage,
       previewStep.completionPercentage
@@ -175,6 +198,7 @@ export function useEventValidation(data: EventData): ValidationResult {
         details: detailsStep,
         artists: artistsStep,
         venue: venueStep,
+        ticketing: ticketingStep,
         media: mediaStep,
         callToAction: callToActionStep,
         preview: previewStep
