@@ -11,6 +11,8 @@ import InvitePreviewStep from "@/components/create/invite/InvitePreviewStep";
 import { useCreateInvite } from "@/hooks/useInvites";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { useEffect } from "react";
 
 interface InviteData {
   activity: {
@@ -70,6 +72,38 @@ export default function CreaInvito() {
   }];
   const currentStepData = steps.find(step => step.id === currentStep);
   const CurrentStepComponent = currentStepData?.component;
+  
+  // Auto-save draft to localStorage
+  const saveDraft = async (data: InviteData) => {
+    if (data.activity.title || data.selectedPeople.length > 0) {
+      localStorage.setItem('invite-draft', JSON.stringify(data));
+    }
+  };
+
+  useAutoSave({
+    data: inviteData,
+    onSave: saveDraft,
+    delay: 3000,
+    enabled: currentStep > 1 && currentStep < steps.length
+  });
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem('invite-draft');
+    if (draft) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        // Convert date string back to Date object if it exists
+        if (parsedDraft.date) {
+          parsedDraft.date = new Date(parsedDraft.date);
+        }
+        setInviteData(parsedDraft);
+      } catch (error) {
+        console.error('Error loading draft:', error);
+      }
+    }
+  }, []);
+
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
@@ -136,6 +170,9 @@ export default function CreaInvito() {
         description: `Hai inviato ${inviteData.selectedPeople.length} ${inviteData.selectedPeople.length === 1 ? 'invito' : 'inviti'} con successo`,
       });
 
+      // Clear draft after successful send
+      localStorage.removeItem('invite-draft');
+
       navigate('/inviti');
     } catch (error) {
       console.error('Error sending invites:', error);
@@ -148,23 +185,23 @@ export default function CreaInvito() {
       setIsSending(false);
     }
   };
-  return <div className="space-y-4">
+  return <div className="space-y-4 pb-8">
       <Helmet>
         <title>LiveMoment · Crea Invito</title>
         <meta name="description" content="Invita persone per un'attività basata su disponibilità e affinità." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Progress indicator */}
-      <div className="flex items-center gap-2 mb-6">
-        {steps.map((step, index) => <div key={step.id} className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= step.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+      {/* Progress indicator with improved styling */}
+      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+        {steps.map((step, index) => <div key={step.id} className="flex items-center shrink-0">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep >= step.id ? "bg-primary text-primary-foreground shadow-lg scale-110" : "bg-muted text-muted-foreground"}`}>
               {step.id}
             </div>
-            <span className={`ml-2 text-sm ${currentStep >= step.id ? "text-foreground" : "text-muted-foreground"}`}>
+            <span className={`ml-2 text-sm font-medium whitespace-nowrap ${currentStep >= step.id ? "text-foreground" : "text-muted-foreground"}`}>
               {step.title}
             </span>
-            {index < steps.length - 1 && <div className={`w-8 h-0.5 mx-3 ${currentStep > step.id ? "bg-primary" : "bg-muted"}`} />}
+            {index < steps.length - 1 && <div className={`w-12 h-1 mx-2 rounded-full transition-all ${currentStep > step.id ? "bg-primary" : "bg-muted"}`} />}
           </div>)}
       </div>
 
