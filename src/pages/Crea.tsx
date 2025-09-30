@@ -1,10 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, CalendarPlus, MessageSquarePlus, ArrowLeft, Users } from "lucide-react";
-import { EnhancedImage } from "@/components/ui/enhanced-image";
+import { Plus, CalendarPlus, MessageSquarePlus, Users } from "lucide-react";
 import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
+import StandardHeader from "@/components/layout/StandardHeader";
 export default function Crea() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,20 +15,11 @@ export default function Crea() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Custom Header for Create Page */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
-        <div className="flex items-center justify-center h-14 px-4 relative">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="absolute left-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-lg font-semibold">Crea</h1>
-        </div>
-      </header>
+      {/* Header */}
+      <StandardHeader 
+        title="Crea" 
+        onBack={() => navigate('/')}
+      />
 
       {/* Main Content - Optimized for mobile vertical layout */}
       <div className="flex-1 px-4 py-6">

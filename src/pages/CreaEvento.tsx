@@ -17,6 +17,7 @@ import { useEventValidation } from "@/hooks/useEventValidation";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdvancedTicketingData } from "@/components/create/event/AdvancedTicketingSystem";
+import StandardHeader from "@/components/layout/StandardHeader";
 
 interface EventData {
   title: string;
@@ -173,21 +174,10 @@ export default function CreaEvento() {
       </Helmet>
 
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container flex items-center justify-between py-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/crea')}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
-            Crea Evento
-          </h1>
-        </div>
-      </header>
+      <StandardHeader 
+        title="Crea Evento" 
+        onBack={() => navigate('/crea')}
+      />
 
       {/* Main Content */}
       <main className="container py-6 pb-32">

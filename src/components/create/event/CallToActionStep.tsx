@@ -63,14 +63,21 @@ export default function CallToActionStep({
   return (
     <div className="space-y-6">
       {/* Header informativo */}
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold">Gestione Inviti e Partecipazione</h2>
+        <p className="text-sm text-muted-foreground">
+          Configura come artisti, location e pubblico possono interagire con il tuo evento
+        </p>
+      </div>
+
       <Alert className="border-primary/20 bg-primary/5">
         <Info className="h-4 w-4" />
         <AlertDescription>
           <div className="space-y-2">
-            <p className="font-medium">Sistema di Inviti Professionali</p>
+            <p className="font-medium">Richieste di Collaborazione Professionale</p>
             <p className="text-sm">
-              Gli inviti per artisti e location sono <strong>richieste professionali dirette</strong> che appariranno 
-              <strong> pinnate in alto</strong> nella sezione "Inviti" della loro app, con tutte le informazioni complete dell'evento.
+              Le richieste per artisti e location sono <strong>inviti professionali diretti</strong> che appariranno 
+              <strong> pinnati in alto</strong> nella sezione "Inviti" della loro app, con badge distintivi e tutte le informazioni dell'evento.
             </p>
           </div>
         </AlertDescription>
@@ -78,14 +85,19 @@ export default function CallToActionStep({
 
       {/* Inviti Professionali - Artisti */}
       {hasArtists && (
-        <Card>
-          <CardHeader>
+        <Card className="border-2 border-primary/30">
+          <CardHeader className="bg-primary/5">
             <div className="flex items-center gap-3">
-              <Music className="h-5 w-5 text-primary" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Music className="h-5 w-5 text-primary" />
+              </div>
               <div>
-                <CardTitle>Inviti agli Artisti</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Richieste di Collaborazione - Artisti
+                  <Badge variant="default" className="text-xs">Professionali</Badge>
+                </CardTitle>
                 <CardDescription>
-                  {data.selectedArtists.length} artist{data.selectedArtists.length !== 1 ? 'i' : 'a'} riceverà un invito professionale
+                  {data.selectedArtists.length} artist{data.selectedArtists.length !== 1 ? 'i' : 'a'} riceverà una richiesta diretta di disponibilità
                 </CardDescription>
               </div>
             </div>
@@ -175,14 +187,19 @@ export default function CallToActionStep({
 
       {/* Inviti Professionali - Venue */}
       {hasVenues && (
-        <Card>
-          <CardHeader>
+        <Card className="border-2 border-primary/30">
+          <CardHeader className="bg-primary/5">
             <div className="flex items-center gap-3">
-              <MapPin className="h-5 w-5 text-primary" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <MapPin className="h-5 w-5 text-primary" />
+              </div>
               <div>
-                <CardTitle>Richieste alle Location</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Richieste di Collaborazione - Location
+                  <Badge variant="default" className="text-xs">Professionali</Badge>
+                </CardTitle>
                 <CardDescription>
-                  {data.selectedVenues.length} location riceverà una richiesta di disponibilità
+                  {data.selectedVenues.length} location riceverà una richiesta diretta di disponibilità
                 </CardDescription>
               </div>
             </div>
@@ -283,17 +300,27 @@ export default function CallToActionStep({
         </Card>
       )}
 
-      <Separator />
+      <Separator className="my-8" />
+
+      {/* Sezione separata per il pubblico */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Accesso del Pubblico</h3>
+        <p className="text-sm text-muted-foreground">
+          Gestisci come il pubblico generale può partecipare al tuo evento
+        </p>
+      </div>
 
       {/* Partecipazione Pubblica */}
-      <Card>
+      <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Megaphone className="h-5 w-5" />
+              <div className="p-2 rounded-lg bg-accent">
+                <Megaphone className="h-5 w-5" />
+              </div>
               <div>
                 <CardTitle>Partecipazione Pubblica</CardTitle>
-                <CardDescription>Abilita la partecipazione per il pubblico generale</CardDescription>
+                <CardDescription>Abilita l'accesso per il pubblico generale (non professionisti)</CardDescription>
               </div>
             </div>
             <Switch 

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { TicketingSystem } from "@/components/TicketingSystem";
+import StandardHeader from "@/components/layout/StandardHeader";
 interface TicketingData {
   enabled: boolean;
   price: number;
@@ -389,28 +390,15 @@ export default function CreaMomento() {
           <meta name="description" content="Aggiungi dettagli al tuo momento" />
         </Helmet>
         
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="p-2"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg font-semibold">Crea il momento</h1>
-              {inviteId && <Badge variant="secondary" className="text-xs">
-                  Da invito: {invite?.title}
-                </Badge>}
-            </div>
-            
+        <StandardHeader 
+          title={inviteId ? `Crea da invito: ${invite?.title || 'momento'}` : "Crea il momento"}
+          onBack={() => navigate('/crea')}
+          rightActions={
             <Button onClick={handleCreateMoment} disabled={isUploading || !momentData.title.trim()} size="sm">
               {isUploading ? "Creando..." : "Pubblica"}
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         <div className="max-w-2xl mx-auto p-4 space-y-6">
           {/* Photo Preview */}
