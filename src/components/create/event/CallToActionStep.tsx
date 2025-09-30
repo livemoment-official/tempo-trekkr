@@ -38,11 +38,20 @@ export default function CallToActionStep({
   onChange,
   onNext
 }: CallToActionStepProps) {
+  // Ensure callToAction exists with defaults
+  const callToAction = data.callToAction || {
+    enabled: false,
+    type: 'open',
+    message: '',
+    artistMessage: '',
+    venueMessage: ''
+  };
+
   const handleCallToActionChange = (field: string, value: any) => {
     onChange({
       ...data,
       callToAction: {
-        ...data.callToAction,
+        ...callToAction,
         [field]: value
       }
     });
@@ -89,7 +98,7 @@ export default function CallToActionStep({
               </Label>
               <Textarea 
                 id="artist-message" 
-                value={data.callToAction.artistMessage || ''} 
+                value={callToAction.artistMessage || ''} 
                 onChange={e => handleCallToActionChange('artistMessage', e.target.value)} 
                 placeholder="Ciao! Stiamo organizzando questo evento e ci piacerebbe averti come ospite. Le tue performance sarebbero perfette per..."
                 className="mt-2" 
@@ -139,11 +148,11 @@ export default function CallToActionStep({
                   )}
                 </div>
 
-                {data.callToAction.artistMessage && (
+                {callToAction.artistMessage && (
                   <div className="bg-muted/50 p-3 rounded mb-4">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <p className="text-sm">{data.callToAction.artistMessage}</p>
+                      <p className="text-sm">{callToAction.artistMessage}</p>
                     </div>
                   </div>
                 )}
@@ -195,7 +204,7 @@ export default function CallToActionStep({
               </Label>
               <Textarea 
                 id="venue-message" 
-                value={data.callToAction.venueMessage || ''} 
+                value={callToAction.venueMessage || ''} 
                 onChange={e => handleCallToActionChange('venueMessage', e.target.value)} 
                 placeholder="Salve, stiamo organizzando un evento e vorremmo sapere se il vostro locale è disponibile nella data indicata..."
                 className="mt-2" 
@@ -249,11 +258,11 @@ export default function CallToActionStep({
                   </div>
                 )}
 
-                {data.callToAction.venueMessage && (
+                {callToAction.venueMessage && (
                   <div className="bg-muted/50 p-3 rounded mb-4">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <p className="text-sm">{data.callToAction.venueMessage}</p>
+                      <p className="text-sm">{callToAction.venueMessage}</p>
                     </div>
                   </div>
                 )}
@@ -288,17 +297,17 @@ export default function CallToActionStep({
               </div>
             </div>
             <Switch 
-              checked={data.callToAction.enabled} 
+              checked={callToAction.enabled} 
               onCheckedChange={checked => handleCallToActionChange('enabled', checked)} 
             />
           </div>
         </CardHeader>
-        {data.callToAction.enabled && (
+        {callToAction.enabled && (
           <CardContent className="pt-0 space-y-4">
             <div>
               <Label className="text-sm font-medium">Modalità di partecipazione</Label>
               <RadioGroup 
-                value={data.callToAction.type} 
+                value={callToAction.type} 
                 onValueChange={value => handleCallToActionChange('type', value)} 
                 className="mt-2"
               >
@@ -331,12 +340,12 @@ export default function CallToActionStep({
               </Label>
               <Textarea 
                 id="cta-message" 
-                value={data.callToAction.message || ''} 
+                value={callToAction.message || ''} 
                 onChange={e => handleCallToActionChange('message', e.target.value)} 
-                placeholder={data.callToAction.type === 'open' 
+                placeholder={callToAction.type === 'open' 
                   ? "Unisciti al nostro evento! Tutti sono benvenuti..." 
                   : "Richiedi l'invito per partecipare a questo evento esclusivo..."
-                } 
+                }
                 className="mt-2" 
                 rows={3} 
               />
@@ -346,26 +355,26 @@ export default function CallToActionStep({
               <h4 className="font-medium mb-2 text-sm">Anteprima per il pubblico</h4>
               <div className="bg-background p-3 rounded border">
                 <div className="flex items-center gap-2 mb-2">
-                  {data.callToAction.type === 'open' 
+                  {callToAction.type === 'open' 
                     ? <Users className="h-4 w-4 text-green-600" /> 
                     : <Lock className="h-4 w-4 text-blue-600" />
                   }
                   <span className="text-sm font-medium">
-                    {data.callToAction.type === 'open' ? 'Evento Aperto' : 'Solo su Invito'}
+                    {callToAction.type === 'open' ? 'Evento Aperto' : 'Solo su Invito'}
                   </span>
                 </div>
                 <p className="text-sm mb-2">
-                  {data.callToAction.message || "Messaggio di invito personalizzato..."}
+                  {callToAction.message || "Messaggio di invito personalizzato..."}
                 </p>
                 <Button size="sm">
-                  {data.callToAction.type === 'open' ? 'Partecipa' : 'Richiedi Invito'}
+                  {callToAction.type === 'open' ? 'Partecipa' : 'Richiedi Invito'}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </div>
           </CardContent>
         )}
-        {!data.callToAction.enabled && (
+        {!callToAction.enabled && (
           <CardContent className="pt-0">
             <div className="bg-muted/50 p-4 rounded-lg">
               <p className="text-sm text-muted-foreground">
