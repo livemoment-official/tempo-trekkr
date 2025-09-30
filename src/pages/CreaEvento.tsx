@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 import EnhancedEventDetailsStep from "@/components/create/event/EnhancedEventDetailsStep";
 import ArtistSelectionStep from "@/components/create/event/ArtistSelectionStep";
 import VenueSelectionStep from "@/components/create/event/VenueSelectionStep";
+import { EventTicketingStep } from "@/components/create/event/EventTicketingStep";
 import EventPhotoUploadStep from "@/components/create/event/EventPhotoUploadStep";
 import CallToActionStep from "@/components/create/event/CallToActionStep";
 import EventPreviewStep from "@/components/create/event/EventPreviewStep";
@@ -82,14 +83,18 @@ export default function CreaEvento() {
     component: VenueSelectionStep
   }, {
     id: 4,
+    title: "Ticketing",
+    component: EventTicketingStep
+  }, {
+    id: 5,
     title: "Media",
     component: EventPhotoUploadStep
   }, {
-    id: 5,
-    title: "Call-to-Action",
+    id: 6,
+    title: "Invita",
     component: CallToActionStep
   }, {
-    id: 6,
+    id: 7,
     title: "Anteprima",
     component: EventPreviewStep
   }];

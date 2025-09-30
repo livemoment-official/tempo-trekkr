@@ -264,7 +264,6 @@ export default function EnhancedEventDetailsStep({
         <AdvancedTicketingSystem
           data={data.advancedTicketing || { enabled: false, currency: 'EUR', phases: [] }}
           onChange={(advancedTicketing) => onChange({ ...data, advancedTicketing })}
-          maxParticipants={data.capacity}
         />
       </form>
     </div>;
