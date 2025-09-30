@@ -3,11 +3,15 @@ import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import ActivitySuggestionStep from "@/components/create/invite/ActivitySuggestionStep";
 import PeopleSelectionStep from "@/components/create/invite/PeopleSelectionStep";
 import InviteDetailsStep from "@/components/create/invite/InviteDetailsStep";
 import InvitePreviewStep from "@/components/create/invite/InvitePreviewStep";
+import { useCreateInvite } from "@/hooks/useInvites";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+
 interface InviteData {
   activity: {
     title: string;
@@ -16,6 +20,7 @@ interface InviteData {
   };
   selectedPeople: string[];
   date: Date | null;
+  time?: string;
   location: {
     name: string;
     coordinates: [number, number] | null;
@@ -25,8 +30,12 @@ interface InviteData {
 export default function CreaInvito() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const createInvite = useCreateInvite();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/crea/invito";
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSending, setIsSending] = useState(false);
   const [inviteData, setInviteData] = useState<InviteData>({
     activity: {
       title: "",
@@ -35,6 +44,7 @@ export default function CreaInvito() {
     },
     selectedPeople: [],
     date: null,
+    time: undefined,
     location: {
       name: "",
       coordinates: null
@@ -70,6 +80,74 @@ export default function CreaInvito() {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  const handleSendInvites = async () => {
+    // Validation
+    if (inviteData.selectedPeople.length === 0) {
+      toast({
+        title: "Errore",
+        description: "Seleziona almeno una persona da invitare",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!inviteData.activity.title) {
+      toast({
+        title: "Errore",
+        description: "Seleziona un'attività",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      // Combine date and time if both are provided
+      let whenAt = inviteData.date;
+      if (inviteData.date && inviteData.time) {
+        const [hours, minutes] = inviteData.time.split(':');
+        whenAt = new Date(inviteData.date);
+        whenAt.setHours(parseInt(hours), parseInt(minutes));
+      }
+
+      // Create place object if location is provided
+      const place = inviteData.location.name ? {
+        name: inviteData.location.name,
+        coordinates: inviteData.location.coordinates
+      } : null;
+
+      // Send one invite per selected person
+      const invitePromises = inviteData.selectedPeople.map(personId => 
+        createInvite.mutateAsync({
+          title: inviteData.activity.title,
+          description: inviteData.message || `Ti va di fare ${inviteData.activity.title.toLowerCase()} insieme?`,
+          participants: [personId],
+          when_at: whenAt || undefined,
+          place: place,
+        })
+      );
+
+      await Promise.all(invitePromises);
+
+      toast({
+        title: "Inviti inviati!",
+        description: `Hai inviato ${inviteData.selectedPeople.length} ${inviteData.selectedPeople.length === 1 ? 'invito' : 'inviti'} con successo`,
+      });
+
+      navigate('/inviti');
+    } catch (error) {
+      console.error('Error sending invites:', error);
+      toast({
+        title: "Errore",
+        description: "Non è stato possibile inviare gli inviti. Riprova.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
   return <div className="space-y-4">
       <Helmet>
         <title>LiveMoment · Crea Invito</title>
@@ -103,12 +181,29 @@ export default function CreaInvito() {
               Indietro
             </Button>
             
-            {currentStep < steps.length ? <Button onClick={handleNext}>
+            {currentStep < steps.length ? (
+              <Button 
+                onClick={handleNext}
+                disabled={currentStep === 2 && inviteData.selectedPeople.length === 0}
+              >
                 Avanti
                 <ArrowRight className="h-4 w-4 ml-2" />
-              </Button> : <Button onClick={() => navigate("/inviti")}>
-                Invia Inviti
-              </Button>}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleSendInvites}
+                disabled={isSending || inviteData.selectedPeople.length === 0}
+              >
+                {isSending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Invio in corso...
+                  </>
+                ) : (
+                  'Invia Inviti'
+                )}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

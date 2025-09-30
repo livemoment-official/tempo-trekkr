@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot, CalendarDays } from "lucide-react";
+import { MessageSquareText, MapPin, Search as SearchIcon, Plus, Calendar, User, Bell, Users, UserPlus, Bot, CalendarDays, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -125,6 +125,7 @@ export default function AppLayout() {
   const {
     pathname
   } = useLocation();
+  const navigate = useNavigate();
   const {
     isAuthenticated
   } = useAuth();
@@ -134,6 +135,7 @@ export default function AppLayout() {
 
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
+  const isInviteCreatePage = pathname === '/crea/invito';
   
   // Check if we need to show the fixed chat input (only on /esplora, not on chat page)
   const showChatInput = pathname === '/esplora';
@@ -141,15 +143,33 @@ export default function AppLayout() {
     // Focus management or analytics could go here
   }, [pathname]);
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm md:max-w-screen-lg flex-col">
-      {!isCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
-      {!isAuthenticated && !isCreatePage && <GuestBanner />}
-      {!isCreatePage && <UnconfirmedUserBanner />}
-      <main className={isCreatePage ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
+      {/* Custom header for invite creation */}
+      {isInviteCreatePage && (
+        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
+          <div className="mx-auto flex h-16 w-full max-w-screen-sm md:max-w-screen-lg items-center justify-between px-5 md:px-8">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/crea')}
+              className="h-10 gap-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Indietro</span>
+            </Button>
+            <h1 className="text-lg font-semibold">Crea Invito</h1>
+            <div className="w-24" /> {/* Spacer for centering */}
+          </div>
+        </header>
+      )}
+      {!isCreatePage && !isInviteCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
+      {!isAuthenticated && !isCreatePage && !isInviteCreatePage && <GuestBanner />}
+      {!isCreatePage && !isInviteCreatePage && <UnconfirmedUserBanner />}
+      <main className={(isCreatePage || isInviteCreatePage) ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
         <Outlet />
       </main>
 
-      {/* Apple-style Floating Create Button - hidden on create page */}
-      {!isCreatePage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
+      {/* Apple-style Floating Create Button - hidden on create pages */}
+      {!isCreatePage && !isInviteCreatePage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
           <AuthGuard>
             <NavLink to="/crea" aria-label="Crea">
               <Button className="shadow-ios-floating rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
@@ -159,7 +179,7 @@ export default function AppLayout() {
           </AuthGuard>
         </div>}
 
-      {!isCreatePage && <BottomTabBar />}
+      {!isCreatePage && !isInviteCreatePage && <BottomTabBar />}
 
       {/* Fixed Chat Input for Esplora pages */}
       {showChatInput && <FixedChatInput />}

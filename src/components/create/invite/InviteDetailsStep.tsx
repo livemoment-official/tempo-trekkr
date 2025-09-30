@@ -66,7 +66,13 @@ export default function InviteDetailsStep({
 
         <div>
           <Label htmlFor="time">Orario</Label>
-          <Input id="time" type="time" className="mt-2" />
+          <Input 
+            id="time" 
+            type="time" 
+            className="mt-2"
+            value={data.time || ''}
+            onChange={(e) => onChange({ ...data, time: e.target.value })}
+          />
         </div>
       </div>
 
