@@ -20,7 +20,7 @@ export const EventTicketingStep = ({ data, onChange }: EventTicketingStepProps) 
 
   // Map selected artist IDs to full artist objects
   const selectedArtistObjects = artists?.filter(artist => 
-    data.selectedArtists.includes(artist.id)
+    data.selectedArtists?.includes(artist.id)
   ) || [];
 
   return (
