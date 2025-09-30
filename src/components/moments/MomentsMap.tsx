@@ -177,7 +177,7 @@ export function MomentsMap({ moments = [], onMomentClick }: MomentMapProps) {
       'arte': '🎨',
       'cibo': '🍽️'
     };
-    return moods[mood || 'chill'] || '📍';
+    return moods[mood || 'chill'] || '✨';
   };
 
   const formatTime = (timestamp: string) => {

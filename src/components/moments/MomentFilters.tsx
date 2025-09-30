@@ -56,7 +56,7 @@ function getCategoryEmoji(category: string): string {
     'Lettura': '📖',
     'Cucina': '👨‍🍳'
   };
-  return emojiMap[category] || '📍';
+  return emojiMap[category] || '✨';
 }
 
 function getSubcategoriesForCategory(category: string): string[] {
