@@ -160,6 +160,14 @@ export default function CreaEvento() {
       duration: 2000
     });
   };
+  
+  const handleDataChange = (updates: Partial<EventData>) => {
+    setEventData(prevData => ({
+      ...prevData,
+      ...updates
+    }));
+  };
+  
   const canProceedToNext = () => {
     if (currentStep === 1) {
       return validation.steps.details.isValid;
@@ -189,7 +197,7 @@ export default function CreaEvento() {
             </CardHeader>
             
             <CardContent className="space-y-6">
-              {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={setEventData} onNext={handleNext} />}
+              {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={handleDataChange} onNext={handleNext} />}
             </CardContent>
           </Card>
         </div>
