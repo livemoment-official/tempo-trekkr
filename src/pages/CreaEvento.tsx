@@ -16,6 +16,8 @@ import { useAutoSave } from "@/hooks/useAutoSave";
 import { useEventValidation } from "@/hooks/useEventValidation";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AdvancedTicketingData } from "@/components/create/event/AdvancedTicketingSystem";
+
 interface EventData {
   title: string;
   description: string;
@@ -29,7 +31,7 @@ interface EventData {
   };
   capacity: number | null;
   ticketing: any;
-  advancedTicketing?: any;
+  advancedTicketing?: AdvancedTicketingData;
   selectedArtists: string[];
   selectedVenues: string[];
   callToAction: {
@@ -57,6 +59,12 @@ export default function CreaEvento() {
     },
     capacity: null,
     ticketing: null,
+    advancedTicketing: {
+      enabled: false,
+      currency: 'EUR',
+      phases: [],
+      artistSplits: []
+    },
     selectedArtists: [],
     selectedVenues: [],
     callToAction: {
@@ -256,11 +264,11 @@ export default function CreaEvento() {
                       tags: eventData.tags,
                       photos: eventData.photos,
                       ticketing: eventData.ticketing,
-                      advanced_ticketing: eventData.advancedTicketing || null,
+                      advanced_ticketing: eventData.advancedTicketing as any,
                       discovery_on: true,
                     };
 
-                    const { data, error } = await supabase
+                    const { data: savedEvent, error } = await supabase
                       .from('events')
                       .insert(eventToSave)
                       .select()
@@ -274,7 +282,7 @@ export default function CreaEvento() {
                         .from('event_artists')
                         .insert(
                           eventData.selectedArtists.map((artistId) => ({
-                            event_id: data.id,
+                            event_id: savedEvent.id,
                             artist_id: artistId,
                             status: 'invited',
                             invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`,
@@ -289,7 +297,7 @@ export default function CreaEvento() {
                         .from('event_venues')
                         .insert(
                           eventData.selectedVenues.map((venueId, index) => ({
-                            event_id: data.id,
+                            event_id: savedEvent.id,
                             venue_id: venueId,
                             status: 'contacted',
                             priority_order: index + 1,
@@ -303,10 +311,10 @@ export default function CreaEvento() {
                     // Send notifications to artists and venues (non-blocking)
                     if (eventData.selectedArtists.length > 0 || eventData.selectedVenues.length > 0) {
                       try {
-                        console.log('Sending notifications for event:', data.id);
+                        console.log('Sending notifications for event:', savedEvent.id);
                         await supabase.functions.invoke('send-event-notifications', {
                           body: {
-                            eventId: data.id,
+                            eventId: savedEvent.id,
                             artistIds: eventData.selectedArtists,
                             venueIds: eventData.selectedVenues,
                           },
@@ -324,7 +332,7 @@ export default function CreaEvento() {
                       description: "Il tuo evento è ora visibile a tutti",
                       duration: 3000,
                     });
-                    navigate(`/event/${data.id}`);
+                    navigate(`/event/${savedEvent.id}`);
                   } catch (error) {
                     console.error('Error saving event:', error);
                     toast({
