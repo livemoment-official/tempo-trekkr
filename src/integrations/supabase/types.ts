@@ -232,6 +232,9 @@ export type Database = {
           id: string
           invitation_message: string | null
           invited_at: string
+          payment_fixed_amount: number | null
+          payment_percentage: number | null
+          payment_type: string | null
           responded_at: string | null
           response_message: string | null
           status: string
@@ -244,6 +247,9 @@ export type Database = {
           id?: string
           invitation_message?: string | null
           invited_at?: string
+          payment_fixed_amount?: number | null
+          payment_percentage?: number | null
+          payment_type?: string | null
           responded_at?: string | null
           response_message?: string | null
           status?: string
@@ -256,6 +262,9 @@ export type Database = {
           id?: string
           invitation_message?: string | null
           invited_at?: string
+          payment_fixed_amount?: number | null
+          payment_percentage?: number | null
+          payment_type?: string | null
           responded_at?: string | null
           response_message?: string | null
           status?: string
