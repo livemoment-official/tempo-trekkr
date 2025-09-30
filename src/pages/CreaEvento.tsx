@@ -38,6 +38,8 @@ interface EventData {
     enabled: boolean;
     message: string;
     type: "open" | "invite_only";
+    artistMessage?: string;
+    venueMessage?: string;
   };
   photos: string[];
 }
@@ -70,7 +72,9 @@ export default function CreaEvento() {
     callToAction: {
       enabled: false,
       message: "",
-      type: "open"
+      type: "open",
+      artistMessage: "",
+      venueMessage: ""
     },
     photos: []
   });

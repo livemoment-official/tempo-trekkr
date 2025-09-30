@@ -76,7 +76,7 @@ export default function EventPreviewStep({
         title: data.title,
         description: data.description,
         when_at,
-        place: data.location.name ? {
+        place: data.location?.name ? {
           name: data.location.name,
           coordinates: data.location.coordinates
         } : null,
@@ -135,7 +135,7 @@ export default function EventPreviewStep({
                 {data.startTime && <span>alle {data.startTime}</span>}
               </div>}
             
-            {data.location.name && <div className="flex items-center gap-2 text-sm">
+            {data.location?.name && <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{data.location.name}</span>
               </div>}
