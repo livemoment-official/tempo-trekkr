@@ -55,18 +55,20 @@ export default function EnhancedEventDetailsStep({
     return "";
   };
   const handleAddTag = (tag: string) => {
-    if (tag && !data.tags.includes(tag)) {
+    const currentTags = Array.isArray(data.tags) ? data.tags : [];
+    if (tag && !currentTags.includes(tag)) {
       onChange({
         ...data,
-        tags: [...data.tags, tag]
+        tags: [...currentTags, tag]
       });
     }
     setNewTag("");
   };
   const handleRemoveTag = (tagToRemove: string) => {
+    const currentTags = Array.isArray(data.tags) ? data.tags : [];
     onChange({
       ...data,
-      tags: data.tags.filter((tag: string) => tag !== tagToRemove)
+      tags: currentTags.filter((tag: string) => tag !== tagToRemove)
     });
   };
   const handleDateSelect = (date: Date | undefined) => {
@@ -121,7 +123,7 @@ export default function EnhancedEventDetailsStep({
             Titolo dell'evento *
             {getFieldValidationStatus('title') === 'valid' && <Badge variant="outline" className="text-xs">✓</Badge>}
           </Label>
-          <Input id="title" value={data.title} onChange={e => onChange({
+          <Input id="title" value={data.title ?? ""} onChange={e => onChange({
           ...data,
           title: e.target.value
         })} onFocus={() => setFocusedField('title')} onBlur={() => setFocusedField(null)} placeholder="Nome del tuo evento..." className={`transition-all ${getFieldValidationStatus('title') === 'valid' ? 'border-green-500/50 focus:border-green-500' : 'focus:border-primary'}`} required />
@@ -137,7 +139,7 @@ export default function EnhancedEventDetailsStep({
             Descrizione
             {getFieldValidationStatus('description') === 'valid' && <Badge variant="outline" className="text-xs">✓</Badge>}
           </Label>
-          <Textarea id="description" value={data.description} onChange={e => onChange({
+          <Textarea id="description" value={data.description ?? ""} onChange={e => onChange({
           ...data,
           description: e.target.value
         })} onFocus={() => setFocusedField('description')} onBlur={() => setFocusedField(null)} placeholder={getSmartPlaceholder()} className={`transition-all ${getFieldValidationStatus('description') === 'valid' ? 'border-green-500/50 focus:border-green-500' : 'focus:border-primary'}`} rows={4} />
@@ -150,7 +152,7 @@ export default function EnhancedEventDetailsStep({
         <div className="space-y-3">
           <Label className="text-base font-medium">Categorie evento</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {eventCategories.map(tag => <Badge key={tag} variant={data.tags.includes(tag) ? "default" : "outline"} className="cursor-pointer justify-center py-2 hover:scale-105 transition-transform" onClick={() => handleAddTag(tag)}>
+            {eventCategories.map(tag => <Badge key={tag} variant={(Array.isArray(data.tags) ? data.tags : []).includes(tag) ? "default" : "outline"} className="cursor-pointer justify-center py-2 hover:scale-105 transition-transform" onClick={() => handleAddTag(tag)}>
                 {tag}
               </Badge>)}
           </div>
@@ -167,8 +169,8 @@ export default function EnhancedEventDetailsStep({
             </Button>
           </div>
 
-          {data.tags.length > 0 && <div className="flex flex-wrap gap-2">
-              {data.tags.map((tag: string) => <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+          {(data.tags?.length ?? 0) > 0 && <div className="flex flex-wrap gap-2">
+              {(data.tags ?? []).map((tag: string) => <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   {tag}
                   <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => handleRemoveTag(tag)} />
                 </Badge>)}
@@ -217,7 +219,7 @@ export default function EnhancedEventDetailsStep({
               Ora inizio *
               {getFieldValidationStatus('startTime') === 'valid' && <Badge variant="outline" className="text-xs">✓</Badge>}
             </Label>
-            <Input id="startTime" type="time" value={data.startTime} onChange={e => onChange({
+            <Input id="startTime" type="time" value={data.startTime ?? ""} onChange={e => onChange({
             ...data,
             startTime: e.target.value
           })} className={`transition-all ${getFieldValidationStatus('startTime') === 'valid' ? 'border-green-500/50 focus:border-green-500' : 'focus:border-primary'}`} required />
@@ -225,7 +227,7 @@ export default function EnhancedEventDetailsStep({
 
           <div className="space-y-2">
             <Label htmlFor="endTime" className="text-base font-medium">Ora fine</Label>
-            <Input id="endTime" type="time" value={data.endTime} onChange={e => onChange({
+            <Input id="endTime" type="time" value={data.endTime ?? ""} onChange={e => onChange({
             ...data,
             endTime: e.target.value
           })} className="transition-all focus:border-primary" />
@@ -238,7 +240,7 @@ export default function EnhancedEventDetailsStep({
             Location
             {getFieldValidationStatus('location') === 'valid' && <Badge variant="outline" className="text-xs">✓</Badge>}
           </Label>
-          <LocationSearchInput value={data.location.name} onChange={handleLocationChange} placeholder="Dove si svolgerà l'evento..." />
+          <LocationSearchInput value={data.location?.name ?? ""} onChange={handleLocationChange} placeholder="Dove si svolgerà l'evento..." />
         </div>
       </form>
     </div>;
