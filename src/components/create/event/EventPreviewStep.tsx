@@ -83,9 +83,9 @@ export default function EventPreviewStep({
         max_participants: data.capacity,
         photos: photoUrls,
         tags: data.tags,
-        mood_tag: data.tags[0],
+        mood_tag: data.tags?.[0],
         ticketing: data.ticketing,
-        registration_status: data.callToAction.type === 'invite_only' ? 'invite_only' : 'open'
+        registration_status: data.callToAction?.type === 'invite_only' ? 'invite_only' : 'open'
       });
       if (error) throw error;
       toast({
@@ -118,7 +118,7 @@ export default function EventPreviewStep({
             {data.description && <p className="text-muted-foreground mb-4">{data.description}</p>}
             
             {/* Tags */}
-            {data.tags.length > 0 && <div className="flex flex-wrap gap-2 mb-4">
+            {data.tags && data.tags.length > 0 && <div className="flex flex-wrap gap-2 mb-4">
                 {data.tags.map((tag: string) => <Badge key={tag} variant="secondary">
                     {tag}
                   </Badge>)}
@@ -155,7 +155,7 @@ export default function EventPreviewStep({
           </div>
 
           {/* Selected artists */}
-          {data.selectedArtists.length > 0 && <div>
+          {data.selectedArtists && data.selectedArtists.length > 0 && <div>
               <h5 className="font-medium mb-3 flex items-center gap-2">
                 <Music className="h-4 w-4" />
                 Artisti invitati ({data.selectedArtists.length})
@@ -169,7 +169,7 @@ export default function EventPreviewStep({
             </div>}
 
           {/* Selected venues */}
-          {data.selectedVenues.length > 0 && <div>
+          {data.selectedVenues && data.selectedVenues.length > 0 && <div>
               <h5 className="font-medium mb-3 flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 Location contattate ({data.selectedVenues.length})
@@ -183,7 +183,7 @@ export default function EventPreviewStep({
             </div>}
 
           {/* Call to action */}
-          {data.callToAction.enabled && <div>
+          {data.callToAction?.enabled && <div>
               <h5 className="font-medium mb-3">Call-to-Action</h5>
               <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
@@ -216,7 +216,7 @@ export default function EventPreviewStep({
           <li>• Gli artisti e le location selezionate riceveranno una notifica</li>
           <li>• L'evento sarà visibile agli utenti secondo le tue impostazioni</li>
           <li>• Potrai gestire partecipazioni e modificare dettagli</li>
-          {data.callToAction.enabled && <li>• Gli utenti potranno rispondere al tuo call-to-action</li>}
+          {data.callToAction?.enabled && <li>• Gli utenti potranno rispondere al tuo call-to-action</li>}
         </ul>
       </div>
 
