@@ -8,8 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Users, DollarSign, Percent, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Trash2, Euro, Ticket } from "lucide-react";
 import { useState, useEffect } from "react";
 export interface TicketPhase {
   name: string;
@@ -37,11 +36,15 @@ interface AdvancedTicketingSystemProps {
     avatar_url?: string;
     stage_name?: string;
   }>;
+  maxParticipants?: number;
+  simplified?: boolean; // For moments, show simplified version
 }
 export const AdvancedTicketingSystem = ({
   data,
   onChange,
-  selectedArtists = []
+  selectedArtists = [],
+  maxParticipants,
+  simplified = false
 }: AdvancedTicketingSystemProps) => {
   const [ticketingData, setTicketingData] = useState<AdvancedTicketingData>(data || {
     enabled: false,
@@ -146,8 +149,15 @@ export const AdvancedTicketingSystem = ({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Sistema di Ticketing Avanzato</CardTitle>
-              <CardDescription>Configura fasi di vendita e divisione ricavi</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Ticket className="h-5 w-5" />
+                {simplified ? "Biglietti a Pagamento" : "Sistema di Ticketing Avanzato"}
+              </CardTitle>
+              <CardDescription>
+                {simplified 
+                  ? "Configura il prezzo per la partecipazione" 
+                  : "Configura fasi di vendita e divisione ricavi"}
+              </CardDescription>
             </div>
             <Switch
               checked={ticketingData.enabled}
@@ -230,16 +240,41 @@ export const AdvancedTicketingSystem = ({
                           value={phase.maxTickets}
                           onChange={(e) => updatePhase(index, { maxTickets: Number(e.target.value) })}
                           min="0"
+                          max={maxParticipants}
+                          placeholder={maxParticipants ? `Max ${maxParticipants}` : "Nessun limite"}
                         />
+                        {maxParticipants && (
+                          <p className="text-xs text-muted-foreground">
+                            Massimo: {maxParticipants} partecipanti
+                          </p>
+                        )}
                       </div>
                     </div>
+
+                    {/* Price Preview for Simplified Mode */}
+                    {simplified && phase.price > 0 && (
+                      <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Prezzo base:</span>
+                          <span className="font-medium">{phase.price.toFixed(2)} {currencySymbol}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Fee LiveMoment (5%):</span>
+                          <span>{(phase.price * 0.05).toFixed(2)} {currencySymbol}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold pt-1 border-t">
+                          <span>Totale utente:</span>
+                          <span>{(phase.price * 1.05).toFixed(2)} {currencySymbol}</span>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            {/* Artist Payment Splits */}
-            {selectedArtists.length > 0 && (
+            {/* Artist Payment Splits - Only for events (not simplified mode) */}
+            {!simplified && selectedArtists.length > 0 && (
               <>
                 <Separator />
                 <div className="space-y-4">

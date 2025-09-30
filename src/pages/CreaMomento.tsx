@@ -21,18 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { TicketingSystem } from "@/components/TicketingSystem";
 import StandardHeader from "@/components/layout/StandardHeader";
-interface TicketingData {
-  enabled: boolean;
-  price: number;
-  currency: string;
-  maxTickets?: number;
-  ticketType: "standard" | "vip" | "early_bird";
-  description?: string;
-  livemomentFeePercentage?: number;
-  organizerFeePercentage?: number;
-}
+import { AdvancedTicketingSystem, AdvancedTicketingData } from "@/components/create/event/AdvancedTicketingSystem";
 
 interface MomentData {
   title: string;
@@ -45,7 +35,7 @@ interface MomentData {
   place: any;
   is_public: boolean;
   max_participants?: number;
-  ticketing?: TicketingData;
+  advancedTicketing?: AdvancedTicketingData;
 }
 const popularCategories = ["Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio"];
 export default function CreaMomento() {
@@ -67,14 +57,6 @@ export default function CreaMomento() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [isUploading, setIsUploading] = useState(false);
-  const [ticketingData, setTicketingData] = useState<TicketingData>({
-    enabled: false,
-    price: 0,
-    currency: 'EUR',
-    ticketType: 'standard',
-    livemomentFeePercentage: 5,
-    organizerFeePercentage: 0
-  });
   const {
     toast
   } = useToast();
@@ -325,6 +307,10 @@ export default function CreaMomento() {
         }
       } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+      // Calculate price from first phase if ticketing enabled
+      const firstPhase = momentData.advancedTicketing?.phases?.[0];
+      const ticketingEnabled = !!(momentData.advancedTicketing?.enabled && firstPhase);
+      
       const momentToCreate = {
         title: momentData.title,
         description: momentData.description,
@@ -338,12 +324,12 @@ export default function CreaMomento() {
         max_participants: momentData.max_participants,
         host_id: user.id,
         participants: [user.id],
-        payment_required: ticketingData.enabled,
-        price_cents: ticketingData.enabled ? Math.round(ticketingData.price * 100) : 0,
-        currency: ticketingData.currency,
-        livemoment_fee_percentage: ticketingData.livemomentFeePercentage || 5,
-        organizer_fee_percentage: ticketingData.organizerFeePercentage || 0,
-        ticketing: ticketingData.enabled ? ticketingData as any : null
+        payment_required: ticketingEnabled || false,
+        price_cents: ticketingEnabled ? Math.round(firstPhase.price * 100) : 0,
+        currency: momentData.advancedTicketing?.currency || 'EUR',
+        livemoment_fee_percentage: 5,
+        organizer_fee_percentage: 0,
+        ticketing: ticketingEnabled ? momentData.advancedTicketing as any : null
       };
       const {
         data: newMoment,
@@ -546,10 +532,11 @@ export default function CreaMomento() {
               <Euro className="inline h-4 w-4 mr-1" />
               Biglietti
             </Label>
-            <TicketingSystem 
-              data={ticketingData} 
-              onChange={setTicketingData}
+            <AdvancedTicketingSystem 
+              data={momentData.advancedTicketing || { enabled: false, currency: 'EUR', phases: [] }}
+              onChange={(advancedTicketing) => setMomentData(prev => ({ ...prev, advancedTicketing }))}
               maxParticipants={momentData.max_participants}
+              simplified={true}
             />
           </div>
         </div>

@@ -14,8 +14,6 @@ import { useState, useEffect } from "react";
 import { useEventValidation } from "@/hooks/useEventValidation";
 import { Progress } from "@/components/ui/progress";
 import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
-import { AdvancedTicketingSystem } from "./AdvancedTicketingSystem";
-
 interface EnhancedEventDetailsStepProps {
   data: any;
   onChange: (data: any) => void;
@@ -37,7 +35,6 @@ export default function EnhancedEventDetailsStep({
   onNext
 }: EnhancedEventDetailsStepProps) {
   const [newTag, setNewTag] = useState("");
-  const [hasTicketing, setHasTicketing] = useState(!!data.ticketing?.price);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const validation = useEventValidation(data);
 
@@ -97,22 +94,6 @@ export default function EnhancedEventDetailsStep({
     }
   };
 
-  // Update ticketing state when hasTicketing changes
-  useEffect(() => {
-    if (!hasTicketing) {
-      onChange({
-        ...data,
-        ticketing: null
-      });
-    } else if (!data.ticketing) {
-      onChange({
-        ...data,
-        ticketing: {
-          price: 0
-        }
-      });
-    }
-  }, [hasTicketing, data, onChange]);
   const getFieldValidationStatus = (fieldName: string) => {
     switch (fieldName) {
       case 'title':
@@ -259,12 +240,6 @@ export default function EnhancedEventDetailsStep({
           </Label>
           <LocationSearchInput value={data.location.name} onChange={handleLocationChange} placeholder="Dove si svolgerà l'evento..." />
         </div>
-
-        {/* Advanced Ticketing */}
-        <AdvancedTicketingSystem
-          data={data.advancedTicketing || { enabled: false, currency: 'EUR', phases: [] }}
-          onChange={(advancedTicketing) => onChange({ ...data, advancedTicketing })}
-        />
       </form>
     </div>;
 }
