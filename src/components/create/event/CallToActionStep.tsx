@@ -26,12 +26,7 @@ export default function CallToActionStep({
     });
   };
   return <div className="space-y-6">
-      <div>
-        <Label className="text-base font-medium">Call-to-Action</Label>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configura come invitare persone al tuo evento
-        </p>
-      </div>
+      
 
       {/* Enable/Disable CTA */}
       <Card>
