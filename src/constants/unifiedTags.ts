@@ -2,9 +2,9 @@
 // This ensures consistency across the app for AI recommendations
 
 export const MOMENT_CATEGORIES = [
-  "Aperitivo", "Cena", "Caffè", "Sport", "Arte", "Musica", 
-  "Cinema", "Teatro", "Shopping", "Natura", "Fotografia", "Viaggio",
-  "Studio", "Lavoro", "Relax", "Festa", "Cultura", "Gaming"
+  "🍽️ Aperitivo", "🍷 Cena", "☕ Caffè", "⚽ Sport", "🎨 Arte", "🎵 Musica", 
+  "🎬 Cinema", "🎭 Teatro", "🛍️ Shopping", "🌳 Natura", "📸 Fotografia", "✈️ Viaggio",
+  "📚 Studio", "💼 Lavoro", "😌 Relax", "🎉 Festa", "🏛️ Cultura", "🎮 Gaming"
 ] as const;
 
 export const MOOD_TAGS = [
