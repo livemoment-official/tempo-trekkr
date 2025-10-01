@@ -21,27 +21,39 @@ export function useRealTimePresence() {
   const { location } = useUnifiedGeolocation();
   const [nearbyUsers, setNearbyUsers] = useState<UserPresence[]>([]);
   const [isOnline, setIsOnline] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Update own presence
+  // Update own presence with duplicate prevention
   const updatePresence = async (status?: string) => {
-    if (!user?.id) return;
+    if (!user?.id || isUpdating) return;
 
+    setIsUpdating(true);
     try {
       const { error } = await supabase
         .from('user_presence')
-        .upsert({
-          user_id: user.id,
-          location: location ? { lat: location.lat, lng: location.lng } : null,
-          is_online: true,
-          status,
-          last_seen: new Date().toISOString()
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            location: location ? { lat: location.lat, lng: location.lng } : null,
+            is_online: true,
+            status,
+            last_seen: new Date().toISOString()
+          },
+          {
+            onConflict: 'user_id',
+            ignoreDuplicates: false
+          }
+        );
 
       if (!error) {
         setIsOnline(true);
+      } else {
+        console.error('Presence update error:', error);
       }
     } catch (error) {
       console.error('Error updating presence:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -64,40 +76,60 @@ export function useRealTimePresence() {
     }
   };
 
-  // Load nearby users
+  // Load nearby users with error handling
   const loadNearbyUsers = async () => {
+    if (!user?.id) return;
+    
     try {
       // First get presence data
       const { data: presenceData, error } = await supabase
         .from('user_presence')
         .select('*')
         .eq('is_online', true)
-        .neq('user_id', user?.id || '');
+        .neq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching presence data:', error);
+        return;
+      }
+      
       if (!presenceData || presenceData.length === 0) {
         setNearbyUsers([]);
         return;
       }
 
-      // Get profiles for users
-      const userIds = presenceData.map(p => p.user_id);
-      const { data: profiles } = await supabase
+      // Get profiles for users - filter valid UUIDs only
+      const userIds = presenceData
+        .map(p => p.user_id)
+        .filter(id => id && typeof id === 'string' && id.length === 36);
+      
+      if (userIds.length === 0) {
+        setNearbyUsers([]);
+        return;
+      }
+
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, name, username, avatar_url')
         .in('id', userIds);
 
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
       const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      const usersWithProfiles = presenceData.map(presence => ({
-        ...presence,
-        location: presence.location as { lat: number; lng: number } | null,
-        user: profilesMap.get(presence.user_id) ? {
-          name: profilesMap.get(presence.user_id)!.name,
-          username: profilesMap.get(presence.user_id)!.username,
-          avatar_url: profilesMap.get(presence.user_id)!.avatar_url
-        } : undefined
-      }));
+      const usersWithProfiles = presenceData
+        .filter(presence => profilesMap.has(presence.user_id))
+        .map(presence => ({
+          ...presence,
+          location: presence.location as { lat: number; lng: number } | null,
+          user: {
+            name: profilesMap.get(presence.user_id)!.name || 'Utente',
+            username: profilesMap.get(presence.user_id)!.username || 'user',
+            avatar_url: profilesMap.get(presence.user_id)!.avatar_url || ''
+          }
+        }));
 
       // Filter by distance if user has location
       if (location) {
@@ -120,6 +152,7 @@ export function useRealTimePresence() {
       }
     } catch (error) {
       console.error('Error loading nearby users:', error);
+      setNearbyUsers([]);
     }
   };
 
