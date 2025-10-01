@@ -33,7 +33,7 @@ export default function InvitePreviewStep({
       'Fotografia': '📸',
       'Concerto': '🎵',
     };
-    return emojiMap[title] || '✨';
+    return emojiMap[title] || '';
   };
   return (
     <div className="space-y-6">

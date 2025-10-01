@@ -34,7 +34,7 @@ function getCategoryEmoji(category: string): string {
     'Relax': '🧘',
     'Famiglia': '👨‍👩‍👧‍👦',
     'Lavoro': '💼',
-    'Spontaneo': '✨',
+    'Spontaneo': '🎲',
     'Arte': '🎨',
     'Musica': '🎵',
     'Gaming': '🎮',
@@ -56,7 +56,7 @@ function getCategoryEmoji(category: string): string {
     'Lettura': '📖',
     'Cucina': '👨‍🍳'
   };
-  return emojiMap[category] || '✨';
+  return emojiMap[category] || '';
 }
 
 function getSubcategoriesForCategory(category: string): string[] {
@@ -158,7 +158,7 @@ export const MomentFilters = ({
                 onClick={() => handleCategoryChange("all")}
                 className="flex items-center gap-2 whitespace-nowrap shrink-0"
               >
-                ✨ Tutti
+                Tutti
               </Button>
               {mainCategories.map((category) => (
                 <Button

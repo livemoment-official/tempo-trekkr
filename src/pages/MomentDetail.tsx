@@ -195,13 +195,13 @@ export default function MomentDetail() {
       'arte': '🎨',
       'cibo': '🍕',
       'natura': '🌿',
-      'spontaneo': '✨',
+      'spontaneo': '🎲',
       'relax': '😌',
       'energia': '⚡',
       'avventura': '🗺️',
       'social': '👥'
     };
-    return categories[tag.toLowerCase()] || '✨';
+    return categories[tag.toLowerCase()] || '';
   };
 
   const handleParticipate = async () => {
@@ -305,7 +305,7 @@ export default function MomentDetail() {
               <span className="text-8xl">
                 {moment.tags && moment.tags.length > 0 
                   ? getCategoryEmoji(moment.tags[0])
-                  : '✨'
+                  : '📍'
                 }
               </span>
             </div>

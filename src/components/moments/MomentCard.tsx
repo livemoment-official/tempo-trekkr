@@ -123,7 +123,7 @@ export function MomentCard({
       'cibo': '🍕',
       'natura': '🌿'
     };
-    return categories[cat.toLowerCase()] || '✨';
+    return categories[cat.toLowerCase()] || '';
   };
 
   return (
