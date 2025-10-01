@@ -30,20 +30,16 @@ const Header = ({
     isLoading,
     user
   } = useAuth();
-  const { avatarUrl } = useProfileAvatar();
+  const {
+    avatarUrl
+  } = useProfileAvatar();
 
   // Check if we're on inviti page for transparent header
   const isInvitiPage = location.pathname === '/inviti';
-  
+
   // Debug log per verificare lo stato di autenticazione
   console.log('Header - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
-  
-  return <header className={cn(
-    "sticky top-0 z-40", 
-    isInvitiPage 
-      ? "bg-transparent border-transparent" 
-      : "border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light"
-  )}>
+  return <header className={cn("sticky top-0 z-40", isInvitiPage ? "bg-transparent border-transparent" : "border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light")}>
       <div className="mx-auto flex h-16 w-full max-w-screen-sm md:max-w-screen-lg items-center justify-between px-5 md:px-8">
         {/* LiveMoment Logo - Top Left */}
         <button className="flex items-center gap-2 hover-scale press-scale" aria-label="LiveMoment Home" onClick={() => navigate("/")}>
@@ -59,9 +55,7 @@ const Header = ({
           
           {/* My Events with notification */}
           <NavLink to="/my-events" className="relative">
-            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
-              <CalendarDays className="h-5 w-5" />
-            </Button>
+            
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
@@ -136,7 +130,7 @@ export default function AppLayout() {
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
   const isInviteCreatePage = pathname === '/crea/invito';
-  
+
   // Check if we need to show the fixed chat input (only on /esplora, not on chat page)
   const showChatInput = pathname === '/esplora';
   useEffect(() => {
@@ -144,27 +138,20 @@ export default function AppLayout() {
   }, [pathname]);
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm md:max-w-screen-lg flex-col">
       {/* Custom header for invite creation */}
-      {isInviteCreatePage && (
-        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
+      {isInviteCreatePage && <header className="sticky top-0 z-40 border-b border-border/50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/85 shadow-ios-light">
           <div className="mx-auto flex h-16 w-full max-w-screen-sm md:max-w-screen-lg items-center justify-between px-5 md:px-8">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/crea')}
-              className="h-10 gap-2"
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/crea')} className="h-10 gap-2">
               <ArrowLeft className="h-5 w-5" />
               <span>Indietro</span>
             </Button>
             <h1 className="text-lg font-semibold">Crea Invito</h1>
             <div className="w-24" /> {/* Spacer for centering */}
           </div>
-        </header>
-      )}
+        </header>}
       {!isCreatePage && !isInviteCreatePage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
       {!isAuthenticated && !isCreatePage && !isInviteCreatePage && <GuestBanner />}
       {!isCreatePage && !isInviteCreatePage && <UnconfirmedUserBanner />}
-      <main className={(isCreatePage || isInviteCreatePage) ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
+      <main className={isCreatePage || isInviteCreatePage ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
         <Outlet />
       </main>
 
