@@ -58,18 +58,7 @@ export default function CallToActionStep({
           </AlertDescription>
         </Alert>}
 
-      <Alert className="border-primary/20 bg-primary/5">
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          <div className="space-y-2">
-            <p className="font-medium">💡 Personalizza il tuo messaggio</p>
-            <p className="text-sm">
-              Un messaggio chiaro e personalizzato aumenta le possibilità di accettazione. Spiega la <strong>natura dell'evento</strong>, 
-              perché hai scelto proprio loro e cosa offre questa collaborazione.
-            </p>
-          </div>
-        </AlertDescription>
-      </Alert>
+      
 
       {/* Inviti Professionali - Artisti */}
       {hasArtists && <Card className="border-2 border-primary/30">
