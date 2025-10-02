@@ -35,6 +35,12 @@ interface EventData {
   advancedTicketing?: AdvancedTicketingData;
   selectedArtists: string[];
   selectedVenues: string[];
+  artistCollaborationType?: 'emergent' | 'professional' | 'both';
+  artistPaymentType?: 'with_cachet' | 'without_cachet' | 'both';
+  venueAccessType?: 'private_rental' | 'public_booking' | 'both';
+  venueCollaborationType?: 'rental_only' | 'partnership' | 'both';
+  budgetRange?: { min: number; max: number };
+  venueAgreementType?: string;
   callToAction: {
     enabled: boolean;
     message: string;
@@ -96,16 +102,16 @@ export default function CreaEvento() {
     component: VenueSelectionStep
   }, {
     id: 4,
+    title: "Invita",
+    component: CallToActionStep
+  }, {
+    id: 5,
     title: "Ticketing",
     component: EventTicketingStep
   }, {
-    id: 5,
+    id: 6,
     title: "Media",
     component: EventPhotoUploadStep
-  }, {
-    id: 6,
-    title: "Invita",
-    component: CallToActionStep
   }, {
     id: 7,
     title: "Anteprima",

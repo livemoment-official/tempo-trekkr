@@ -66,18 +66,32 @@ export default function CallToActionStep({
       <div className="space-y-2">
         <h2 className="text-xl font-bold">Gestione Inviti e Partecipazione</h2>
         <p className="text-sm text-muted-foreground">
-          Configura come artisti, location e pubblico possono interagire con il tuo evento
+          Personalizza i messaggi per artisti e location selezionati, poi configura l'accesso pubblico
         </p>
       </div>
+
+      {/* Riepilogo selezioni */}
+      {(hasArtists || hasVenues) && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p className="font-medium">Riepilogo Collaboratori</p>
+              {hasArtists && <p className="text-sm">✨ {data.selectedArtists.length} artista/i selezionato/i</p>}
+              {hasVenues && <p className="text-sm">📍 {data.selectedVenues.length} location selezionata/e (prima che accetta vince!)</p>}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Alert className="border-primary/20 bg-primary/5">
         <Info className="h-4 w-4" />
         <AlertDescription>
           <div className="space-y-2">
-            <p className="font-medium">Richieste di Collaborazione Professionale</p>
+            <p className="font-medium">💡 Personalizza il tuo messaggio</p>
             <p className="text-sm">
-              Le richieste per artisti e location sono <strong>inviti professionali diretti</strong> che appariranno 
-              <strong> pinnati in alto</strong> nella sezione "Inviti" della loro app, con badge distintivi e tutte le informazioni dell'evento.
+              Un messaggio chiaro e personalizzato aumenta le possibilità di accettazione. Spiega la <strong>natura dell'evento</strong>, 
+              perché hai scelto proprio loro e cosa offre questa collaborazione.
             </p>
           </div>
         </AlertDescription>

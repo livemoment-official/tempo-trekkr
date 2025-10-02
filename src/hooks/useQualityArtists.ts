@@ -23,6 +23,7 @@ export interface ArtistProfile {
   audience_size?: string;
   performance_duration?: string;
   profile_video_url?: string;
+  cachet_info?: any;
   // Add completeness score
   completeness_score?: number;
   is_complete?: boolean;

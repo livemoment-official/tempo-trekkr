@@ -24,6 +24,8 @@ export default function ArtistSelectionStep({
   const [onlyComplete, setOnlyComplete] = useState(true);
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minScore, setMinScore] = useState(50);
+  const [paymentType, setPaymentType] = useState<'both' | 'with_cachet' | 'without_cachet'>('both');
+  const [collaborationType, setCollaborationType] = useState<'both' | 'emergent' | 'professional'>('both');
   
   const {
     data: artists,
@@ -33,7 +35,35 @@ export default function ArtistSelectionStep({
     onlyVerified,
     minCompletenessScore: minScore
   });
-  const filteredArtists = artists?.filter(artist => artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase())) || [];
+  const filteredArtists = artists?.filter(artist => {
+    // Text search
+    const matchesSearch = artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Payment type filter
+    if (paymentType !== 'both') {
+      const hasCachet = artist.cachet_info && Object.keys(artist.cachet_info).length > 0;
+      if (paymentType === 'with_cachet' && !hasCachet) return false;
+      if (paymentType === 'without_cachet' && hasCachet) return false;
+    }
+
+    // Collaboration type filter
+    if (collaborationType !== 'both') {
+      // We consider "emergent" as artists with less experience or without cachet
+      // and "professional" as verified or with cachet
+      const isEmergent = !artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0);
+      const isProfessional = artist.verified || (artist.cachet_info && Object.keys(artist.cachet_info).length > 0);
+      
+      if (collaborationType === 'emergent' && !isEmergent) return false;
+      if (collaborationType === 'professional' && !isProfessional) return false;
+    }
+
+    return true;
+  }) || [];
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -56,9 +86,11 @@ export default function ArtistSelectionStep({
       <Card className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Filtri Qualità</span>
+          <span className="text-sm font-medium">Filtri Ricerca</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Quality Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="complete-only" className="text-sm">Solo profili completi</Label>
             <Switch 
@@ -86,6 +118,78 @@ export default function ArtistSelectionStep({
               onChange={(e) => setMinScore(Number(e.target.value))}
               className="w-full accent-primary"
             />
+          </div>
+        </div>
+
+        {/* Advanced Filters */}
+        <div className="border-t pt-4 space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Tipo di Compenso</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={paymentType === 'both' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentType('both')}
+                className="flex-1"
+              >
+                Tutti
+              </Button>
+              <Button
+                type="button"
+                variant={paymentType === 'with_cachet' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentType('with_cachet')}
+                className="flex-1"
+              >
+                Con Cachet
+              </Button>
+              <Button
+                type="button"
+                variant={paymentType === 'without_cachet' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPaymentType('without_cachet')}
+                className="flex-1"
+              >
+                Senza Cachet
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Tipo di Collaborazione</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={collaborationType === 'both' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('both')}
+                className="flex-1"
+              >
+                Tutti
+              </Button>
+              <Button
+                type="button"
+                variant={collaborationType === 'emergent' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('emergent')}
+                className="flex-1"
+              >
+                Progetto Emergente
+              </Button>
+              <Button
+                type="button"
+                variant={collaborationType === 'professional' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('professional')}
+                className="flex-1"
+              >
+                Lavoro Artistico
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <strong>Emergente:</strong> collaborazione alla pari, visibilità reciproca • <strong>Artistico:</strong> performance professionale retribuita
+            </p>
           </div>
         </div>
       </Card>
@@ -131,10 +235,22 @@ export default function ArtistSelectionStep({
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">{artist.artist_type}</p>
                         <CompletenessBar score={artist.completeness_score || 0} className="mb-2" />
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex gap-1 flex-wrap mb-2">
                           {artist.genres?.slice(0, 3).map(genre => <Badge key={genre} variant="outline" className="text-xs">
                               {genre}
                             </Badge>)}
+                        </div>
+                        <div className="flex gap-1 flex-wrap">
+                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              💰 Con Cachet
+                            </Badge>
+                          )}
+                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && (
+                            <Badge variant="outline" className="text-xs">
+                              🌱 Emergente
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -185,10 +301,22 @@ export default function ArtistSelectionStep({
                         <p className="text-sm text-muted-foreground mb-1">{artist.artist_type}</p>
                         <CompletenessBar score={artist.completeness_score || 0} className="mb-2" />
                         {artist.bio && <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{artist.bio}</p>}
-                        <div className="flex gap-1 flex-wrap">
+                        <div className="flex gap-1 flex-wrap mb-2">
                           {artist.genres?.slice(0, 3).map(genre => <Badge key={genre} variant="outline" className="text-xs">
                               {genre}
                             </Badge>)}
+                        </div>
+                        <div className="flex gap-1 flex-wrap">
+                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              💰 Con Cachet
+                            </Badge>
+                          )}
+                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && (
+                            <Badge variant="outline" className="text-xs">
+                              🌱 Emergente
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>

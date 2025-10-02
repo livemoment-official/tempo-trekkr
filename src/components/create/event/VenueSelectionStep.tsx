@@ -24,6 +24,8 @@ export default function VenueSelectionStep({
   const [onlyComplete, setOnlyComplete] = useState(true);
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minScore, setMinScore] = useState(50);
+  const [accessType, setAccessType] = useState<'both' | 'private_rental' | 'public_booking'>('both');
+  const [collaborationType, setCollaborationType] = useState<'both' | 'rental_only' | 'partnership'>('both');
   
   const {
     data: venues,
@@ -33,7 +35,35 @@ export default function VenueSelectionStep({
     onlyVerified,
     minCompletenessScore: minScore
   });
-  const filteredVenues = venues?.filter(venue => venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()))) || [];
+  const filteredVenues = venues?.filter(venue => {
+    // Text search
+    const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (!matchesSearch) return false;
+
+    // Access type filter
+    if (accessType !== 'both') {
+      const hasRental = venue.pricing && (venue.pricing as any).rental_cost;
+      const hasPublicBooking = venue.venue_type === 'bar' || venue.venue_type === 'restaurant' || venue.venue_type === 'club';
+      
+      if (accessType === 'private_rental' && !hasRental) return false;
+      if (accessType === 'public_booking' && !hasPublicBooking) return false;
+    }
+
+    // Collaboration type filter
+    if (collaborationType !== 'both') {
+      const supportsPartnership = venue.agreement_types?.includes('partnership') || venue.agreement_types?.includes('revenue_share');
+      const supportsRental = venue.pricing && (venue.pricing as any).rental_cost;
+      
+      if (collaborationType === 'partnership' && !supportsPartnership) return false;
+      if (collaborationType === 'rental_only' && !supportsRental) return false;
+    }
+
+    return true;
+  }) || [];
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -70,21 +100,23 @@ export default function VenueSelectionStep({
       <Card className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Filtri Qualità</span>
+          <span className="text-sm font-medium">Filtri Ricerca</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Quality Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="complete-only-venue" className="text-sm">Solo profili completi</Label>
+            <Label htmlFor="venue-complete" className="text-sm">Solo profili completi</Label>
             <Switch 
-              id="complete-only-venue"
+              id="venue-complete"
               checked={onlyComplete} 
               onCheckedChange={setOnlyComplete} 
             />
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="verified-only-venue" className="text-sm">Solo verificati</Label>
+            <Label htmlFor="venue-verified" className="text-sm">Solo verificate</Label>
             <Switch 
-              id="verified-only-venue"
+              id="venue-verified"
               checked={onlyVerified} 
               onCheckedChange={setOnlyVerified} 
             />
@@ -100,6 +132,78 @@ export default function VenueSelectionStep({
               onChange={(e) => setMinScore(Number(e.target.value))}
               className="w-full accent-primary"
             />
+          </div>
+        </div>
+
+        {/* Advanced Filters */}
+        <div className="border-t pt-4 space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Tipo di Accesso</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={accessType === 'both' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAccessType('both')}
+                className="flex-1"
+              >
+                Tutti
+              </Button>
+              <Button
+                type="button"
+                variant={accessType === 'private_rental' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAccessType('private_rental')}
+                className="flex-1"
+              >
+                🏢 Affitto Privato
+              </Button>
+              <Button
+                type="button"
+                variant={accessType === 'public_booking' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAccessType('public_booking')}
+                className="flex-1"
+              >
+                🌐 Prenotazione Pubblica
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Modalità di Collaborazione</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={collaborationType === 'both' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('both')}
+                className="flex-1"
+              >
+                Tutti
+              </Button>
+              <Button
+                type="button"
+                variant={collaborationType === 'rental_only' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('rental_only')}
+                className="flex-1"
+              >
+                Solo Affitto
+              </Button>
+              <Button
+                type="button"
+                variant={collaborationType === 'partnership' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCollaborationType('partnership')}
+                className="flex-1"
+              >
+                Partnership
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <strong>Affitto:</strong> costo fisso per l'intera sala • <strong>Partnership:</strong> accordo basato su revenue share o collaborazione
+            </p>
           </div>
         </div>
       </Card>
@@ -161,10 +265,22 @@ export default function VenueSelectionStep({
                             </>}
                         </div>
                         <CompletenessBar score={venue.completeness_score || 0} className="mb-2" />
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 mb-2">
                           {venue.amenities?.slice(0, 3).map(amenity => <Badge key={amenity} variant="outline" className="text-xs">
                               {amenity}
                             </Badge>)}
+                        </div>
+                        <div className="flex gap-1 flex-wrap">
+                          {venue.pricing && (venue.pricing as any).rental_cost && (
+                            <Badge variant="secondary" className="text-xs">
+                              💶 Affitto
+                            </Badge>
+                          )}
+                          {venue.agreement_types?.includes('partnership') && (
+                            <Badge variant="outline" className="text-xs">
+                              🤝 Partnership
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -232,10 +348,22 @@ export default function VenueSelectionStep({
                         </div>
                         <CompletenessBar score={venue.completeness_score || 0} className="mb-2" />
                         {venue.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{venue.description}</p>}
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 mb-2">
                           {venue.amenities?.slice(0, 3).map(amenity => <Badge key={amenity} variant="outline" className="text-xs">
                               {amenity}
                             </Badge>)}
+                        </div>
+                        <div className="flex gap-1 flex-wrap">
+                          {venue.pricing && (venue.pricing as any).rental_cost && (
+                            <Badge variant="secondary" className="text-xs">
+                              💶 Affitto
+                            </Badge>
+                          )}
+                          {venue.agreement_types?.includes('partnership') && (
+                            <Badge variant="outline" className="text-xs">
+                              🤝 Partnership
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>

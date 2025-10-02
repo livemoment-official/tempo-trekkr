@@ -23,6 +23,9 @@ export interface VenueProfile {
   contact_person_surname?: string;
   contact_phone?: string;
   contact_email?: string;
+  agreement_types?: string[];
+  max_capacity_standing?: number;
+  max_capacity_seated?: number;
   // Add completeness score
   completeness_score?: number;
   is_complete?: boolean;
