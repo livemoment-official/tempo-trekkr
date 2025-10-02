@@ -295,8 +295,14 @@ export default function ChatFullscreen() {
           onBack={() => navigate(-1)}
           onShowParticipants={() => {}}
           onShowSettings={() => {}}
-          showCreateMoment={chatInfo.type === 'moment'}
-          onCreateMoment={chatInfo.type === 'moment' ? handleShare : undefined}
+          showCreateMoment={chatInfo.type === 'moment' || isFriendChat}
+          onCreateMoment={
+            chatInfo.type === 'moment' 
+              ? handleShare 
+              : isFriendChat && targetUser
+                ? () => navigate(`/crea/momento?withUser=${targetUser.id}`)
+                : undefined
+          }
           eventDate={groupInfo?.date}
           eventTime={groupInfo?.time}
           location={groupInfo?.location}
