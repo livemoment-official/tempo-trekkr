@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 
 export function AreaIndicator() {
-  const { location, permission, isLoading: geoLoading, error } = useUnifiedGeolocation();
+  const { location, permission, isLoading: geoLoading, error, requestLocation } = useUnifiedGeolocation();
   const [areaName, setAreaName] = useState<string>("");
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
 
@@ -86,14 +86,21 @@ export function AreaIndicator() {
   }
 
   return (
-    <Badge variant="secondary" className="text-xs">
+    <Badge 
+      variant="secondary" 
+      className="text-xs cursor-pointer hover:bg-secondary/80 transition-colors"
+      onClick={() => requestLocation()}
+    >
       {isReverseGeocoding ? (
         <>
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
           Rilevamento area...
         </>
       ) : (
-        <>{areaName} (5 km)</>
+        <>
+          <MapPin className="h-3 w-3 mr-1" />
+          {areaName} (5 km)
+        </>
       )}
     </Badge>
   );

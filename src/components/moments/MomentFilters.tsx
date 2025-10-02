@@ -199,8 +199,6 @@ export const MomentFilters = ({
 
           {/* Advanced Filters and Area Indicator */}
           <div className="flex items-center gap-3">
-            <AreaIndicator />
-            
             <Sheet open={showAdvanced} onOpenChange={setShowAdvanced}>
             <SheetTrigger asChild>
               <Button 
@@ -216,6 +214,8 @@ export const MomentFilters = ({
                 )}
               </Button>
             </SheetTrigger>
+            
+            <AreaIndicator />
             
             <SheetContent side="right" className="w-[400px] sm:w-[540px]">
               <SheetHeader>
