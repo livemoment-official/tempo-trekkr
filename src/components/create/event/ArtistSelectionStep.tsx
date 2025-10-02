@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Search, User, Plus, Loader2, Filter } from "lucide-react";
 import { useQualityArtists } from "@/hooks/useQualityArtists";
 import { ProfileQualityBadge, CompletenessBar } from "@/components/ui/profile-quality-badge";
+import { safeIncludes, safeArrayLength } from "@/lib/safeUtils";
 interface ArtistSelectionStepProps {
   data: any;
   onChange: (data: any) => void;
@@ -37,14 +38,18 @@ export default function ArtistSelectionStep({
     setSearchQuery(query);
   };
   const toggleArtistSelection = (artistId: string) => {
-    const selectedArtists = data.selectedArtists.includes(artistId) ? data.selectedArtists.filter((id: string) => id !== artistId) : [...data.selectedArtists, artistId];
+    const currentSelected = data.selectedArtists || [];
+    const selectedArtists = safeIncludes(currentSelected, artistId) 
+      ? currentSelected.filter((id: string) => id !== artistId) 
+      : [...currentSelected, artistId];
     onChange({
       ...data,
       selectedArtists
     });
   };
   const getSelectedArtists = () => {
-    return artists?.filter(artist => data.selectedArtists.includes(artist.id)) || [];
+    const currentSelected = data.selectedArtists || [];
+    return artists?.filter(artist => safeIncludes(currentSelected, artist.id)) || [];
   };
   return <div className="space-y-6">
       {/* Filters */}
@@ -97,8 +102,8 @@ export default function ArtistSelectionStep({
         </div>}
 
       {/* Selected artists */}
-      {data.selectedArtists.length > 0 && !isLoading && <div>
-          <h4 className="font-medium mb-3">Artisti selezionati ({data.selectedArtists.length})</h4>
+      {safeArrayLength(data.selectedArtists) > 0 && !isLoading && <div>
+          <h4 className="font-medium mb-3">Artisti selezionati ({safeArrayLength(data.selectedArtists)})</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {getSelectedArtists().map(artist => <Card key={artist.id} className="border-primary/50">
                 <CardContent className="p-4">
@@ -153,7 +158,7 @@ export default function ArtistSelectionStep({
       {!isLoading && <div>
         <h4 className="font-medium mb-3">Artisti disponibili</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filteredArtists.filter(artist => !data.selectedArtists.includes(artist.id)).map(artist => <Card key={artist.id} className="hover:shadow-md transition-shadow cursor-pointer">
+          {filteredArtists.filter(artist => !safeIncludes(data.selectedArtists || [], artist.id)).map(artist => <Card key={artist.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -204,7 +209,7 @@ export default function ArtistSelectionStep({
         </div>
       </div>}
 
-      {filteredArtists.filter(artist => !data.selectedArtists.includes(artist.id)).length === 0 && <div className="text-center py-8 text-muted-foreground">
+      {filteredArtists.filter(artist => !safeIncludes(data.selectedArtists || [], artist.id)).length === 0 && <div className="text-center py-8 text-muted-foreground">
           <p>Nessun artista trovato</p>
         </div>}
 
