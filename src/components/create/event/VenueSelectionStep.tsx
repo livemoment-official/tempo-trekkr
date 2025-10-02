@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Search, MapPin, Users, Plus, Loader2, Filter } from "lucide-react";
 import { useQualityVenues } from "@/hooks/useQualityVenues";
 import { ProfileQualityBadge, CompletenessBar } from "@/components/ui/profile-quality-badge";
+import { safeIncludes, safeArrayLength } from "@/lib/safeUtils";
 interface VenueSelectionStepProps {
   data: any;
   onChange: (data: any) => void;
@@ -39,19 +40,20 @@ export default function VenueSelectionStep({
   const maxVenues = 3; // Limite massimo venues
 
   const toggleVenueSelection = (venueId: string) => {
-    const isSelected = data.selectedVenues.includes(venueId);
+    const currentSelected = data.selectedVenues || [];
+    const isSelected = safeIncludes(currentSelected, venueId);
     
     if (isSelected) {
       // Rimuovi venue
-      const selectedVenues = data.selectedVenues.filter((id: string) => id !== venueId);
+      const selectedVenues = currentSelected.filter((id: string) => id !== venueId);
       onChange({
         ...data,
         selectedVenues
       });
     } else {
       // Aggiungi venue se non supera il limite
-      if (data.selectedVenues.length < maxVenues) {
-        const selectedVenues = [...data.selectedVenues, venueId];
+      if (safeArrayLength(currentSelected) < maxVenues) {
+        const selectedVenues = [...currentSelected, venueId];
         onChange({
           ...data,
           selectedVenues
@@ -60,7 +62,8 @@ export default function VenueSelectionStep({
     }
   };
   const getSelectedVenues = () => {
-    return venues?.filter(venue => data.selectedVenues.includes(venue.id)) || [];
+    const currentSelected = data.selectedVenues || [];
+    return venues?.filter(venue => safeIncludes(currentSelected, venue.id)) || [];
   };
   return <div className="space-y-6">
       {/* Filters */}
@@ -113,9 +116,9 @@ export default function VenueSelectionStep({
         </div>}
 
       {/* Selected venues */}
-      {data.selectedVenues.length > 0 && !isLoading && <div>
+      {safeArrayLength(data.selectedVenues) > 0 && !isLoading && <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium">Location selezionate ({data.selectedVenues.length}/{maxVenues})</h4>
+            <h4 className="font-medium">Location selezionate ({safeArrayLength(data.selectedVenues)}/{maxVenues})</h4>
             <div className="text-sm text-muted-foreground">
               Prima che accetta vince!
             </div>
@@ -185,17 +188,17 @@ export default function VenueSelectionStep({
       {!isLoading && <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-medium">Location disponibili</h4>
-          {data.selectedVenues.length >= maxVenues && (
+          {safeArrayLength(data.selectedVenues) >= maxVenues && (
             <Badge variant="secondary" className="text-xs">
               Limite raggiunto ({maxVenues})
             </Badge>
           )}
         </div>
         <div className="grid grid-cols-1 gap-3">
-          {filteredVenues.filter(venue => !data.selectedVenues.includes(venue.id)).map(venue => <Card 
+          {filteredVenues.filter(venue => !safeIncludes(data.selectedVenues || [], venue.id)).map(venue => <Card 
               key={venue.id} 
               className={`hover:shadow-md transition-all cursor-pointer ${
-                data.selectedVenues.length >= maxVenues ? 'opacity-50' : ''
+                safeArrayLength(data.selectedVenues) >= maxVenues ? 'opacity-50' : ''
               }`}
             >
                 <CardContent className="p-4">
@@ -241,7 +244,7 @@ export default function VenueSelectionStep({
                         variant="outline" 
                         size="sm" 
                         onClick={() => toggleVenueSelection(venue.id)}
-                        disabled={data.selectedVenues.length >= maxVenues}
+                        disabled={safeArrayLength(data.selectedVenues) >= maxVenues}
                         className="min-w-[80px]"
                       >
                         <Plus className="h-4 w-4 mr-1" />
@@ -254,7 +257,7 @@ export default function VenueSelectionStep({
         </div>
       </div>}
 
-      {!isLoading && filteredVenues.filter(venue => !data.selectedVenues.includes(venue.id)).length === 0 && <div className="text-center py-8 text-muted-foreground">
+      {!isLoading && filteredVenues.filter(venue => !safeIncludes(data.selectedVenues || [], venue.id)).length === 0 && <div className="text-center py-8 text-muted-foreground">
           <p>Nessuna location trovata</p>
         </div>}
 
