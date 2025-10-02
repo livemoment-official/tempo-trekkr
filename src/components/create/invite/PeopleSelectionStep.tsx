@@ -108,7 +108,7 @@ export default function PeopleSelectionStep({
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            {person.distance_km !== undefined && (
+                            {person.distance_km != null && (
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
                                 {person.distance_km.toFixed(1)}km
