@@ -114,7 +114,7 @@ export default function InvitePreviewStep({
                         <p className="text-xs text-muted-foreground">{user.job_title}</p>
                       )}
                     </div>
-                    {user.distance_km !== undefined && (
+                    {user.distance_km != null && (
                       <Badge variant="outline" className="text-xs">
                         {user.distance_km.toFixed(1)}km
                       </Badge>
