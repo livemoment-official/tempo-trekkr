@@ -45,14 +45,14 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
       }
     }
 
-    // Event is in progress
-    return {
-      status: 'in_progress',
-      label: 'In corso',
-      className: 'bg-white/90 text-amber-700 border border-amber-200',
-      icon: '🔴',
-      iconColor: 'text-amber-600'
-    };
+  // Event is in progress
+  return {
+    status: 'in_progress',
+    label: 'In corso',
+    className: 'bg-white/90 text-gray-700 border border-gray-200',
+    icon: '🔴',
+    iconColor: 'text-red-500'
+  };
   }
 
   // Event starts soon (less than 30 minutes)

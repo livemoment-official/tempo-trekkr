@@ -14,6 +14,7 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { getEventStatus } from "@/utils/eventStatus";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface MomentCardProps {
   id: string;
@@ -91,6 +92,7 @@ export function MomentCard({
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -408,11 +410,35 @@ export function MomentCard({
               )}
             </Button>
             
-            <ShareModal contentType="moment" contentId={id} title={title}>
-              <Button size="sm" variant="outline" className="h-9 w-9 p-0">
-                <Share2 className="h-4 w-4" strokeWidth={1.5} />
-              </Button>
-            </ShareModal>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-9 w-9 p-0"
+              onClick={async (e) => {
+                e.stopPropagation();
+                const shareUrl = `${window.location.origin}/moment/${id}`;
+                
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: title,
+                      text: `Guarda questo momento: ${title}`,
+                      url: shareUrl
+                    });
+                  } catch (error) {
+                    console.error('Error sharing:', error);
+                  }
+                } else {
+                  await navigator.clipboard.writeText(shareUrl);
+                  toast({
+                    title: "Link copiato!",
+                    description: "Il link è stato copiato negli appunti",
+                  });
+                }
+              }}
+            >
+              <Share2 className="h-4 w-4" strokeWidth={1.5} />
+            </Button>
             
             <Button
               size="sm"
@@ -420,7 +446,9 @@ export function MomentCard({
               className="h-9 w-9 p-0"
               onClick={(e) => {
                 e.stopPropagation();
-                // Open chat with organizer
+                if (hostId) {
+                  navigate(`/chat/conversation/${hostId}`);
+                }
               }}
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
