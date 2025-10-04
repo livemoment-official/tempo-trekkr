@@ -61,10 +61,12 @@ export default function MomentDetail() {
   const [participantCount, setParticipantCount] = useState(0);
   const [hasUserPaid, setHasUserPaid] = useState(false);
   const [isParticipating, setIsParticipating] = useState(false);
+  const [participantProfiles, setParticipantProfiles] = useState<any[]>([]);
   const [locationInfo, setLocationInfo] = useState<{
     street: string;
     city: string;
     formatted_address: string;
+    province: string;
   } | null>(null);
   
   const { reverseGeocode } = useReverseGeocoding();
@@ -119,15 +121,17 @@ export default function MomentDetail() {
       
       setIsParticipating(!!participation);
 
-      // Get participant count
+      // Get participant count and profiles
       const { data, error } = await supabase
         .from('moment_participants')
-        .select('*')
+        .select('user_id, profiles(id, name, avatar_url)')
         .eq('moment_id', moment.id)
-        .eq('status', 'confirmed');
+        .eq('status', 'confirmed')
+        .limit(4);
       
       if (!error && data) {
         setParticipantCount(data.length);
+        setParticipantProfiles(data);
       }
     };
 
@@ -250,6 +254,13 @@ export default function MomentDetail() {
         // Toast already shown by useDeleteContent
       }
     }
+  };
+
+  const openInMaps = () => {
+    if (!moment?.place?.coordinates) return;
+    const { lat, lng } = moment.place.coordinates;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    window.open(mapsUrl, '_blank');
   };
 
   return (
@@ -383,17 +394,28 @@ export default function MomentDetail() {
                     <p className="font-medium">{moment.place.name}</p>
                     {locationInfo && (
                       <div className="space-y-1 mt-1">
-                        <p className="text-sm text-muted-foreground">{locationInfo.street}</p>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-muted-foreground">{locationInfo.city}</p>
+                        <p className="text-sm text-muted-foreground">{locationInfo.formatted_address}</p>
+                        {locationInfo.province && (
+                          <p className="text-sm font-medium text-muted-foreground">{locationInfo.city}, {locationInfo.province}</p>
+                        )}
+                        <div className="flex gap-2 mt-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setShowMapModal(true)}
                             className="text-xs"
                           >
+                            <MapPin className="h-3 w-3 mr-1" />
+                            Vedi Mappa
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={openInMaps}
+                            className="text-xs"
+                          >
                             <Navigation className="h-3 w-3 mr-1" />
-                            Mappa
+                            Apri in Maps
                           </Button>
                         </div>
                       </div>
@@ -404,16 +426,38 @@ export default function MomentDetail() {
 
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">
-                    {participantCount}
-                    {moment.max_participants && `/${moment.max_participants}`} partecipanti
-                  </p>
-                  {moment.max_participants && (
-                    <p className="text-sm text-muted-foreground">
-                      {moment.max_participants - participantCount} posti disponibili
-                    </p>
-                  )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar circolari sovrapposti */}
+                    {participantProfiles.length > 0 && (
+                      <div className="flex -space-x-2">
+                        {participantProfiles.slice(0, 4).map((participant: any, index: number) => (
+                          <Avatar key={participant.user_id} className="h-8 w-8 border-2 border-background" style={{ zIndex: 4 - index }}>
+                            <AvatarImage src={participant.profiles?.avatar_url} />
+                            <AvatarFallback className="text-xs">
+                              {participant.profiles?.name?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {participantCount > 4 && (
+                          <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium" style={{ zIndex: 0 }}>
+                            +{participantCount - 4}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium">
+                        {participantCount}
+                        {moment.max_participants && `/${moment.max_participants}`} partecipanti
+                      </p>
+                      {moment.max_participants && (
+                        <p className="text-sm text-muted-foreground">
+                          {moment.max_participants - participantCount} posti disponibili
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 

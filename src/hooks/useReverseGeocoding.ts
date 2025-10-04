@@ -6,6 +6,7 @@ interface ReverseGeocodingResult {
   street: string;
   city: string;
   country: string;
+  province: string;
 }
 
 export function useReverseGeocoding() {
@@ -42,6 +43,7 @@ export function useReverseGeocoding() {
         let street = '';
         let city = '';
         let country = '';
+        let province = '';
 
         // Get street from place name or address
         if (feature.place_name) {
@@ -49,10 +51,12 @@ export function useReverseGeocoding() {
           street = parts[0]?.trim() || '';
         }
 
-        // Extract city and country from context
+        // Extract city, province, and country from context
         components.forEach((component: any) => {
           if (component.id?.includes('place')) {
             city = component.text || city;
+          } else if (component.id?.includes('region')) {
+            province = component.short_code?.replace(/IT-/, '') || component.text || province;
           } else if (component.id?.includes('country')) {
             country = component.text || country;
           }
@@ -62,7 +66,8 @@ export function useReverseGeocoding() {
           formatted_address: feature.place_name || `${lat}, ${lng}`,
           street: street || 'Via sconosciuta',
           city: city || 'Città sconosciuta',
-          country: country || 'Italia'
+          country: country || 'Italia',
+          province: province || ''
         };
 
         return result;
@@ -73,7 +78,8 @@ export function useReverseGeocoding() {
         formatted_address: `${lat}, ${lng}`,
         street: 'Posizione',
         city: 'Città sconosciuta',
-        country: 'Italia'
+        country: 'Italia',
+        province: ''
       };
 
     } catch (err) {
@@ -85,7 +91,8 @@ export function useReverseGeocoding() {
         formatted_address: `${lat}, ${lng}`,
         street: 'La tua posizione',
         city: 'Posizione attuale',
-        country: 'Italia'
+        country: 'Italia',
+        province: ''
       };
     } finally {
       setIsLoading(false);
