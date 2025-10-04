@@ -76,13 +76,13 @@ export function GroupRulesBanner({ onDismiss }: GroupRulesBannerProps) {
         {/* Content */}
         {isExpanded && (
           <div className="px-4 pb-4 animate-fade-in">
-            <div className="space-y-3 mb-4">
+            <div className="space-y-2.5 mb-4">
               <div className="flex gap-3 items-start">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 flex-shrink-0 mt-0.5">
                   <span className="text-xs font-bold text-primary">1</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Crea gruppi pubblici o privati</strong> per organizzare eventi, condividere momenti e chattare con la tua community.
+                  <strong>Crea gruppi</strong> pubblici o privati per organizzare eventi
                 </p>
               </div>
 
@@ -91,7 +91,7 @@ export function GroupRulesBanner({ onDismiss }: GroupRulesBannerProps) {
                   <span className="text-xs font-bold text-primary">2</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Invita amici o lascia che tutti scoprano</strong> il tuo gruppo nella sezione "Esplora" se è pubblico.
+                  <strong>Invita amici</strong> o rendilo pubblico nella sezione Esplora
                 </p>
               </div>
 
@@ -100,7 +100,7 @@ export function GroupRulesBanner({ onDismiss }: GroupRulesBannerProps) {
                   <span className="text-xs font-bold text-primary">3</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Chatta in tempo reale</strong> con i membri del gruppo, condividi foto, video e vocali.
+                  <strong>Chatta</strong> e condividi foto, video e vocali
                 </p>
               </div>
 
@@ -109,16 +109,7 @@ export function GroupRulesBanner({ onDismiss }: GroupRulesBannerProps) {
                   <span className="text-xs font-bold text-primary">4</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Organizza momenti collettivi</strong> direttamente dal gruppo e coordina le attività con i partecipanti.
-                </p>
-              </div>
-
-              <div className="flex gap-3 items-start">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-primary">5</span>
-                </div>
-                <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Gestisci i partecipanti</strong>: come host, puoi moderare il gruppo e rimuovere utenti se necessario.
+                  <strong>Gestisci partecipanti</strong> e modera il gruppo come host
                 </p>
               </div>
             </div>
