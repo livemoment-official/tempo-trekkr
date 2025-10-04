@@ -12,30 +12,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import StandardHeader from "@/components/layout/StandardHeader";
 const proFeatures = [{
-  icon: <Check className="h-6 w-6" />,
+  icon: <Check className="h-5 w-5" />,
   title: "Partecipa e Crea senza limiti",
-  description: "Attualmente puoi creare solo 2 Momenti al mese e partecipare a massimo 3 Momenti.",
-  highlight: true
+  description: "Attualmente puoi creare solo 2 Momenti al mese e partecipare a massimo 3 Momenti."
 }, {
-  icon: <Ticket className="h-6 w-6" />,
+  icon: <Ticket className="h-5 w-5" />,
   title: "Momenti con Ticketing",
-  description: "Attualmente non puoi vendere biglietti o ricevere contributi durante i tuoi Momenti.",
-  highlight: false
+  description: "Attualmente non puoi vendere biglietti o ricevere contributi durante i tuoi Momenti."
 }, {
-  icon: <Users className="h-6 w-6" />,
+  icon: <Users className="h-5 w-5" />,
   title: "Crea Gruppi e Community",
-  description: "Attualmente non puoi creare chat basate su interessi comuni, solo partecipare agli eventi.",
-  highlight: false
+  description: "Attualmente non puoi creare chat basate su interessi comuni, solo partecipare agli eventi."
 }, {
-  icon: <MessageCircle className="h-6 w-6" />,
+  icon: <MessageCircle className="h-5 w-5" />,
   title: "Chatta Privatamente con Tutti",
-  description: "Attualmente puoi scrivere solo alle persone a cui sei amico e a chi organizza Momenti.",
-  highlight: false
+  description: "Attualmente puoi scrivere solo alle persone a cui sei amico e a chi organizza Momenti."
 }, {
-  icon: <Star className="h-6 w-6" />,
+  icon: <Star className="h-5 w-5" />,
   title: "Badge Live Moment",
-  description: "Prima il tuo profilo non era verificato ne visibile fra i Top 15 Badge li permette di avere più amici.",
-  highlight: true
+  description: "Prima il tuo profilo non era verificato ne visibile fra i Top 15 Badge li permette di avere più amici."
 }];
 const businessFeatures = [{
   icon: <Calendar className="h-5 w-5" />,
@@ -275,19 +270,14 @@ export default function Abbonamento() {
           {activeTab === 'pro' ? <>
               {/* Enhanced Pro Features */}
               <div className="space-y-2 md:space-y-3">
-                {proFeatures.map((feature, index) => <Card key={index} className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]">
-                    <CardContent className="flex items-start gap-3 p-4 md:gap-4 md:p-5">
-                      <div className={`p-2.5 md:p-3 rounded-xl transition-all ${feature.highlight ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' : 'bg-gradient-to-br from-muted to-muted/50'}`}>
-                        <div className={feature.highlight ? 'text-white' : ''}>
-                          {feature.icon}
-                        </div>
+                {proFeatures.map((feature, index) => <Card key={index} className="border border-border bg-card hover:border-primary/20 transition-all duration-200">
+                    <CardContent className="flex items-start gap-3 p-3 md:gap-4 md:p-4">
+                      <div className="flex-shrink-0 text-primary">
+                        {feature.icon}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold flex items-center gap-2 mb-0.5">
+                        <h3 className="font-semibold text-sm mb-1">
                           {feature.title}
-                          {feature.highlight && <span className="text-xs px-2 py-1 bg-gradient-to-r from-primary to-orange-400 text-white rounded-full shadow-sm animate-pulse">
-                              🔥 Hot
-                            </span>}
                         </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
@@ -341,16 +331,18 @@ export default function Abbonamento() {
               </div>
             </> : <>
               {/* Business Features */}
-              <div className="space-y-3 md:space-y-4">
-                {businessFeatures.map((feature, index) => <div key={index} className={`flex gap-4 p-3 md:p-4 rounded-xl ${feature.bgColor}`}>
-                    <div className={`flex-shrink-0 ${feature.iconColor}`}>
-                      {feature.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">{feature.title}</h3>
-                      <p className="text-xs text-gray-600 leading-relaxed">{feature.description}</p>
-                    </div>
-                  </div>)}
+              <div className="space-y-2 md:space-y-3">
+                {businessFeatures.map((feature, index) => <Card key={index} className={`border border-border ${feature.bgColor}`}>
+                    <CardContent className="flex items-start gap-3 p-3 md:gap-4 md:p-4">
+                      <div className={`flex-shrink-0 ${feature.iconColor}`}>
+                        {feature.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm mb-1">{feature.title}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>)}
               </div>
 
               {/* Account Types */}
