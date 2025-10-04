@@ -50,7 +50,7 @@ const Header = ({
           <EnhancedImage src={liveMomentLogo} alt="LiveMoment Logo" fallbackSrc="/placeholder.svg" showSkeleton={false} className="h-10 w-10 object-contain" />
         </button>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Filtri Momenti */}
           <Button 
             variant="ghost" 
