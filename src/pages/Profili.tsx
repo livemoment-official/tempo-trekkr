@@ -10,9 +10,10 @@ import { ProfileTypeSelector } from '@/components/profiles/ProfileTypeSelector';
 import { CreateArtistProfile } from '@/components/profiles/CreateArtistProfile';
 import { CreateVenueProfile } from '@/components/profiles/CreateVenueProfile';
 import { CreateStaffProfile } from '@/components/profiles/CreateStaffProfile';
+import { CreateFormatProfile } from '@/components/profiles/CreateFormatProfile';
 import { useUserProfiles, type ProfileType } from '@/hooks/useUserProfiles';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Music, MapPin, Users, Edit, Trash2, CheckCircle } from 'lucide-react';
+import { Plus, Music, MapPin, Users, Edit, Trash2, CheckCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Profili() {
@@ -23,6 +24,7 @@ export default function Profili() {
     createArtistProfile,
     createVenueProfile,
     createStaffProfile,
+    createFormatProfile,
     deleteProfile,
     getTotalProfilesCount
   } = useUserProfiles();
@@ -54,6 +56,9 @@ export default function Profili() {
           break;
         case 'staff':
           await createStaffProfile(data);
+          break;
+        case 'format':
+          await createFormatProfile(data);
           break;
       }
       setShowCreateForm(false);
@@ -221,6 +226,16 @@ export default function Profili() {
             loading={actionLoading}
           />
         );
+      case 'format':
+        return (
+          <CreateFormatProfile
+            onSubmit={(data) => handleCreateSubmit('format', data)}
+            onCancel={() => {
+              setShowCreateForm(false);
+              setCreateType(null);
+            }}
+          />
+        );
     }
   }
 
@@ -327,6 +342,21 @@ export default function Profili() {
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {profiles.staff.map(profile => 
                       renderProfileCard(profile, 'staff', Users, 'Staff', 'text-accent-foreground')
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Formats */}
+              {profiles.formats.length > 0 && (
+                <section>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5" />
+                    Profili Format ({profiles.formats.length})
+                  </h2>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {profiles.formats.map(profile => 
+                      renderProfileCard(profile, 'format', Sparkles, 'Format', 'text-yellow-700')
                     )}
                   </div>
                 </section>

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Music, MapPin, Users } from 'lucide-react';
+import { Music, MapPin, Users, Sparkles } from 'lucide-react';
 import type { ProfileType } from '@/hooks/useUserProfiles';
 
 interface ProfileTypeSelectorProps {
@@ -32,6 +32,14 @@ const profileTypes = [
     description: 'Offri i tuoi servizi professionali per eventi',
     color: 'bg-accent/10 text-accent-foreground border-accent/20',
     iconColor: 'text-accent-foreground'
+  },
+  {
+    type: 'format' as ProfileType,
+    icon: Sparkles,
+    title: 'Format',
+    description: 'Crea e promuovi il tuo format evento unico',
+    color: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
+    iconColor: 'text-yellow-700'
   }
 ];
 

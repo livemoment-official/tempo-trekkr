@@ -484,6 +484,93 @@ export type Database = {
         }
         Relationships: []
       }
+      formats: {
+        Row: {
+          activities: string[] | null
+          artist_categories: string[]
+          avg_cost_per_participant: number
+          avg_participants: number
+          category: string
+          created_at: string
+          description: string
+          event_timings: string[] | null
+          founder_bio: string
+          founder_email: string
+          founder_name: string
+          founder_phone: string
+          founder_photo: string
+          id: string
+          location_types: string[]
+          logo_url: string | null
+          materials: string[] | null
+          name: string
+          recommended_days: string
+          representative_image: string
+          social_link: string
+          staff_roles: string[] | null
+          support_gallery: string[] | null
+          updated_at: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          activities?: string[] | null
+          artist_categories: string[]
+          avg_cost_per_participant: number
+          avg_participants: number
+          category: string
+          created_at?: string
+          description: string
+          event_timings?: string[] | null
+          founder_bio: string
+          founder_email: string
+          founder_name: string
+          founder_phone: string
+          founder_photo: string
+          id?: string
+          location_types: string[]
+          logo_url?: string | null
+          materials?: string[] | null
+          name: string
+          recommended_days: string
+          representative_image: string
+          social_link: string
+          staff_roles?: string[] | null
+          support_gallery?: string[] | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          activities?: string[] | null
+          artist_categories?: string[]
+          avg_cost_per_participant?: number
+          avg_participants?: number
+          category?: string
+          created_at?: string
+          description?: string
+          event_timings?: string[] | null
+          founder_bio?: string
+          founder_email?: string
+          founder_name?: string
+          founder_phone?: string
+          founder_photo?: string
+          id?: string
+          location_types?: string[]
+          logo_url?: string | null
+          materials?: string[] | null
+          name?: string
+          recommended_days?: string
+          representative_image?: string
+          social_link?: string
+          staff_roles?: string[] | null
+          support_gallery?: string[] | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string

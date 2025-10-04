@@ -51,12 +51,42 @@ export interface StaffProfile {
   updated_at: string;
 }
 
-export type ProfileType = 'artist' | 'venue' | 'staff';
+export interface FormatProfile {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  social_link: string;
+  representative_image: string;
+  support_gallery?: string[];
+  logo_url?: string;
+  description: string;
+  activities?: string[];
+  materials?: string[];
+  avg_participants: number;
+  avg_cost_per_participant: number;
+  artist_categories: string[];
+  staff_roles?: string[];
+  location_types: string[];
+  recommended_days: string;
+  event_timings?: string[];
+  founder_name: string;
+  founder_photo: string;
+  founder_bio: string;
+  founder_email: string;
+  founder_phone: string;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ProfileType = 'artist' | 'venue' | 'staff' | 'format';
 
 export interface UserProfiles {
   artists: ArtistProfile[];
   venues: VenueProfile[];
   staff: StaffProfile[];
+  formats: FormatProfile[];
 }
 
 export function useUserProfiles() {
@@ -64,7 +94,8 @@ export function useUserProfiles() {
   const [profiles, setProfiles] = useState<UserProfiles>({
     artists: [],
     venues: [],
-    staff: []
+    staff: [],
+    formats: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +109,7 @@ export function useUserProfiles() {
       setLoading(true);
 
       // Fetch all profile types in parallel
-      const [artistsResult, venuesResult, staffResult] = await Promise.all([
+      const [artistsResult, venuesResult, staffResult, formatsResult] = await Promise.all([
         supabase
           .from('artists')
           .select('*')
@@ -93,17 +124,24 @@ export function useUserProfiles() {
           .from('staff_profiles')
           .select('*')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('formats')
+          .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
       ]);
 
       if (artistsResult.error) throw artistsResult.error;
       if (venuesResult.error) throw venuesResult.error;
       if (staffResult.error) throw staffResult.error;
+      if (formatsResult.error) throw formatsResult.error;
 
       setProfiles({
         artists: artistsResult.data || [],
         venues: venuesResult.data || [],
-        staff: staffResult.data || []
+        staff: staffResult.data || [],
+        formats: formatsResult.data || []
       });
     } catch (error) {
       console.error('Error fetching profiles:', error);
@@ -237,6 +275,46 @@ export function useUserProfiles() {
     }
   };
 
+  const createFormatProfile = async (data: Omit<FormatProfile, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'verified'>) => {
+    if (!user) return null;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('formats')
+        .insert({ ...data, user_id: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await fetchProfiles();
+      toast.success('Profilo format creato con successo');
+      return profile;
+    } catch (error) {
+      console.error('Error creating format profile:', error);
+      toast.error('Errore nella creazione del profilo format');
+      return null;
+    }
+  };
+
+  const updateFormatProfile = async (id: string, data: Partial<FormatProfile>) => {
+    try {
+      const { error } = await supabase
+        .from('formats')
+        .update(data)
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      await fetchProfiles();
+      toast.success('Profilo format aggiornato');
+    } catch (error) {
+      console.error('Error updating format profile:', error);
+      toast.error('Errore nell\'aggiornamento del profilo format');
+    }
+  };
+
   const deleteProfile = async (type: ProfileType, id: string) => {
     try {
       let error;
@@ -263,6 +341,13 @@ export function useUserProfiles() {
             .eq('id', id)
             .eq('user_id', user?.id));
           break;
+        case 'format':
+          ({ error } = await supabase
+            .from('formats')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user?.id));
+          break;
       }
 
       if (error) throw error;
@@ -276,7 +361,7 @@ export function useUserProfiles() {
   };
 
   const getTotalProfilesCount = () => {
-    return profiles.artists.length + profiles.venues.length + profiles.staff.length;
+    return profiles.artists.length + profiles.venues.length + profiles.staff.length + profiles.formats.length;
   };
 
   return {
@@ -286,9 +371,11 @@ export function useUserProfiles() {
     createArtistProfile,
     createVenueProfile,
     createStaffProfile,
+    createFormatProfile,
     updateArtistProfile,
     updateVenueProfile,
     updateStaffProfile,
+    updateFormatProfile,
     deleteProfile,
     getTotalProfilesCount
   };
