@@ -88,7 +88,7 @@ export default function InviteDetailsStep({
         <Textarea id="message" value={data.message} onChange={e => onChange({
         ...data,
         message: e.target.value
-      })} placeholder={`Ciao! Che ne dici di ${data.activity?.title ? `un ${data.activity.title.toLowerCase()}` : 'uscire'} insieme?`} className="mt-2" rows={3} />
+      })} placeholder={`Ciao! Che ne dici di ${data.activity?.title ? `un ${data.activity?.title?.toLowerCase()}` : 'uscire'} insieme?`} className="mt-2" rows={3} />
       </div>
 
       
