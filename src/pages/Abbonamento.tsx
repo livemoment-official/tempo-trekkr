@@ -299,7 +299,7 @@ export default function Abbonamento() {
                     className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
                   >
                     <CardContent className="flex items-start gap-3 p-4 md:gap-4 md:p-5">
-                      <div className={`p-2.5 md:p-3 rounded-xl transition-transform group-hover:scale-110 ${
+                      <div className={`p-2.5 md:p-3 rounded-xl transition-all ${
                         feature.highlight 
                           ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' 
                           : 'bg-gradient-to-br from-muted to-muted/50'
