@@ -249,7 +249,7 @@ export default function Abbonamento() {
       />
 
       {/* Scarcity Timer */}
-      <div className="bg-gradient-to-r from-primary/10 via-orange-500/10 to-primary/10 border-y border-primary/20 py-3">
+      <div className="bg-gradient-to-r from-primary/10 via-orange-500/10 to-primary/10 border-y border-primary/20 py-2 md:py-3">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm font-medium flex items-center justify-center gap-2 flex-wrap">
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
@@ -261,12 +261,12 @@ export default function Abbonamento() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 pb-32 max-w-2xl">
+      <div className="container mx-auto px-4 py-4 md:py-6 pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-[calc(80px+env(safe-area-inset-bottom))] max-w-2xl">
         {/* Enhanced Plan Toggle */}
-        <div className="p-1 bg-muted/50 backdrop-blur-sm rounded-full mb-6 flex">
+        <div className="p-0.5 bg-muted/50 backdrop-blur-sm rounded-full mb-3 md:mb-6 flex">
           <button 
             onClick={() => setActiveTab('pro')} 
-            className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               activeTab === 'pro' 
                 ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
                 : 'text-muted-foreground hover:text-foreground'
@@ -277,7 +277,7 @@ export default function Abbonamento() {
           </button>
           <button 
             onClick={() => setActiveTab('business')} 
-            className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               activeTab === 'business' 
                 ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
                 : 'text-muted-foreground hover:text-foreground'
@@ -289,17 +289,17 @@ export default function Abbonamento() {
         </div>
 
         {/* Content */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {activeTab === 'pro' ? <>
               {/* Enhanced Pro Features */}
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {proFeatures.map((feature, index) => (
                   <Card 
                     key={index} 
                     className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
                   >
-                    <CardContent className="flex items-start gap-4 p-5">
-                      <div className={`p-3 rounded-xl transition-transform group-hover:scale-110 ${
+                    <CardContent className="flex items-start gap-3 p-4 md:gap-4 md:p-5">
+                      <div className={`p-2.5 md:p-3 rounded-xl transition-transform group-hover:scale-110 ${
                         feature.highlight 
                           ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' 
                           : 'bg-gradient-to-br from-muted to-muted/50'
@@ -309,7 +309,7 @@ export default function Abbonamento() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold flex items-center gap-2 mb-0.5">
                           {feature.title}
                           {feature.highlight && (
                             <span className="text-xs px-2 py-1 bg-gradient-to-r from-primary to-orange-400 text-white rounded-full shadow-sm animate-pulse">
@@ -326,25 +326,25 @@ export default function Abbonamento() {
 
               {/* Enhanced Pricing */}
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                   {Object.entries(pricingPlans).map(([key, plan]) => (
                     <button 
                       key={key} 
                       onClick={() => setSelectedPlan(key as '1' | '3' | '6')} 
-                      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+                      className={`relative p-3 md:p-4 rounded-xl border-2 transition-all duration-300 ${
                         selectedPlan === key 
                           ? 'border-primary bg-gradient-to-br from-primary/10 to-orange-400/10 shadow-lg shadow-primary/20 scale-105' 
                           : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
                       } ${key === '3' ? 'animate-pulse-slow' : ''}`}
                     >
                       {key === '3' && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
                           ⭐ Più Popolare
                         </div>
                       )}
                       
                       <div className="text-center">
-                        <div className={`text-3xl font-bold mb-1 ${selectedPlan === key ? 'text-primary' : 'text-foreground'}`}>
+                        <div className={`text-2xl md:text-3xl font-bold mb-1 ${selectedPlan === key ? 'text-primary' : 'text-foreground'}`}>
                           {plan.months}
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -367,13 +367,13 @@ export default function Abbonamento() {
                     ? 'border-primary bg-gradient-to-br from-primary/5 via-background to-orange-400/5 shadow-xl' 
                     : 'border-border'
                 }`}>
-                  <CardContent className="p-6">
-                    <div className="text-center space-y-3">
+                  <CardContent className="p-4 md:p-6">
+                    <div className="text-center space-y-2 md:space-y-3">
                       <div>
-                        <span className="text-5xl font-bold bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+                        <span className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
                           {pricingPlans[selectedPlan].price}
                         </span>
-                        <span className="text-muted-foreground text-lg">/mese</span>
+                        <span className="text-muted-foreground text-base md:text-lg">/mese</span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         Fatturato ogni {pricingPlans[selectedPlan].months} {pricingPlans[selectedPlan].months === '1' ? 'mese' : 'mesi'}: <span className="font-bold text-foreground">{pricingPlans[selectedPlan].total}</span>
@@ -390,8 +390,8 @@ export default function Abbonamento() {
               </div>
             </> : <>
               {/* Business Features */}
-              <div className="space-y-4">
-                {businessFeatures.map((feature, index) => <div key={index} className={`flex gap-4 p-4 rounded-xl ${feature.bgColor}`}>
+              <div className="space-y-3 md:space-y-4">
+                {businessFeatures.map((feature, index) => <div key={index} className={`flex gap-4 p-3 md:p-4 rounded-xl ${feature.bgColor}`}>
                     <div className={`flex-shrink-0 ${feature.iconColor}`}>
                       {feature.icon}
                     </div>
@@ -405,8 +405,8 @@ export default function Abbonamento() {
               {/* Account Types */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-base">Scegli il Profilo da Creare:</h3>
-                <div className="space-y-3">
-                  {accountTypes.map((account, index) => <button key={index} onClick={() => setSelectedBusinessType(account.title.toLowerCase().replace('account ', ''))} className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${selectedBusinessType === account.title.toLowerCase().replace('account ', '') ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-orange-50'}`}>
+                <div className="space-y-2 md:space-y-3">
+                  {accountTypes.map((account, index) => <button key={index} onClick={() => setSelectedBusinessType(account.title.toLowerCase().replace('account ', ''))} className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border-2 transition-all ${selectedBusinessType === account.title.toLowerCase().replace('account ', '') ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-orange-50'}`}>
                       <div className="flex items-center gap-3">
                         <div className="text-orange-600">
                           {account.icon}
