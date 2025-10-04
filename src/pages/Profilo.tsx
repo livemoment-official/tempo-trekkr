@@ -178,7 +178,7 @@ export default function Profilo() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Profilo</h1>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/abbonamento')} className="flex items-center gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50">
+        <Button variant="outline" size="sm" onClick={() => navigate('/abbonamento')} className="flex items-center gap-2 bg-gradient-to-r from-orange-50 via-orange-100/50 to-orange-50 border border-gray-300/60 text-orange-600 font-semibold hover:from-orange-100 hover:via-orange-200/60 hover:to-orange-100 hover:border-orange-400/70 hover:shadow-sm hover:shadow-orange-200/50 transition-all duration-300 [&_svg]:transition-transform [&_svg]:duration-300 hover:[&_svg]:scale-110 hover:[&_svg]:rotate-12">
           <Crown className="h-4 w-4" />
           Upgrade Profilo
         </Button>
