@@ -203,10 +203,9 @@ export default function InviteCard({
                       }
                     }} 
                     variant="outline" 
-                    className={`flex-1 ${isMobile ? "border border-black text-black hover:bg-gray-100 hover:border-black font-semibold h-11" : "border-2 border-black text-black hover:bg-gray-100 hover:border-black font-semibold h-12"} rounded-xl transition-all`}
+                    className={`${isMobile ? "h-11 w-11" : "h-12 w-12"} p-0 border-2 border-black hover:bg-gray-100 rounded-xl transition-all`}
                   >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Chatta
+                    <MessageSquare className="h-5 w-5" />
                   </Button>
                 </div>
               )}
