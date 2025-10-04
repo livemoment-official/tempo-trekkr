@@ -11,7 +11,6 @@ import AppLayout from './components/layout/AppLayout'
 import MinimalLayoutWrapper from './components/layout/MinimalLayoutWrapper'
 
 // Pages
-import Index from './pages/Index'
 import Inviti from './pages/Inviti'
 import TrovaAmici from './pages/TrovaAmici'
 import Esplora from './pages/Esplora'
@@ -48,7 +47,7 @@ createRoot(document.getElementById("root")!).render(
           <Routes>
             {/* Routes with App Layout (bottom nav + header) */}
             <Route path="/" element={<AppLayout />}>
-              <Route index element={<Index />} />
+              <Route index element={<MomentiEventi />} />
               <Route path="inviti" element={<Inviti />} />
               <Route path="trova-amici" element={<TrovaAmici />} />
               <Route path="esplora" element={<Esplora />} />

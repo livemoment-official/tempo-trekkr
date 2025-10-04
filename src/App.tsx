@@ -13,6 +13,7 @@ import Gruppi from "./pages/Gruppi";
 import MomentiEventi from "./pages/MomentiEventi";
 import MomentDetail from "./pages/MomentDetail";
 import Profilo from "./pages/Profilo";
+import { Navigate } from "react-router-dom";
 import Crea from "./pages/Crea";
 import Esplora from "./pages/Esplora";
 import CreaMomento from "./pages/CreaMomento";
@@ -49,10 +50,10 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route element={<AppLayout />}>
-                <Route path="/" element={<Esplora />} />
+                <Route path="/" element={<MomentiEventi />} />
                 <Route path="/inviti" element={<Inviti />} />
                 <Route path="/gruppi" element={<Gruppi />} />
-                <Route path="/momenti" element={<MomentiEventi />} />
+                <Route path="/momenti" element={<Navigate to="/" replace />} />
                 <Route path="/momenti/:id" element={<MomentDetail />} />
                 <Route path="/esplora" element={<Esplora />} />
                 <Route path="/profilo" element={<Profilo />} />

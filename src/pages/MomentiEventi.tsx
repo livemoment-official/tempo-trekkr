@@ -3,13 +3,12 @@ import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { List, MapPin, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { MomentFilters } from "@/components/moments/MomentFilters";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
 
-import { useMoments } from "@/hooks/useMoments";
-import { useEvents } from "@/hooks/useEvents";
+import { useUnifiedFeed } from "@/hooks/useUnifiedFeed";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,58 +22,22 @@ export default function MomentiEventi() {
   const [view, setView] = useState<'list' | 'map'>('list');
   const isMobile = useIsMobile();
   
-  // Use real moments data
+  // Auto-hide filters on scroll
+  const [showFilters, setShowFilters] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Use unified feed (moments + events)
   const {
-    moments,
-    isLoading: momentsLoading,
+    items,
+    isLoading,
     hasMore,
     filters,
-    loadMoments,
+    loadFeed,
     applyFilters,
     loadMore,
     joinMoment,
     leaveMoment
-  } = useMoments();
-
-  // Use events data
-  const {
-    events,
-    isLoading: eventsLoading
-  } = useEvents();
-
-  // Combine moments and events with unified format
-  const allItems = [
-    ...moments.map(moment => ({
-      ...moment,
-      type: 'moment' as const,
-      organizer: moment.organizer || (moment.host ? 
-        { 
-          name: moment.host.name || 'Utente', 
-          avatar: moment.host.avatar_url 
-        } : 
-        { name: 'Utente', avatar: null }
-      ),
-      time: moment.when_at ? new Date(moment.when_at).toLocaleString('it-IT') : 'Ora da definire',
-      location: moment.place?.name || 'Luogo da definire',
-      category: moment.tags?.[0] || 'generale'
-    })),
-    ...events.map(event => ({
-      ...event,
-      type: 'event' as const,
-      participants: [] as string[], // Events use separate table
-      is_public: event.discovery_on,
-      image: event.photos?.[0],
-      category: 'evento',
-      organizer: event.host ? {
-        name: event.host.name,
-        avatar: event.host.avatar_url
-      } : { name: 'Organizzatore', avatar: null },
-      time: event.when_at ? new Date(event.when_at).toLocaleString('it-IT') : 'Data da definire',
-      location: event.place?.name || 'Luogo da definire'
-    }))
-  ];
-
-  const isLoading = momentsLoading || eventsLoading;
+  } = useUnifiedFeed();
 
   // Infinite scroll
   const { sentinelRef } = useInfiniteScroll({
@@ -93,12 +56,41 @@ export default function MomentiEventi() {
 
   // Load initial data
   useEffect(() => {
-    loadMoments({}, true);
+    loadFeed({}, true);
   }, []);
+
+  // Auto-hide filters on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // Scrolling down & past threshold
+        setShowFilters(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setShowFilters(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   // Handle filter changes
   const handleFilterChange = (newFilters: any) => {
-    applyFilters(newFilters);
+    const filters = {
+      category: newFilters.category,
+      subcategories: newFilters.subcategories,
+      mood: newFilters.mood,
+      ageMin: newFilters.ageRange?.[0],
+      ageMax: newFilters.ageRange?.[1],
+      maxDistance: newFilters.maxDistance,
+      tags: newFilters.subcategories
+    };
+    applyFilters(filters);
   };
 
   return (
@@ -109,9 +101,12 @@ export default function MomentiEventi() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      
-      
-      <div className="space-y-4">
+      {/* Filters with auto-hide */}
+      <div 
+        className={`sticky top-16 z-30 bg-background/95 backdrop-blur-sm transition-transform duration-300 -mx-5 px-5 md:-mx-8 md:px-8 ${
+          showFilters ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         <MomentFilters
           onFiltersChange={handleFilterChange}
           currentFilters={filters}
@@ -137,12 +132,12 @@ export default function MomentiEventi() {
             ? "flex flex-col" 
             : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           }>
-            {allItems.map((item, index) => {
-              const isEvent = item.type === 'event';
+            {items.map((item, index) => {
+              const isEvent = item.contentType === 'event';
               
               return (
-                <div key={`${item.type}-${item.id}-${index}`} className={isMobile ? "snap-start" : ""}>
-                  {/* Event/Moment Badge */}
+                <div key={`${item.contentType}-${item.id}-${index}`} className={isMobile ? "snap-start" : ""}>
+                  {/* Event Badge */}
                   <div className="relative">
                     {isEvent && (
                       <Badge 
@@ -155,21 +150,29 @@ export default function MomentiEventi() {
                     <MomentCard
                       id={item.id}
                       title={item.title}
-                      description={item.description}
-                      image={item.image || item.photos?.[0]}
-                      category={item.category}
-                      time={item.time}
-                      location={item.location}
-                      organizer={item.organizer}
-                      participants={item.participant_count || item.participants?.length || 0}
-                      maxParticipants={item.max_participants}
+                      description={item.description || ""}
+                      image={item.photos?.[0] || ""}
+                      category={item.mood_tag || "generale"}
+                      time={item.when_at ? new Date(item.when_at).toLocaleTimeString('it-IT', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : ""}
+                      location={item.place?.name || ""}
+                      organizer={{
+                        name: item.host?.name || "Organizzatore",
+                        avatar: item.host?.avatar_url || ""
+                      }}
+                      participants={item.participant_count || 0}
+                      maxParticipants={item.max_participants || 0}
                       mood={item.mood_tag}
                       distance={item.distance_km}
                       isOwner={item.host_id === user?.id}
                       hostId={item.host_id}
-                      onJoin={isEvent ? undefined : () => joinMoment(item.id)}
-                      onLeave={isEvent ? undefined : () => leaveMoment(item.id)}
-                      tags={item.tags}
+                      when_at={item.when_at}
+                      end_at={item.end_at}
+                      onJoin={item.contentType === 'moment' ? () => joinMoment(item.id) : undefined}
+                      onLeave={item.contentType === 'moment' ? () => leaveMoment(item.id) : undefined}
+                      tags={item.tags || []}
                       reactions={{ hearts: 0, likes: 0, stars: 0, fire: 0 }}
                     />
                   </div>
@@ -183,7 +186,7 @@ export default function MomentiEventi() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
               <span className="ml-2 text-sm text-muted-foreground">
-                Caricamento {momentsLoading && eventsLoading ? 'momenti ed eventi' : momentsLoading ? 'momenti' : 'eventi'}...
+                Caricamento contenuti...
               </span>
             </div>
           )}
@@ -192,14 +195,14 @@ export default function MomentiEventi() {
           <div ref={sentinelRef} className="h-4" />
           
           {/* No more data message */}
-          {!hasMore && allItems.length > 0 && (
+          {!hasMore && items.length > 0 && (
             <div className="text-center py-8 text-sm text-muted-foreground">
               Non ci sono altri contenuti da caricare
             </div>
           )}
           
           {/* Empty state */}
-          {allItems.length === 0 && !isLoading && (
+          {items.length === 0 && !isLoading && (
             <div className="text-center py-16">
               <h3 className="text-lg font-semibold mb-2">Nessun contenuto trovato</h3>
               <p className="text-muted-foreground mb-4">
@@ -219,7 +222,7 @@ export default function MomentiEventi() {
       ) : (
         <div>
           {/* Render unified moments and events for map */}
-          <MomentsMap moments={allItems} onMomentClick={(id) => navigate(`/moment/${id}`)} />
+          <MomentsMap moments={items.filter(i => i.contentType === 'moment')} onMomentClick={(id) => navigate(`/moment/${id}`)} />
         </div>
       )}
     </div>
