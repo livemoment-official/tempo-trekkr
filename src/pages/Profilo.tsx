@@ -271,7 +271,7 @@ export default function Profilo() {
               <div className="font-bold text-2xl">
                 {metrics.loading ? '-' : metrics.peopleMet}
               </div>
-              <div className="text-sm text-muted-foreground font-medium">Persone</div>
+              <div className="text-sm text-muted-foreground font-medium">Partecipanti Incontrati</div>
             </div>
           </CardContent>
         </Card>
