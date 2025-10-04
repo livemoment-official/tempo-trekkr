@@ -34,6 +34,7 @@ import ChatFullscreen from './pages/ChatFullscreen'
 import Abbonamento from './pages/Abbonamento'
 import NotFound from './pages/NotFound'
 import UnifiedChatPage from './pages/UnifiedChatPage'
+import Profili from './pages/Profili'
 
 import './index.css'
 
@@ -56,6 +57,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="momenti" element={<MomentiEventi />} />
               <Route path="agenda" element={<Agenda />} />
               <Route path="profilo" element={<Profilo />} />
+              <Route path="profili" element={<Profili />} />
               <Route path="profilo/:userId" element={<UserDetailById />} />
               <Route path="abbonamento" element={<Abbonamento />} />
               <Route path="crea" element={<Crea />} />
