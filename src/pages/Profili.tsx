@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { ProfileTypeSelector } from '@/components/profiles/ProfileTypeSelector';
-import { CreateArtistProfile } from '@/components/profiles/CreateArtistProfile';
-import { CreateVenueProfile } from '@/components/profiles/CreateVenueProfile';
+import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
+import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
 import { CreateStaffProfile } from '@/components/profiles/CreateStaffProfile';
 import { CreateFormatProfile } from '@/components/profiles/CreateFormatProfile';
 import { useUserProfiles, type ProfileType } from '@/hooks/useUserProfiles';
@@ -215,19 +215,27 @@ export default function Profili() {
     switch (createType) {
       case 'artist':
         return (
-          <CreateArtistProfile
-            onSubmit={(data) => handleCreateSubmit('artist', data)}
-            onCancel={closeCreateForm}
-            loading={actionLoading}
-          />
+          <div className="min-h-screen bg-background">
+            <Helmet>
+              <title>Crea Profilo Artista | LiveMoment</title>
+            </Helmet>
+            <ArtistRegistrationWizard
+              onComplete={closeCreateForm}
+              onCancel={closeCreateForm}
+            />
+          </div>
         );
       case 'venue':
         return (
-          <CreateVenueProfile
-            onSubmit={(data) => handleCreateSubmit('venue', data)}
-            onCancel={closeCreateForm}
-            loading={actionLoading}
-          />
+          <div className="min-h-screen bg-background">
+            <Helmet>
+              <title>Crea Profilo Location | LiveMoment</title>
+            </Helmet>
+            <LocationRegistrationWizard
+              onComplete={closeCreateForm}
+              onCancel={closeCreateForm}
+            />
+          </div>
         );
       case 'staff':
         return (
