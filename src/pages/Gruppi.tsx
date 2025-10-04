@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Plus, X, Users, MapPin, Loader2, MoreVertical } from "lucide-react";
+import { Search, Filter, Plus, X, Users, MapPin, Loader2, MoreVertical, ChevronRight } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
@@ -511,19 +511,76 @@ export default function Gruppi() {
                 />
               ))
             ) : (
-              <Card className="bg-muted/50">
-                <CardContent className="p-6 text-center">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {searchQuery ? "Non ci sono gruppi che corrispondono alla tua ricerca." : "Non ci sono ancora gruppi disponibili."}
-                  </p>
-                  <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crea il primo gruppo
-                  </Button>
-                </CardContent>
-              </Card>
+              <>
+                {/* CASO 1: Se c'è ricerca attiva e non trova nulla */}
+                {searchQuery && filteredMyGroups.length === 0 ? (
+                  <Card className="bg-muted/50">
+                    <CardContent className="p-6 text-center">
+                      <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Non ci sono gruppi che corrispondono alla tua ricerca.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {/* CASO 2: Nessun gruppo disponibile - Mostra banner + pop-up regole */}
+                    {sortedMyGroups.length === 0 && (
+                      <>
+                        {/* Banner "Crea il primo gruppo" */}
+                        <Card className="bg-muted/50">
+                          <CardContent className="p-6 text-center">
+                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Non ci sono ancora gruppi disponibili.
+                            </p>
+                            <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Crea il primo gruppo
+                            </Button>
+                          </CardContent>
+                        </Card>
+
+                        {/* Pop-up con le regole dei gruppi */}
+                        <GroupInfoModal 
+                          trigger={
+                            <Card className="mt-4 cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20">
+                              <CardContent className="p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <Users className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">Regole dei Gruppi</h4>
+                                    <p className="text-xs text-muted-foreground">Scopri come funzionano</p>
+                                  </div>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                              </CardContent>
+                            </Card>
+                          }
+                        />
+                      </>
+                    )}
+
+                    {/* CASO 3: Mostra sempre i gruppi dell'utente (se esistono) */}
+                    {filteredMyGroups.map(gruppo => (
+                      <GroupCard 
+                        key={gruppo.id} 
+                        group={gruppo} 
+                        type="user"
+                        onJoin={handleJoinGroup}
+                        onLeave={handleLeaveGroup}
+                        isJoining={joiningGroups.has(gruppo.id)}
+                        isLeaving={leavingGroups.has(gruppo.id)}
+                        currentUserId={user?.id}
+                      />
+                    ))}
+                  </>
+                )}
+              </>
             )}
           </TabsContent>
 
