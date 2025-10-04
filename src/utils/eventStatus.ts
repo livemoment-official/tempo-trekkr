@@ -23,9 +23,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'ended',
       label: 'Terminato',
-      className: 'bg-gray-400/80 backdrop-blur-md text-black border border-gray-500/30',
+      className: 'bg-black/60 backdrop-blur-md text-white border border-white/20',
       icon: '✓',
-      iconColor: 'text-gray-700'
+      iconColor: 'text-gray-400'
     };
   }
 
@@ -38,9 +38,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
         return {
           status: 'ending_soon',
           label: 'Sta terminando',
-          className: 'bg-red-400/80 backdrop-blur-md text-black border border-red-500/30',
+          className: 'bg-black/60 backdrop-blur-md text-white border border-white/20',
           icon: '⚡',
-          iconColor: 'text-red-700'
+          iconColor: 'text-yellow-400'
         };
       }
     }
@@ -49,7 +49,7 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
   return {
     status: 'in_progress',
     label: 'In corso',
-    className: 'bg-white/90 text-gray-700 border border-gray-200',
+    className: 'bg-black/60 backdrop-blur-md text-white border border-white/20',
     icon: '🔴',
     iconColor: 'text-red-500'
   };
@@ -61,9 +61,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'starting_soon',
       label: 'Inizia tra poco',
-      className: 'bg-gradient-to-r from-amber-300/90 via-yellow-400/90 to-amber-400/90 backdrop-blur-md text-black border border-yellow-500/30',
+      className: 'bg-black/60 backdrop-blur-md text-white border border-white/20',
       icon: '⏰',
-      iconColor: 'text-yellow-700'
+      iconColor: 'text-yellow-400'
     };
   }
 
@@ -71,9 +71,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
   return {
     status: 'upcoming',
     label: 'Prossimamente',
-    className: 'bg-white/90 text-blue-700 border border-blue-200',
+    className: 'bg-black/60 backdrop-blur-md text-white border border-white/20',
     icon: '📅',
-    iconColor: 'text-blue-600'
+    iconColor: 'text-blue-400'
   };
 }
 

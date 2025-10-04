@@ -292,7 +292,6 @@ export function MomentCard({
                     {locationInfo?.street || place?.name || 'Via non specificata'}
                   </p>
                 </div>
-                <Navigation className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
               </div>
             </div>
 
