@@ -105,8 +105,11 @@ export default function ActivitySuggestionStep({
   const handleActivitySelect = (activity: any) => {
     onChange({
       ...data,
-      activity: activity.title,
-      activity_category: activity.category
+      activity: {
+        title: activity.title,
+        category: activity.category,
+        suggestedDuration: activity.duration
+      }
     });
     onNext();
   };
