@@ -8,6 +8,7 @@ export interface EventStatusInfo {
   label: string;
   className: string;
   icon: string;
+  iconColor: string;
 }
 
 export function getEventStatus(when_at?: string, end_at?: string): EventStatusInfo | null {
@@ -22,8 +23,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'ended',
       label: 'Terminato',
-      className: 'bg-gray-500/90 text-white',
-      icon: '✓'
+      className: 'bg-white/90 text-gray-700 border border-gray-300',
+      icon: '✓',
+      iconColor: 'text-gray-500'
     };
   }
 
@@ -36,8 +38,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
         return {
           status: 'ending_soon',
           label: 'Sta terminando',
-          className: 'bg-red-600/90 text-white',
-          icon: '⚡'
+          className: 'bg-white/90 text-red-700 border border-red-200',
+          icon: '⚡',
+          iconColor: 'text-red-600'
         };
       }
     }
@@ -46,8 +49,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'in_progress',
       label: 'In corso',
-      className: 'bg-orange-500/90 text-white',
-      icon: '🔴'
+      className: 'bg-white/90 text-orange-700 border border-orange-200',
+      icon: '🔴',
+      iconColor: 'text-orange-600'
     };
   }
 
@@ -57,8 +61,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'starting_soon',
       label: 'Inizia tra poco',
-      className: 'bg-yellow-500/90 text-white',
-      icon: '⏰'
+      className: 'bg-white/90 text-yellow-700 border border-yellow-200',
+      icon: '⏰',
+      iconColor: 'text-yellow-600'
     };
   }
 
@@ -66,8 +71,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
   return {
     status: 'upcoming',
     label: 'Prossimamente',
-    className: 'bg-blue-500/90 text-white',
-    icon: '📅'
+    className: 'bg-white/90 text-blue-700 border border-blue-200',
+    icon: '📅',
+    iconColor: 'text-blue-600'
   };
 }
 

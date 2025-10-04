@@ -176,9 +176,9 @@ export function MomentCard({
           {eventStatusInfo && eventStatusInfo.status !== 'upcoming' && (
             <div className="absolute bottom-4 left-4 z-20">
               <Badge 
-                className={`${eventStatusInfo.className} backdrop-blur-md px-3 py-1.5 text-xs font-semibold shadow-lg border-0`}
+                className={`${eventStatusInfo.className} backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-card`}
               >
-                <span className="mr-1.5">{eventStatusInfo.icon}</span>
+                <span className={`mr-1.5 ${eventStatusInfo.iconColor}`}>{eventStatusInfo.icon}</span>
                 {eventStatusInfo.label}
               </Badge>
             </div>
