@@ -3,42 +3,39 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, Check, Ticket, Users, MessageCircle, Shield, Star, Crown, MapPin, Palette, Clipboard, Calendar, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Check, Ticket, Users, MessageCircle, Shield, Star, Crown, MapPin, Palette, Clipboard, Calendar, Loader2, Sparkles, Zap, TrendingUp, PiggyBank } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import StandardHeader from "@/components/layout/StandardHeader";
 const proFeatures = [{
-  icon: <Check className="h-5 w-5" />,
+  icon: <Check className="h-6 w-6" />,
   title: "Partecipa e Crea senza limiti",
   description: "Attualmente puoi creare solo 2 Momenti al mese e partecipare a massimo 3 Momenti.",
-  bgColor: "bg-green-100",
-  iconColor: "text-green-600"
+  highlight: true
 }, {
-  icon: <Ticket className="h-5 w-5" />,
+  icon: <Ticket className="h-6 w-6" />,
   title: "Momenti con Ticketing",
   description: "Attualmente non puoi vendere biglietti o ricevere contributi durante i tuoi Momenti.",
-  bgColor: "bg-red-100",
-  iconColor: "text-red-600"
+  highlight: false
 }, {
-  icon: <Users className="h-5 w-5" />,
+  icon: <Users className="h-6 w-6" />,
   title: "Crea Gruppi e Community",
   description: "Attualmente non puoi creare chat basate su interessi comuni, solo partecipare agli eventi.",
-  bgColor: "bg-blue-100",
-  iconColor: "text-blue-600"
+  highlight: false
 }, {
-  icon: <MessageCircle className="h-5 w-5" />,
+  icon: <MessageCircle className="h-6 w-6" />,
   title: "Chatta Privatamente con Tutti",
   description: "Attualmente puoi scrivere solo alle persone a cui sei amico e a chi organizza Momenti.",
-  bgColor: "bg-purple-100",
-  iconColor: "text-purple-600"
+  highlight: false
 }, {
-  icon: <Star className="h-5 w-5" />,
+  icon: <Star className="h-6 w-6" />,
   title: "Badge Live Moment",
   description: "Prima il tuo profilo non era verificato ne visibile fra i Top 15 Badge li permette di avere più amici.",
-  bgColor: "bg-yellow-100",
-  iconColor: "text-yellow-600"
+  highlight: true
 }];
 const businessFeatures = [{
   icon: <Calendar className="h-5 w-5" />,
@@ -86,6 +83,7 @@ export default function Abbonamento() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState<{ hours: number; minutes: number; seconds: number }>({ hours: 23, minutes: 59, seconds: 59 });
   const {
     session,
     subscribed,
@@ -94,6 +92,24 @@ export default function Abbonamento() {
   } = useAuth();
 
   // Handle payment result from Stripe redirect
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { hours: prev.hours, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
@@ -205,68 +221,172 @@ export default function Abbonamento() {
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen bg-background flex flex-col">
+  const handleBack = () => {
+    if (document.referrer && document.referrer.includes(window.location.host)) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
+  return <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <Helmet>
-        <title>LiveMoment · Upgrade Profilo</title>
-        <meta name="description" content="Upgrade il tuo profilo LiveMoment con funzionalità premium" />
+        <title>LiveMoment · Passa a Pro</title>
+        <meta name="description" content="Sblocca tutte le funzionalità premium di LiveMoment" />
       </Helmet>
 
-      {/* Minimal Custom Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-accent rounded-full transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold">Abbonamenti</h1>
+      {/* Enhanced Header */}
+      <StandardHeader 
+        title="Passa a Pro"
+        onBack={handleBack}
+        rightActions={
+          <img 
+            src="/livemoment-mascot.png" 
+            alt="LiveMoment" 
+            className="h-8 w-8 animate-bounce-slow"
+          />
+        }
+      />
+
+      {/* Scarcity Timer */}
+      <div className="bg-gradient-to-r from-primary/10 via-orange-500/10 to-primary/10 border-y border-primary/20 py-3">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm font-medium flex items-center justify-center gap-2 flex-wrap">
+            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            <span>Offerta speciale termina tra:</span>
+            <span className="font-mono font-bold text-primary">
+              {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+            </span>
+          </p>
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-auto w-full pb-40 overflow-y-auto">
-        {/* Plan Toggle */}
-        <div className="p-4">
-          <div className="flex bg-gray-200 rounded-full p-1">
-            <button onClick={() => setActiveTab('pro')} className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all ${activeTab === 'pro' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-700'}`}>
-              Pro
-            </button>
-            <button onClick={() => setActiveTab('business')} className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all ${activeTab === 'business' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-700'}`}>
-              Business
-            </button>
-          </div>
+      <div className="container mx-auto px-4 py-6 pb-32 max-w-2xl">
+        {/* Enhanced Plan Toggle */}
+        <div className="p-1 bg-muted/50 backdrop-blur-sm rounded-full mb-6 flex">
+          <button 
+            onClick={() => setActiveTab('pro')} 
+            className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              activeTab === 'pro' 
+                ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Crown className="h-4 w-4" />
+            <span>Pro</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('business')} 
+            className={`flex-1 py-3 px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              activeTab === 'business' 
+                ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <TrendingUp className="h-4 w-4" />
+            <span>Business</span>
+          </button>
         </div>
 
         {/* Content */}
-        <div className="px-4 space-y-6">
+        <div className="space-y-6">
           {activeTab === 'pro' ? <>
-              {/* Pro Features */}
-              <div className="space-y-4">
-                {proFeatures.map((feature, index) => <div key={index} className={`flex gap-4 p-4 rounded-xl ${feature.bgColor}`}>
-                    <div className={`flex-shrink-0 ${feature.iconColor}`}>
-                      {feature.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm mb-1">{feature.title}</h3>
-                      <p className="text-xs text-gray-600 leading-relaxed">{feature.description}</p>
-                    </div>
-                  </div>)}
+              {/* Enhanced Pro Features */}
+              <div className="space-y-3">
+                {proFeatures.map((feature, index) => (
+                  <Card 
+                    key={index} 
+                    className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
+                  >
+                    <CardContent className="flex items-start gap-4 p-5">
+                      <div className={`p-3 rounded-xl transition-transform group-hover:scale-110 ${
+                        feature.highlight 
+                          ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' 
+                          : 'bg-gradient-to-br from-muted to-muted/50'
+                      }`}>
+                        <div className={feature.highlight ? 'text-white' : ''}>
+                          {feature.icon}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold flex items-center gap-2 mb-1">
+                          {feature.title}
+                          {feature.highlight && (
+                            <span className="text-xs px-2 py-1 bg-gradient-to-r from-primary to-orange-400 text-white rounded-full shadow-sm animate-pulse">
+                              🔥 Hot
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
 
-              {/* Pricing */}
+              {/* Enhanced Pricing */}
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(pricingPlans).map(([key, plan]) => <button key={key} onClick={() => setSelectedPlan(key as '1' | '3' | '6')} className={`relative p-3 rounded-xl border-2 transition-all ${selectedPlan === key ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}>
+                <div className="grid grid-cols-3 gap-3">
+                  {Object.entries(pricingPlans).map(([key, plan]) => (
+                    <button 
+                      key={key} 
+                      onClick={() => setSelectedPlan(key as '1' | '3' | '6')} 
+                      className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+                        selectedPlan === key 
+                          ? 'border-primary bg-gradient-to-br from-primary/10 to-orange-400/10 shadow-lg shadow-primary/20 scale-105' 
+                          : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
+                      } ${key === '3' ? 'animate-pulse-slow' : ''}`}
+                    >
+                      {key === '3' && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                          ⭐ Più Popolare
+                        </div>
+                      )}
+                      
                       <div className="text-center">
-                        <div className={`text-2xl font-bold ${selectedPlan === key ? 'text-orange-600' : 'text-gray-900'}`}>
+                        <div className={`text-3xl font-bold mb-1 ${selectedPlan === key ? 'text-primary' : 'text-foreground'}`}>
                           {plan.months}
                         </div>
-                        <div className="text-xs text-gray-500 mb-1">
-                          {plan.months === '1' ? 'Mese' : 'Mesi'}
+                        <div className="text-xs text-muted-foreground">
+                          {plan.months === '1' ? 'mese' : 'mesi'}
                         </div>
-                        <div className="text-xs font-semibold text-gray-900">{plan.price}</div>
                         
-                        {plan.saving && <div className="text-xs text-green-600 font-medium mt-1">{plan.saving}</div>}
+                        {plan.saving && (
+                          <div className="mt-2 flex items-center justify-center gap-1 text-green-600">
+                            <PiggyBank className="h-3 w-3" />
+                            <span className="text-xs font-medium">Risparmi</span>
+                          </div>
+                        )}
                       </div>
-                    </button>)}
+                    </button>
+                  ))}
                 </div>
+
+                <Card className={`border-2 transition-all duration-300 ${
+                  selectedPlan 
+                    ? 'border-primary bg-gradient-to-br from-primary/5 via-background to-orange-400/5 shadow-xl' 
+                    : 'border-border'
+                }`}>
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-3">
+                      <div>
+                        <span className="text-5xl font-bold bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+                          {pricingPlans[selectedPlan].price}
+                        </span>
+                        <span className="text-muted-foreground text-lg">/mese</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Fatturato ogni {pricingPlans[selectedPlan].months} {pricingPlans[selectedPlan].months === '1' ? 'mese' : 'mesi'}: <span className="font-bold text-foreground">{pricingPlans[selectedPlan].total}</span>
+                      </div>
+                      {pricingPlans[selectedPlan].saving && (
+                        <div className="inline-flex items-center gap-2 text-sm font-semibold text-green-600 bg-green-50 px-4 py-2 rounded-full">
+                          <PiggyBank className="h-4 w-4" />
+                          {pricingPlans[selectedPlan].saving}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </> : <>
               {/* Business Features */}
@@ -336,34 +456,74 @@ export default function Abbonamento() {
         </div>
       </div>
 
-      {/* Fixed CTA Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-2xl z-50">
-        <div className="max-w-md mx-auto p-4">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={checked => setAcceptedTerms(checked as boolean)} className="mt-0.5" />
-              <label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer">
-                Accetto i termini e le condizioni di Live Moment
-              </label>
-            </div>
-            
-            <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
-              {subscribed ? <div className="space-y-2">
-                  <div className="text-center py-2 px-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center justify-center gap-2 text-sm text-green-700 font-medium">
-                      <Check className="h-4 w-4" />
-                      <span>Abbonamento attivo: {subscriptionTier}</span>
-                    </div>
+      {/* Enhanced Fixed Bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t shadow-2xl p-4 z-40">
+        <div className="container mx-auto max-w-2xl space-y-3">
+          <div className="flex items-center gap-2 justify-center">
+            <Checkbox 
+              id="terms" 
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+              className="border-primary data-[state=checked]:bg-primary"
+            />
+            <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
+              Accetto i{' '}
+              <a href="#" className="text-primary underline hover:text-orange-400 transition-colors">
+                termini e condizioni
+              </a>
+            </label>
+          </div>
+
+          <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
+            {subscribed ? (
+              <div className="space-y-2">
+                <div className="text-center py-2 px-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-center gap-2 text-sm text-green-700 dark:text-green-300 font-medium">
+                    <Check className="h-4 w-4" />
+                    <span>Abbonamento attivo: {subscriptionTier}</span>
                   </div>
-                  <Button onClick={handleManageSubscription} disabled={isLoading} className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base transition-all">
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Gestisci Abbonamento
-                  </Button>
-                </div> : <Button onClick={handleSubscribe} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled={!acceptedTerms || isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
-                </Button>}
-            </AuthGuard>
+                </div>
+                <Button
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-muted to-muted hover:from-muted/80 hover:to-muted/80"
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Caricamento...</>
+                  ) : (
+                    "Gestisci Abbonamento"
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleSubscribe}
+                disabled={!acceptedTerms || isLoading}
+                className="group w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] disabled:bg-muted disabled:text-muted-foreground transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Caricamento...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                    {activeTab === 'pro' ? 'Sblocca Pro Ora' : 'Crea Account Premium'}
+                    <Sparkles className="h-5 w-5 group-hover:-rotate-12 transition-transform" />
+                  </span>
+                )}
+              </Button>
+            )}
+          </AuthGuard>
+          
+          {/* Trust Signals */}
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+            <span>🔒 Pagamento sicuro</span>
+            <span>•</span>
+            <span>💳 Cancella quando vuoi</span>
+            <span>•</span>
+            <span>✨ Attiva subito</span>
           </div>
         </div>
       </div>
