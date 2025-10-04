@@ -114,11 +114,14 @@ export function MomentCard({
     const addressParts = place.address.split(',').map(p => p.trim());
     
     // Italian addresses: "Street, City, Province/Postal, Country"
-    // We want Province (second to last) or City (third to last)
+    // Extract just the city name (third from last)
+    const cityRaw = addressParts.length >= 3 ? addressParts[addressParts.length - 3] : addressParts[0];
+    const city = cityRaw.split(' ')[0]; // Take only first word to get clean city name
+    
     return {
       street: addressParts[0] || '',
-      city: addressParts.length >= 3 ? addressParts[addressParts.length - 3] : addressParts[0],
-      province: addressParts.length >= 2 ? addressParts[addressParts.length - 2] : addressParts[addressParts.length - 1]
+      city: city,
+      province: addressParts.length >= 2 ? addressParts[addressParts.length - 2] : ''
     };
   }, [place]);
 
@@ -289,7 +292,7 @@ export function MomentCard({
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <p className="text-sm font-semibold truncate">
-                    {locationInfo?.province || locationInfo?.city || place?.name?.split(',')[0] || 'Luogo'}
+                    {locationInfo?.city || place?.name?.split(',')[0] || 'Città'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
                     {locationInfo?.street || place?.name || 'Indirizzo non specificato'}
