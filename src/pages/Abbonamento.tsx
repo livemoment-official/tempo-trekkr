@@ -1,14 +1,15 @@
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArrowLeft, MessageSquare, Check, Ticket, Users, MessageCircle, Shield, Star, Gift, Crown, MapPin, Palette, Clipboard, Camera, Calendar, Heart, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import StandardHeader from "@/components/layout/StandardHeader";
 const proFeatures = [{
   icon: <Check className="h-5 w-5" />,
   title: "Partecipa e Crea senza limiti",
@@ -80,6 +81,7 @@ const accountTypes = [{
 }];
 export default function Abbonamento() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState<'1' | '3' | '12'>('3');
   const [selectedBusinessType, setSelectedBusinessType] = useState<string>('location');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -87,6 +89,28 @@ export default function Abbonamento() {
   const [isLoading, setIsLoading] = useState(false);
   
   const { session, subscribed, subscriptionTier, checkSubscription } = useAuth();
+
+  // Handle payment result from Stripe redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+
+    if (success === 'true') {
+      toast.success("Pagamento completato con successo!", {
+        description: "Il tuo abbonamento è stato attivato."
+      });
+      // Remove query params from URL
+      window.history.replaceState({}, '', '/abbonamento');
+      // Refresh subscription status
+      checkSubscription();
+    } else if (canceled === 'true') {
+      toast.error("Pagamento annullato", {
+        description: "Puoi riprovare quando vuoi."
+      });
+      // Remove query params from URL
+      window.history.replaceState({}, '', '/abbonamento');
+    }
+  }, [searchParams, checkSubscription]);
   const pricingPlans = {
     '1': {
       months: '1',
@@ -136,9 +160,9 @@ export default function Abbonamento() {
         return;
       }
 
-      // Open Stripe checkout in a new tab
+      // Redirect to Stripe checkout in the same tab for better UX
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
         toast.success("Reindirizzamento al pagamento...");
       }
     } catch (error) {
@@ -170,7 +194,7 @@ export default function Abbonamento() {
       }
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
         toast.success("Apertura portale gestione abbonamento...");
       }
     } catch (error) {
@@ -180,16 +204,16 @@ export default function Abbonamento() {
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50 flex flex-col">
       <Helmet>
         <title>LiveMoment · Upgrade Profilo</title>
         <meta name="description" content="Upgrade il tuo profilo LiveMoment con funzionalità premium" />
       </Helmet>
 
       {/* Header */}
-      
+      <StandardHeader title="Abbonamenti" />
 
-      <div className="max-w-md mx-auto pb-32">
+      <div className="flex-1 max-w-md mx-auto w-full pb-32 overflow-y-auto">
         {/* Plan Toggle */}
         <div className="p-4">
           <div className="flex bg-gray-200 rounded-full p-1">
@@ -304,42 +328,52 @@ export default function Abbonamento() {
         </div>
       </div>
 
-      {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 max-w-md mx-auto">
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={checked => setAcceptedTerms(checked as boolean)} className="mt-0.5" />
-            <label htmlFor="terms" className="text-xs text-gray-600">
-              Accetto i termini e le condizioni di Live Moment
-            </label>
-          </div>
-          
-          <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
-            {subscribed ? (
-              <div className="space-y-2">
-                <div className="text-center text-sm text-gray-600">
-                  Abbonamento attivo: {subscriptionTier}
+      {/* Fixed CTA Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
+        <div className="max-w-md mx-auto p-4">
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <Checkbox 
+                id="terms" 
+                checked={acceptedTerms} 
+                onCheckedChange={checked => setAcceptedTerms(checked as boolean)} 
+                className="mt-0.5" 
+              />
+              <label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer">
+                Accetto i termini e le condizioni di Live Moment
+              </label>
+            </div>
+            
+            <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
+              {subscribed ? (
+                <div className="space-y-2">
+                  <div className="text-center py-2 px-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-center gap-2 text-sm text-green-700 font-medium">
+                      <Check className="h-4 w-4" />
+                      <span>Abbonamento attivo: {subscriptionTier}</span>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleManageSubscription}
+                    disabled={isLoading}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base transition-all"
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Gestisci Abbonamento
+                  </Button>
                 </div>
+              ) : (
                 <Button 
-                  onClick={handleManageSubscription}
-                  disabled={isLoading}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base"
+                  onClick={handleSubscribe} 
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" 
+                  disabled={!acceptedTerms || isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Gestisci Abbonamento
+                  {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
                 </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={handleSubscribe} 
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base" 
-                disabled={!acceptedTerms || isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
-              </Button>
-            )}
-          </AuthGuard>
+              )}
+            </AuthGuard>
+          </div>
         </div>
       </div>
     </div>;
