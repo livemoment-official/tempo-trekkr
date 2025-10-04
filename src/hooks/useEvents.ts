@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -160,19 +160,28 @@ export function useEvents() {
         });
       }
 
-      // Get participant count from event_participants
-      processedEvents = await Promise.all(processedEvents.map(async event => {
-        const { count } = await supabase
+      // Get participant counts with a single query using LEFT JOIN (eliminates N+1 problem)
+      const eventIds = processedEvents.map(e => e.id);
+      
+      if (eventIds.length > 0) {
+        const { data: participantCounts } = await supabase
           .from('event_participants')
-          .select('*', { count: 'exact', head: true })
-          .eq('event_id', event.id)
+          .select('event_id')
+          .in('event_id', eventIds)
           .eq('status', 'confirmed');
         
-        return {
+        // Count participants per event
+        const countMap = (participantCounts || []).reduce((acc, p) => {
+          acc[p.event_id] = (acc[p.event_id] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        // Add counts to events
+        processedEvents = processedEvents.map(event => ({
           ...event,
-          participant_count: count || 0
-        };
-      }));
+          participant_count: countMap[event.id] || 0
+        }));
+      }
 
       setEvents(processedEvents);
     } catch (error) {
@@ -187,8 +196,8 @@ export function useEvents() {
     }
   }, [location, toast]);
 
-  // Calculate distance between two points
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  // Calculate distance between two points - memoized with useCallback
+  const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number): number => {
     const R = 6371; // Earth's radius in kilometers
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
@@ -198,7 +207,7 @@ export function useEvents() {
       Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
-  };
+  }, []);
 
   // Load events on mount
   useEffect(() => {

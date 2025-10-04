@@ -107,9 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Generate a more user-friendly username
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || `user_${userId.slice(0, 8)}`;
         
+        // Use upsert to prevent race conditions - if profile already exists, it will be ignored
         const { error: createError } = await supabase
           .from('profiles')
-          .insert([
+          .upsert(
             {
               id: userId,
               name: '',
@@ -117,8 +118,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               onboarding_completed: false,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
+            },
+            {
+              onConflict: 'id',
+              ignoreDuplicates: true
             }
-          ]);
+          );
 
         if (createError) {
           console.error('❌ Error creating profile:', createError);

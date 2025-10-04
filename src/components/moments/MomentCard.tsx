@@ -86,12 +86,23 @@ export function MomentCard({
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(getEventStatus(when_at, end_at));
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const isCurrentUserOwner = user?.id === hostId;
+
+  // Update event status in real-time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newStatus = getEventStatus(when_at, end_at);
+      setCurrentStatus(newStatus);
+    }, 60000); // Update every 60 seconds
+
+    return () => clearInterval(interval);
+  }, [when_at, end_at]);
   
-  // Calculate event status
-  const eventStatusInfo = getEventStatus(when_at, end_at);
+  // Use current status for display
+  const eventStatusInfo = currentStatus;
 
   const handleReaction = (reactionType: string, e: React.MouseEvent) => {
     e.stopPropagation();

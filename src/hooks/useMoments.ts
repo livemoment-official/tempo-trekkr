@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -78,7 +78,23 @@ export function useMoments() {
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<MomentsFilters>({});
 
-  // Convert mock data to Moment interface  
+  const ITEMS_PER_PAGE = 12;
+  const MAX_ITEMS = 100; // Limit to prevent memory issues
+
+  // Calculate distance between two points - memoized with useCallback
+  const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }, []);
+
+  // Convert mock data to Moment interface
   const convertMockToMoment = (mockMoment: any, userLat?: number, userLng?: number): Moment => {
     // Generate coordinates around user location if available, otherwise Milan
     const baseLat = userLat || 45.4642;
@@ -220,11 +236,12 @@ export function useMoments() {
         let validPlace;
         
         if (place && typeof place === 'object') {
-          // Handle both place.lat/lng and place.coordinates.lat/lng
-          const lat = place.lat || place.coordinates?.lat;
-          const lng = place.lng || place.coordinates?.lng;
+          // Safe access to lat/lng using optional chaining and nullish coalescing
+          const lat = place.lat ?? place.coordinates?.lat;
+          const lng = place.lng ?? place.coordinates?.lng;
           
-          if (lat && lng) {
+          // Only create validPlace if we have both coordinates
+          if (lat !== undefined && lat !== null && lng !== undefined && lng !== null) {
             validPlace = {
               lat: Number(lat),
               lng: Number(lng),
@@ -413,19 +430,6 @@ export function useMoments() {
       loadMoments(filters, false);
     }
   }, [isLoading, hasMore, loadMoments, filters]);
-
-  // Calculate distance between two points
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
 
   // Join moment
   const joinMoment = useCallback(async (momentId: string) => {
