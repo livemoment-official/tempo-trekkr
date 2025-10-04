@@ -48,6 +48,31 @@ interface ValidationResult {
 
 export function useEventValidation(data: EventData): ValidationResult {
   return useMemo(() => {
+    // Guard clause: if data is not provided, return empty validation
+    if (!data) {
+      const emptyStep: StepValidation = {
+        isValid: false,
+        errors: [],
+        completionPercentage: 0
+      };
+      return {
+        steps: {
+          details: emptyStep,
+          artists: emptyStep,
+          venue: emptyStep,
+          ticketing: emptyStep,
+          media: emptyStep,
+          callToAction: emptyStep,
+          preview: emptyStep
+        },
+        overall: {
+          isValid: false,
+          completionPercentage: 0,
+          nextIncompleteStep: 1
+        }
+      };
+    }
+
     // Step 1: Details validation
     const detailsErrors: string[] = [];
     let detailsCompletion = 0;
