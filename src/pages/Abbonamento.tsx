@@ -508,7 +508,6 @@ export default function Abbonamento() {
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 group-hover:rotate-12 transition-transform" />
                     {activeTab === 'pro' ? 'Sblocca Pro Ora' : 'Crea Account Premium'}
                     <Sparkles className="h-5 w-5 group-hover:-rotate-12 transition-transform" />
                   </span>
