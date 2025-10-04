@@ -66,10 +66,6 @@ export default function CreaInvito() {
     id: 3,
     title: "Dettagli",
     component: InviteDetailsStep
-  }, {
-    id: 4,
-    title: "Anteprima",
-    component: InvitePreviewStep
   }];
   const currentStepData = steps.find(step => step.id === currentStep);
   const CurrentStepComponent = currentStepData?.component;
@@ -189,25 +185,15 @@ export default function CreaInvito() {
   };
   return <div className="min-h-screen bg-background">
       <Helmet>
-        <title>LiveMoment · Crea Invito</title>
+        <title>LiveMoment · Invita</title>
         <meta name="description" content="Invita persone per un'attività basata su disponibilità e affinità." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
       {/* Header */}
       <StandardHeader 
-        title="Crea Invito" 
+        title="Invita" 
         onBack={() => navigate('/crea')}
-        rightActions={
-          currentStep === steps.length ? (
-            <Button 
-              onClick={handleSendInvites}
-              disabled={isSending || inviteData.selectedPeople.length === 0}
-            >
-              {isSending ? "Invio..." : "Invia"}
-            </Button>
-          ) : null
-        }
       />
 
       {/* Main Content */}
@@ -246,32 +232,40 @@ export default function CreaInvito() {
             ))}
           </div>
 
-          <Card>
-            <CardHeader>
-              
-            </CardHeader>
-            <CardContent>
-              {CurrentStepComponent && <CurrentStepComponent data={inviteData} onChange={setInviteData} onNext={handleNext} />}
-            </CardContent>
-          </Card>
+          {CurrentStepComponent && <CurrentStepComponent data={inviteData} onChange={setInviteData} onNext={handleNext} />}
         </div>
       </main>
 
-      {/* Fixed Bottom Navigation Bar - Hidden on last step */}
-      {currentStep < steps.length && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
-          <div className="container py-4">
-            <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className="shrink-0"
+      {/* Fixed Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
+        <div className="container py-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            
+            {currentStep === steps.length ? (
+              <Button 
+                onClick={handleSendInvites}
+                disabled={isSending || inviteData.selectedPeople.length === 0}
+                className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold h-12"
               >
-                <ArrowLeft className="h-5 w-5" />
+                {isSending ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Invio...
+                  </>
+                ) : (
+                  "Invia"
+                )}
               </Button>
-              
+            ) : (
               <Button 
                 onClick={handleNext}
                 disabled={currentStep === 2 && inviteData.selectedPeople.length === 0}
@@ -280,9 +274,9 @@ export default function CreaInvito() {
                 Avanti
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>;
 }
