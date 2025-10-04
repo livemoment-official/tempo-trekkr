@@ -232,10 +232,10 @@ export function MomentCard({
           {/* Event Status Badge - Bottom RIGHT */}
           {eventStatusInfo && eventStatusInfo.status !== 'upcoming' && (
             <div className="absolute bottom-4 right-4 z-20">
-              <Badge className={`${eventStatusInfo.className} backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-card`}>
+              <div className={`${eventStatusInfo.className} rounded-full px-3 py-1.5 text-xs font-medium flex items-center`}>
                 <span className={`mr-1.5 ${eventStatusInfo.iconColor}`}>{eventStatusInfo.icon}</span>
-                {eventStatusInfo.label}
-              </Badge>
+                <span>{eventStatusInfo.label}</span>
+              </div>
             </div>
           )}
 
