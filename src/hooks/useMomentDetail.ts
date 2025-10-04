@@ -8,6 +8,7 @@ export interface MomentDetail {
   description: string;
   photos: string[];
   when_at: string;
+  end_at?: string;
   place: {
     name: string;
     coordinates?: { lat: number; lng: number };
@@ -98,6 +99,7 @@ export function useMomentDetail(momentId: string) {
         description: momentData.description || '',
         photos: momentData.photos || [],
         when_at: momentData.when_at,
+        end_at: momentData.end_at,
         place: momentData.place as any,
         host_id: momentData.host_id,
         host: hostProfile ? {

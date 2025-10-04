@@ -46,6 +46,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
     ageMin: moment.age_range_min?.toString() || '18',
     ageMax: moment.age_range_max?.toString() || '65',
     date: moment.when_at ? new Date(moment.when_at).toISOString().slice(0, 16) : '',
+    endDate: moment.end_at ? new Date(moment.end_at).toISOString().slice(0, 16) : '',
     tags: moment.tags || []
   });
 
@@ -65,6 +66,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
         ageMin: moment.age_range_min?.toString() || '18',
         ageMax: moment.age_range_max?.toString() || '65',
         date: moment.when_at ? new Date(moment.when_at).toISOString().slice(0, 16) : '',
+        endDate: moment.end_at ? new Date(moment.end_at).toISOString().slice(0, 16) : '',
         tags: moment.tags || []
       });
     }
@@ -98,6 +100,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
         title: formData.title,
         description: formData.description,
         when_at: formData.date ? new Date(formData.date).toISOString() : null,
+        end_at: formData.endDate ? new Date(formData.endDate).toISOString() : null,
         place: formData.location ? {
           name: formData.location,
           coordinates: formData.locationCoordinates
@@ -257,19 +260,34 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
             />
           </div>
 
-          {/* Date */}
-          <div>
-            <Label htmlFor="date" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Data e Ora
-            </Label>
-            <Input
-              id="date"
-              type="datetime-local"
-              value={formData.date}
-              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-              className="mt-1"
-            />
+          {/* Date & Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="date" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Inizio
+              </Label>
+              <Input
+                id="date"
+                type="datetime-local"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Fine
+              </Label>
+              <Input
+                id="endDate"
+                type="datetime-local"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                className="mt-1"
+              />
+            </div>
           </div>
 
           {/* Location */}
