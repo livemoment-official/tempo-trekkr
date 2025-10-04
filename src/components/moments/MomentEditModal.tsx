@@ -13,6 +13,7 @@ import { MomentDetail } from "@/hooks/useMomentDetail";
 import { useAllUsers } from "@/hooks/useAllUsers";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { Calendar, MapPin, Users, Tag, Camera, Trash2, UserX, Upload } from "lucide-react";
+import { EnhancedLocationSearch } from "@/components/location/EnhancedLocationSearch";
 
 interface MomentEditModalProps {
   open: boolean;
@@ -40,6 +41,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
     title: moment.title,
     description: moment.description,
     location: moment.place?.name || '',
+    locationCoordinates: moment.place?.coordinates || null,
     capacity: moment.max_participants?.toString() || '',
     ageMin: moment.age_range_min?.toString() || '18',
     ageMax: moment.age_range_max?.toString() || '65',
@@ -58,6 +60,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
         title: moment.title,
         description: moment.description,
         location: moment.place?.name || '',
+        locationCoordinates: moment.place?.coordinates || null,
         capacity: moment.max_participants?.toString() || '',
         ageMin: moment.age_range_min?.toString() || '18',
         ageMax: moment.age_range_max?.toString() || '65',
@@ -97,7 +100,7 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
         when_at: formData.date ? new Date(formData.date).toISOString() : null,
         place: formData.location ? {
           name: formData.location,
-          coordinates: moment.place?.coordinates
+          coordinates: formData.locationCoordinates
         } : null,
         max_participants: formData.capacity ? parseInt(formData.capacity) : null,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
@@ -271,16 +274,23 @@ export function MomentEditModal({ open, onOpenChange, moment, onSuccess, onDelet
 
           {/* Location */}
           <div>
-            <Label htmlFor="location" className="flex items-center gap-2">
+            <Label className="flex items-center gap-2 mb-2">
               <MapPin className="h-4 w-4" />
               Luogo
             </Label>
-            <Input
-              id="location"
+            <EnhancedLocationSearch
               value={formData.location}
-              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              placeholder="Dove si svolge?"
-              className="mt-1"
+              onLocationSelect={(location) => {
+                setFormData(prev => ({
+                  ...prev,
+                  location: location.address || location.name,
+                  locationCoordinates: {
+                    lat: location.lat,
+                    lng: location.lng
+                  }
+                }));
+              }}
+              placeholder="Cerca città o indirizzo..."
             />
           </div>
 
