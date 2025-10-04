@@ -25,7 +25,7 @@ const provincieItaliane = ["Agrigento", "Alessandria", "Ancona", "Aosta", "Arezz
 // Emoji per categorie
 const categoryEmojis: Record<string, string> = {
   "aperitivo": "🍹",
-  "festa": "🎉", 
+  "festa": "🎉",
   "drink": "🥃",
   "cibo": "🍔",
   "sport": "⚽",
@@ -37,7 +37,6 @@ const categoryEmojis: Record<string, string> = {
   "moment_chat": "💬",
   "default": "👥"
 };
-
 const GroupInfoModal = ({
   trigger
 }: {
@@ -112,7 +111,6 @@ const GroupCard = ({
   if (type === "city") {
     const cityData = cityGroupsMap?.get(group);
     const participantCount = cityData?.participant_count || 0;
-    
     return <Card className="mb-3">
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
@@ -186,7 +184,7 @@ const GroupCard = ({
   const participantCount = Array.isArray(group.participants) ? group.participants.length : 0;
   const emoji = categoryEmojis[group.category] || categoryEmojis.default;
   const locationName = group.location?.name || group.location || "Posizione non specificata";
-  
+
   // FASE 5: Format last message time
   const formatTime = (timestamp?: string) => {
     if (!timestamp) return '';
@@ -196,42 +194,33 @@ const GroupCard = ({
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
     if (diffMins < 1) return 'Ora';
     if (diffMins < 60) return `${diffMins}m fa`;
     if (diffHours < 24) return `${diffHours}h fa`;
     if (diffDays < 7) return `${diffDays}g fa`;
-    return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString('it-IT', {
+      day: 'numeric',
+      month: 'short'
+    });
   };
-
   return <Card className="mb-3">
       <CardContent className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl shrink-0 relative">
-            {group.avatar_url ? (
-              <img src={group.avatar_url} alt={group.title} className="w-full h-full rounded-full object-cover" />
-            ) : (
-              emoji
-            )}
-            {group.unread_count && group.unread_count > 0 && (
-              <Badge variant="default" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+            {group.avatar_url ? <img src={group.avatar_url} alt={group.title} className="w-full h-full rounded-full object-cover" /> : emoji}
+            {group.unread_count && group.unread_count > 0 && <Badge variant="default" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
                 {group.unread_count}
-              </Badge>
-            )}
+              </Badge>}
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold truncate">{group.title}</h3>
-            {group.last_message && (
-              <p className="text-sm text-muted-foreground truncate">{group.last_message}</p>
-            )}
+            {group.last_message && <p className="text-sm text-muted-foreground truncate">{group.last_message}</p>}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{participantCount} {participantCount === 1 ? 'partecipante' : 'partecipanti'}</span>
-              {group.last_message_at && (
-                <>
+              {group.last_message_at && <>
                   <span>•</span>
                   <span>{formatTime(group.last_message_at)}</span>
-                </>
-              )}
+                </>}
             </div>
           </div>
         </div>
@@ -239,48 +228,20 @@ const GroupCard = ({
             Accedi
           </Button>}>
           <div className="flex items-center gap-2">
-            {(isHost || isParticipant) && (
-              <Button 
-                size="sm" 
-                className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground" 
-                onClick={() => navigate(`/chat/group/${group.id}`)}
-              >
+            {(isHost || isParticipant) && <Button size="sm" className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => navigate(`/chat/group/${group.id}`)}>
                 Entra
-              </Button>
-            )}
+              </Button>}
             
-            {isHost ? (
-                <GroupManagementModal
-                  groupId={group.id}
-                  groupTitle={group.title}
-                  isHost={true}
-                  groupCategory={group.category}
-                >
+            {isHost ? <GroupManagementModal groupId={group.id} groupTitle={group.title} isHost={true} groupCategory={group.category}>
                 <Button variant="outline" size="sm" className="rounded-xl p-2">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
-              </GroupManagementModal>
-            ) : isParticipant ? (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="rounded-xl" 
-                onClick={() => onLeave?.(group.id)}
-                disabled={isLeaving}
-              >
+              </GroupManagementModal> : isParticipant ? <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onLeave?.(group.id)} disabled={isLeaving}>
                 {isLeaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Esci"}
-              </Button>
-            ) : (
-              <Button 
-                size="sm" 
-                className="rounded-xl" 
-                onClick={() => onJoin?.(group.id)}
-                disabled={isJoining}
-              >
+              </Button> : <Button size="sm" className="rounded-xl" onClick={() => onJoin?.(group.id)} disabled={isJoining}>
                 {isJoining ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {isJoining ? "Iscrivendo..." : "Iscriviti"}
-              </Button>
-            )}
+              </Button>}
           </div>
         </AuthGuard>
       </CardContent>
@@ -289,25 +250,45 @@ const GroupCard = ({
 export default function Gruppi() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { groups, userGroups, isLoading, joinGroup, leaveGroup, loadPublicGroups, loadUserGroups } = useGroups();
-  const { momentChats, isLoading: isMomentChatsLoading } = useMomentChats();
-  const { conversations, isLoading: isConversationsLoading, loadConversations } = useChat();
-  const { loadCityGroup, cityGroups } = useCityGroups();
-  
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
+  const {
+    groups,
+    userGroups,
+    isLoading,
+    joinGroup,
+    leaveGroup,
+    loadPublicGroups,
+    loadUserGroups
+  } = useGroups();
+  const {
+    momentChats,
+    isLoading: isMomentChatsLoading
+  } = useMomentChats();
+  const {
+    conversations,
+    isLoading: isConversationsLoading,
+    loadConversations
+  } = useChat();
+  const {
+    loadCityGroup,
+    cityGroups
+  } = useCityGroups();
   const [searchQuery, setSearchQuery] = useState("");
   const [showBanner, setShowBanner] = useState(() => {
     return localStorage.getItem('gruppi-banner-dismissed') !== 'true';
   });
-   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
-   const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
+  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
+  const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (user) {
       loadConversations();
     }
   }, [user, loadConversations]);
-
   const dismissBanner = () => {
     setShowBanner(false);
     localStorage.setItem('gruppi-banner-dismissed', 'true');
@@ -316,32 +297,25 @@ export default function Gruppi() {
   // FASE 2: Filter moment_chat groups from "I tuoi Gruppi" tab
   // Show only normal groups (not moment_chat) where user is participant or host
   const myNormalGroups = userGroups.filter(g => g.category !== 'moment_chat');
-  
+
   // FASE 3: For Esplora tab - show only public groups where user is NOT a participant
-  const exploreGroups = groups.filter(g => 
-    g.is_public && 
-    !userGroups.some(ug => ug.id === g.id) &&
-    g.host_id !== user?.id
-  );
-  
+  const exploreGroups = groups.filter(g => g.is_public && !userGroups.some(ug => ug.id === g.id) && g.host_id !== user?.id);
+
   // FASE 5: Sort groups - unread first, then by last message time
   const sortedMyGroups = [...myNormalGroups].sort((a, b) => {
     // First priority: unread messages
     if (a.unread_count && !b.unread_count) return -1;
     if (!a.unread_count && b.unread_count) return 1;
-    
+
     // Second priority: last message time
     if (a.last_message_at && b.last_message_at) {
       return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
     }
-    
+
     // Fallback: creation date
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
-  
-  const filteredProvince = provincieItaliane.filter(provincia => 
-    provincia.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProvince = provincieItaliane.filter(provincia => provincia.toLowerCase().includes(searchQuery.toLowerCase()));
 
   // Load city groups participant counts
   useEffect(() => {
@@ -349,43 +323,30 @@ export default function Gruppi() {
       loadCityGroup(city);
     });
   }, [filteredProvince.length]);
-  
-  const filteredMyGroups = sortedMyGroups.filter(gruppo => 
-    gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const filteredExploreGroups = exploreGroups.filter(gruppo => 
-    gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  const filteredMyGroups = sortedMyGroups.filter(gruppo => gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) || gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) || gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredExploreGroups = exploreGroups.filter(gruppo => gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) || gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) || gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase()));
   const handleJoinGroup = async (groupId: string) => {
     if (!user) return;
-    
     setJoiningGroups(prev => new Set(prev).add(groupId));
-    
     try {
       const success = await joinGroup(groupId);
       if (success) {
         toast({
           title: "Iscrizione completata",
-          description: "Ti sei iscritto al gruppo con successo!",
+          description: "Ti sei iscritto al gruppo con successo!"
         });
       } else {
         toast({
           title: "Errore",
           description: "Non è stato possibile iscriverti al gruppo.",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante l'iscrizione.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setJoiningGroups(prev => {
@@ -395,31 +356,28 @@ export default function Gruppi() {
       });
     }
   };
-
   const handleLeaveGroup = async (groupId: string) => {
     if (!user) return;
-    
     setLeavingGroups(prev => new Set(prev).add(groupId));
-    
     try {
       const success = await leaveGroup(groupId);
       if (success) {
         toast({
-          title: "Uscita completata", 
-          description: "Hai lasciato il gruppo.",
+          title: "Uscita completata",
+          description: "Hai lasciato il gruppo."
         });
       } else {
         toast({
           title: "Errore",
           description: "Non è stato possibile lasciare il gruppo. Gli host non possono uscire dal proprio gruppo.",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Errore",
         description: "Si è verificato un errore.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLeavingGroups(prev => {
@@ -479,10 +437,8 @@ export default function Gruppi() {
                 </CardContent>
               </Card>}
 
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="mb-3">
+            {isLoading ? <div className="space-y-3">
+                {[1, 2, 3].map(i => <Card key={i} className="mb-3">
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-12 h-12 rounded-full" />
@@ -494,27 +450,10 @@ export default function Gruppi() {
                       </div>
                       <Skeleton className="h-8 w-16 rounded-xl" />
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredMyGroups.length > 0 ? (
-              filteredMyGroups.map(gruppo => (
-                <GroupCard 
-                  key={gruppo.id} 
-                  group={gruppo} 
-                  type="user"
-                  onJoin={handleJoinGroup}
-                  onLeave={handleLeaveGroup}
-                  isJoining={joiningGroups.has(gruppo.id)}
-                  isLeaving={leavingGroups.has(gruppo.id)}
-                  currentUserId={user?.id}
-                />
-              ))
-            ) : (
-              <>
+                  </Card>)}
+              </div> : filteredMyGroups.length > 0 ? filteredMyGroups.map(gruppo => <GroupCard key={gruppo.id} group={gruppo} type="user" onJoin={handleJoinGroup} onLeave={handleLeaveGroup} isJoining={joiningGroups.has(gruppo.id)} isLeaving={leavingGroups.has(gruppo.id)} currentUserId={user?.id} />) : <>
                 {/* CASO 1: Se c'è ricerca attiva e non trova nulla */}
-                {searchQuery && filteredMyGroups.length === 0 ? (
-                  <Card className="bg-muted/50">
+                {searchQuery && filteredMyGroups.length === 0 ? <Card className="bg-muted/50">
                     <CardContent className="p-6 text-center">
                       <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
@@ -522,31 +461,16 @@ export default function Gruppi() {
                         Non ci sono gruppi che corrispondono alla tua ricerca.
                       </p>
                     </CardContent>
-                  </Card>
-                ) : (
-                  <>
+                  </Card> : <>
                     {/* CASO 2: Nessun gruppo disponibile - Mostra banner + pop-up regole */}
-                    {sortedMyGroups.length === 0 && (
-                      <>
+                    {sortedMyGroups.length === 0 && <>
                         {/* Banner "Crea il primo gruppo" */}
                         <Card className="bg-muted/50">
-                          <CardContent className="p-6 text-center">
-                            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                            <h3 className="text-lg font-semibold mb-2">Nessun gruppo trovato</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Non ci sono ancora gruppi disponibili.
-                            </p>
-                            <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Crea il primo gruppo
-                            </Button>
-                          </CardContent>
+                          
                         </Card>
 
                         {/* Pop-up con le regole dei gruppi */}
-                        <GroupInfoModal 
-                          trigger={
-                            <Card className="mt-4 cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20">
+                        <GroupInfoModal trigger={<Card className="mt-4 cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20">
                               <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -559,36 +483,18 @@ export default function Gruppi() {
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
                               </CardContent>
-                            </Card>
-                          }
-                        />
-                      </>
-                    )}
+                            </Card>} />
+                      </>}
 
                     {/* CASO 3: Mostra sempre i gruppi dell'utente (se esistono) */}
-                    {filteredMyGroups.map(gruppo => (
-                      <GroupCard 
-                        key={gruppo.id} 
-                        group={gruppo} 
-                        type="user"
-                        onJoin={handleJoinGroup}
-                        onLeave={handleLeaveGroup}
-                        isJoining={joiningGroups.has(gruppo.id)}
-                        isLeaving={leavingGroups.has(gruppo.id)}
-                        currentUserId={user?.id}
-                      />
-                    ))}
-                  </>
-                )}
-              </>
-            )}
+                    {filteredMyGroups.map(gruppo => <GroupCard key={gruppo.id} group={gruppo} type="user" onJoin={handleJoinGroup} onLeave={handleLeaveGroup} isJoining={joiningGroups.has(gruppo.id)} isLeaving={leavingGroups.has(gruppo.id)} currentUserId={user?.id} />)}
+                  </>}
+              </>}
           </TabsContent>
 
           <TabsContent value="esplora" className="space-y-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="mb-3">
+            {isLoading ? <div className="space-y-3">
+                {[1, 2, 3].map(i => <Card key={i} className="mb-3">
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-12 h-12 rounded-full" />
@@ -600,22 +506,8 @@ export default function Gruppi() {
                       </div>
                       <Skeleton className="h-8 w-16 rounded-xl" />
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredExploreGroups.length > 0 ? (
-              filteredExploreGroups.map(gruppo => (
-                <GroupCard 
-                  key={gruppo.id} 
-                  group={gruppo} 
-                  type="user"
-                  onJoin={handleJoinGroup}
-                  isJoining={joiningGroups.has(gruppo.id)}
-                  currentUserId={user?.id}
-                />
-              ))
-            ) : (
-              <Card className="bg-muted/50">
+                  </Card>)}
+              </div> : filteredExploreGroups.length > 0 ? filteredExploreGroups.map(gruppo => <GroupCard key={gruppo.id} group={gruppo} type="user" onJoin={handleJoinGroup} isJoining={joiningGroups.has(gruppo.id)} currentUserId={user?.id} />) : <Card className="bg-muted/50">
                 <CardContent className="p-6 text-center">
                   <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">Nessun gruppo pubblico disponibile</h3>
@@ -627,8 +519,7 @@ export default function Gruppi() {
                     Crea un gruppo pubblico
                   </Button>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </TabsContent>
 
           <TabsContent value="citta" className="space-y-4">
@@ -639,10 +530,8 @@ export default function Gruppi() {
           </TabsContent>
 
           <TabsContent value="amici" className="space-y-4">
-            {isConversationsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="mb-3">
+            {isConversationsLoading ? <div className="space-y-3">
+                {[1, 2, 3].map(i => <Card key={i} className="mb-3">
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-12 h-12 rounded-full" />
@@ -653,42 +542,28 @@ export default function Gruppi() {
                       </div>
                       <Skeleton className="h-3 w-12" />
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center py-8">
+                  </Card>)}
+              </div> : conversations.length === 0 ? <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">Non hai ancora conversazioni con amici.</p>
                 <Button variant="outline" className="rounded-xl" onClick={() => navigate('/trova-amici')}>
                   Trova Amici
                 </Button>
-              </div>
-            ) : (
-              conversations.map((conversation) => (
-                <GroupCard 
-                  key={conversation.id} 
-                  group={{
-                    id: conversation.id,
-                    name: conversation.other_participant?.name || 'Utente',
-                    avatar: conversation.other_participant?.avatar_url ? '👤' : '👤',
-                    lastMessage: conversation.last_message?.content || 'Nessun messaggio',
-                    time: conversation.last_message ? new Date(conversation.last_message.created_at).toLocaleTimeString('it-IT', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    }) : '',
-                    unread: conversation.unread_count || 0
-                  }} 
-                  type="friend" 
-                />
-              ))
-            )}
+              </div> : conversations.map(conversation => <GroupCard key={conversation.id} group={{
+            id: conversation.id,
+            name: conversation.other_participant?.name || 'Utente',
+            avatar: conversation.other_participant?.avatar_url ? '👤' : '👤',
+            lastMessage: conversation.last_message?.content || 'Nessun messaggio',
+            time: conversation.last_message ? new Date(conversation.last_message.created_at).toLocaleTimeString('it-IT', {
+              hour: '2-digit',
+              minute: '2-digit'
+            }) : '',
+            unread: conversation.unread_count || 0
+          }} type="friend" />)}
           </TabsContent>
 
           <TabsContent value="momenti" className="space-y-4">
-            {isMomentChatsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="mb-3">
+            {isMomentChatsLoading ? <div className="space-y-3">
+                {[1, 2, 3].map(i => <Card key={i} className="mb-3">
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-12 h-12 rounded-full" />
@@ -699,21 +574,13 @@ export default function Gruppi() {
                       </div>
                       <Skeleton className="h-3 w-12" />
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : momentChats.length === 0 ? (
-              <div className="text-center py-8">
+                  </Card>)}
+              </div> : momentChats.length === 0 ? <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">Non hai momenti con chat attive.</p>
                 <Button variant="outline" className="rounded-xl" onClick={() => navigate('/crea/momento')}>
                   Crea Momento
                 </Button>
-              </div>
-            ) : (
-              momentChats.map((chat) => (
-                <GroupCard key={chat.id} group={chat} type="moment" />
-              ))
-            )}
+              </div> : momentChats.map(chat => <GroupCard key={chat.id} group={chat} type="moment" />)}
           </TabsContent>
         </Tabs>
       </div>
