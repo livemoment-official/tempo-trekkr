@@ -80,7 +80,7 @@ const Index = () => {
       <MomentFilters onFiltersChange={handleFilterChange} currentFilters={filterState} view={view} onViewChange={setView} />
 
       {/* Content */}
-      {view === 'list' ? <div className="space-y-6">
+      {view === 'list' ? <div className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map(item => (
               <div key={`${item.contentType}-${item.id}`} className="relative">

@@ -153,7 +153,7 @@ export function MomentCard({
       data-snap-card
     >
       {/* Unified Responsive Layout */}
-      <div className="w-full h-screen md:h-auto flex flex-col bg-background rounded-xl md:shadow-card md:hover:shadow-elevated overflow-hidden">
+      <div className="w-full h-screen md:h-auto flex flex-col bg-background rounded-xl border border-border/30 md:border-0 md:shadow-card md:hover:shadow-elevated overflow-hidden">
         {/* Hero Image Section */}
         <div className="relative w-full h-[50vh] md:h-80 lg:h-96 overflow-hidden md:rounded-t-xl">
           {hasVideo && videoUrl ? (

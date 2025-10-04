@@ -23,9 +23,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'ended',
       label: 'Terminato',
-      className: 'bg-white/90 text-gray-700 border border-gray-300',
+      className: 'bg-gray-400/80 backdrop-blur-md text-black border border-gray-500/30',
       icon: '✓',
-      iconColor: 'text-gray-500'
+      iconColor: 'text-gray-700'
     };
   }
 
@@ -38,9 +38,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
         return {
           status: 'ending_soon',
           label: 'Sta terminando',
-          className: 'bg-white/90 text-red-700 border border-red-200',
+          className: 'bg-red-400/80 backdrop-blur-md text-black border border-red-500/30',
           icon: '⚡',
-          iconColor: 'text-red-600'
+          iconColor: 'text-red-700'
         };
       }
     }
@@ -49,9 +49,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'in_progress',
       label: 'In corso',
-      className: 'bg-white/90 text-orange-700 border border-orange-200',
+      className: 'bg-gradient-to-r from-amber-400/90 via-orange-400/90 to-amber-500/90 backdrop-blur-md text-black border border-amber-500/30',
       icon: '🔴',
-      iconColor: 'text-orange-600'
+      iconColor: 'text-orange-700'
     };
   }
 
@@ -61,9 +61,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'starting_soon',
       label: 'Inizia tra poco',
-      className: 'bg-white/90 text-yellow-700 border border-yellow-200',
+      className: 'bg-gradient-to-r from-amber-300/90 via-yellow-400/90 to-amber-400/90 backdrop-blur-md text-black border border-yellow-500/30',
       icon: '⏰',
-      iconColor: 'text-yellow-600'
+      iconColor: 'text-yellow-700'
     };
   }
 
