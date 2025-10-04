@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { getEventStatus } from "@/utils/eventStatus";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MomentCardProps {
   id: string;
@@ -21,12 +22,18 @@ interface MomentCardProps {
   image?: string;
   category: string;
   time: string;
-  location: string;
+  place?: {
+    lat: number;
+    lng: number;
+    name: string;
+    address?: string;
+  };
   organizer: {
     name: string;
     avatar?: string;
   };
   participants: number;
+  participantIds?: string[];
   maxParticipants?: number;
   reactions?: {
     hearts: number;
@@ -64,9 +71,10 @@ export function MomentCard({
   image, 
   category, 
   time, 
-  location, 
+  place, 
   organizer, 
-  participants, 
+  participants,
+  participantIds,
   maxParticipants,
   reactions = { hearts: 0, likes: 0, stars: 0, fire: 0 },
   mood,
@@ -90,6 +98,47 @@ export function MomentCard({
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const isCurrentUserOwner = user?.id === hostId;
+
+  // Parse location info
+  const locationInfo = useMemo(() => {
+    if (!place?.address) return null;
+    
+    const addressParts = place.address.split(',').map(p => p.trim());
+    
+    return {
+      street: addressParts[0] || '',
+      city: addressParts[addressParts.length - 2] || '',
+      province: addressParts[addressParts.length - 1] || ''
+    };
+  }, [place]);
+
+  // Fetch participant avatars
+  const [participantAvatars, setParticipantAvatars] = useState<Array<{
+    id: string;
+    avatar_url?: string;
+    name: string;
+  }>>([]);
+
+  useEffect(() => {
+    if (!participantIds || participantIds.length === 0) {
+      setParticipantAvatars([]);
+      return;
+    }
+
+    const fetchAvatars = async () => {
+      const idsToFetch = participantIds.slice(0, 4);
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, avatar_url, name')
+        .in('id', idsToFetch);
+      
+      if (data) {
+        setParticipantAvatars(data);
+      }
+    };
+
+    fetchAvatars();
+  }, [participantIds]);
 
   // Update event status in real-time every minute
   useEffect(() => {
@@ -263,20 +312,59 @@ export function MomentCard({
           <div className="flex items-center gap-4 text-muted-foreground flex-wrap md:flex-col md:items-start md:gap-2">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" strokeWidth={1.5} />
-              <span className="text-sm">{time}</span>
+              <span className="text-sm">
+                {time}
+                {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}`}
+              </span>
             </div>
             <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
               <MapPin className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
-              <span className="text-sm truncate">{location}</span>
+              <div className="flex flex-col min-w-0">
+                {locationInfo ? (
+                  <>
+                    <span className="text-sm font-medium truncate">
+                      {locationInfo.city}, {locationInfo.province}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {locationInfo.street}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm truncate">{place?.name || 'Posizione non specificata'}</span>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Participants */}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Users className="h-4 w-4" strokeWidth={1.5} />
-            <span className="text-sm">
-              <span className="font-medium">{participants}</span>{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
-            </span>
+          <div className="flex items-center gap-3">
+            {participantAvatars.length > 0 && (
+              <div className="flex -space-x-2">
+                {participantAvatars.map((participant) => (
+                  <Avatar key={participant.id} className="h-8 w-8 border-2 border-background">
+                    <AvatarImage src={participant.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {participant.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex flex-col">
+              <span className="text-sm">
+                <span className="font-semibold">{participants}</span>
+                {maxParticipants ? `/${maxParticipants}` : ''} partecipanti
+              </span>
+              {maxParticipants && participants < maxParticipants && (
+                <span className="text-xs text-muted-foreground">
+                  {maxParticipants - participants} posti disponibili
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Price Display */}
@@ -351,7 +439,7 @@ export function MomentCard({
             title,
             description,
             when_at: time,
-            place: { name: location },
+            place: { name: place?.name || '' },
             price_cents: price * 100, // Convert to cents
             currency,
             livemoment_fee_percentage: 5,

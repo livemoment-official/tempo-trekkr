@@ -157,7 +157,8 @@ export default function MomentiEventi() {
                         hour: '2-digit',
                         minute: '2-digit'
                       }) : ""}
-                      location={item.place?.name || ""}
+                      place={item.place}
+                      participantIds={item.participants || []}
                       organizer={{
                         name: item.host?.name || "Organizzatore",
                         avatar: item.host?.avatar_url || ""
