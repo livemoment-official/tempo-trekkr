@@ -65,10 +65,19 @@ export function useEvents() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      // Show events that haven't ended yet
-      // Filter based on end_at if available
-      const now = new Date().toISOString();
-      query = query.or(`when_at.is.null,end_at.is.null,end_at.gte.${now}`);
+      // CRITICAL: Events MUST have when_at to appear in feed
+      query = query.not('when_at', 'is', null);
+
+      // Filter based on temporal status:
+      // - If event has end_at: show only if end_at >= now (not yet ended)
+      // - If event has NO end_at: show only if when_at >= now - 24h (24h tolerance after start)
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+      query = query.or(
+        `and(end_at.not.is.null,end_at.gte.${now.toISOString()}),` +
+        `and(end_at.is.null,when_at.gte.${yesterday.toISOString()})`
+      );
 
       const { data, error } = await query;
 
