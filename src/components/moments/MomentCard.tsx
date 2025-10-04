@@ -227,7 +227,7 @@ export function MomentCard({
               
               {/* Count text */}
               <span className="text-xs font-semibold text-white">
-                {participants}{maxParticipants ? `/${maxParticipants}` : ''}
+                {participants}{maxParticipants ? `/${maxParticipants}` : ''} partecipanti
               </span>
             </div>
           </div>
