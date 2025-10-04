@@ -33,16 +33,19 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
         throw new Error('Devi effettuare il login per eliminare il contenuto');
       }
       
-      console.log(`🗑️ [DELETE] Authenticated user:`, user.id);
+      console.log(`🗑️ [DELETE] Authenticated user ID:`, user.id);
+      console.log(`🗑️ [DELETE] Content type:`, contentType, 'Content ID:', contentId);
       
       // Soft delete: set deleted_at timestamp and ensure user owns the content
-      const { count, error } = await supabase
+      // Use .select() to verify rows were actually updated
+      const { data, error } = await supabase
         .from(contentType)
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', contentId)
-        .eq('host_id', user.id);
+        .eq('host_id', user.id)
+        .select('id');
 
-      console.log(`🗑️ [DELETE] Result:`, { count, error });
+      console.log(`🗑️ [DELETE] Result:`, { dataLength: data?.length, error });
       
       if (error) {
         console.error(`🗑️ [DELETE] Error details:`, error);
@@ -53,12 +56,13 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
         throw new Error(error.message || 'Errore durante l\'eliminazione');
       }
       
-      if (count === 0) {
-        console.error(`🗑️ [DELETE] No rows affected - content not found or already deleted`);
-        throw new Error('Contenuto non trovato o già eliminato');
+      // Check if any rows were actually updated
+      if (!data || data.length === 0) {
+        console.error(`🗑️ [DELETE] No rows affected - content not found, already deleted, or insufficient permissions`);
+        throw new Error('Contenuto non trovato o non hai i permessi per eliminarlo');
       }
       
-      console.log(`🗑️ [DELETE] Successfully deleted ${count} row(s)`);
+      console.log(`🗑️ [DELETE] Successfully deleted ${data.length} row(s)`);
     },
     onSuccess: () => {
       toast({

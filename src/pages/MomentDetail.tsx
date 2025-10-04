@@ -42,6 +42,7 @@ import { useMomentDetail } from "@/hooks/useMomentDetail";
 import { useMomentTickets } from "@/hooks/useMomentTickets";
 import { useReverseGeocoding } from "@/hooks/useReverseGeocoding";
 import { useMoments } from "@/hooks/useMoments";
+import { useDeleteContent } from "@/hooks/useContentActions";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -74,6 +75,7 @@ export default function MomentDetail() {
   // Fetch real moment data
   const { moment, isLoading, error, refreshMoment } = useMomentDetail(id || '');
   const { joinMoment, leaveMoment } = useMoments();
+  const deleteMoment = useDeleteContent('moments');
 
   // Check if user is host
   const isHost = user && moment && user.id === moment.host_id;
@@ -232,8 +234,22 @@ export default function MomentDetail() {
   };
 
 
-  const handleDeleteSuccess = () => {
-    navigate('/momenti');
+  const handleDelete = async () => {
+    if (!moment?.id) return;
+    
+    const confirmed = window.confirm(
+      'Sei sicuro di voler eliminare questo momento? Sarà archiviato per 30 giorni prima dell\'eliminazione definitiva.'
+    );
+    
+    if (confirmed) {
+      try {
+        await deleteMoment.mutateAsync(moment.id);
+        navigate('/momenti');
+      } catch (error) {
+        console.error('Error deleting moment:', error);
+        // Toast already shown by useDeleteContent
+      }
+    }
   };
 
   return (
@@ -250,7 +266,7 @@ export default function MomentDetail() {
         isParticipant={isParticipating}
         onEdit={() => setShowEditModal(true)}
         onShare={() => setShowShareModal(true)}
-        onDelete={() => handleDeleteSuccess()}
+        onDelete={handleDelete}
         onReport={() => toast({ title: "Segnalazione inviata", description: "Grazie per aver segnalato questo momento" })}
         onLeave={() => {
           setIsParticipating(false);
@@ -650,7 +666,7 @@ export default function MomentDetail() {
             onOpenChange={setShowEditModal}
             moment={moment}
             onSuccess={refreshMoment}
-            onDelete={handleDeleteSuccess}
+            onDelete={handleDelete}
           />
         )}
 
