@@ -38,31 +38,40 @@ export function useDeleteContent(contentType: 'moments' | 'events' | 'invites') 
       
       // Soft delete: set deleted_at timestamp and ensure user owns the content
       // Use .select() to verify rows were actually updated
-      const { data, error } = await supabase
+      // Pre-check ownership and existence to avoid false success and RLS return issues
+      const { data: existing, error: checkError } = await supabase
+        .from(contentType)
+        .select('id')
+        .eq('id', contentId)
+        .eq('host_id', user.id)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('🗑️ [DELETE] Pre-check error:', checkError);
+        throw new Error(checkError.message || 'Errore di verifica permessi');
+      }
+      if (!existing) {
+        console.error('🗑️ [DELETE] Pre-check failed: not found or not owner', { contentType, contentId, userId: user.id });
+        throw new Error('Contenuto non trovato o non hai i permessi per eliminarlo');
+      }
+
+      // Perform soft delete with minimal returning to avoid SELECT blocked by RLS after update
+      const { error } = await supabase
         .from(contentType)
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', contentId)
-        .eq('host_id', user.id)
-        .select('id');
+        .eq('host_id', user.id);
 
-      console.log(`🗑️ [DELETE] Result:`, { dataLength: data?.length, error });
-      
       if (error) {
-        console.error(`🗑️ [DELETE] Error details:`, error);
-        // Handle specific RLS error
+        console.error('🗑️ [DELETE] Update error:', error);
         if (error.code === '42501') {
           throw new Error('Non hai i permessi per eliminare questo contenuto');
         }
-        throw new Error(error.message || 'Errore durante l\'eliminazione');
+        throw new Error(error.message || "Errore durante l'eliminazione");
       }
-      
-      // Check if any rows were actually updated
-      if (!data || data.length === 0) {
-        console.error(`🗑️ [DELETE] No rows affected - content not found, already deleted, or insufficient permissions`);
-        throw new Error('Contenuto non trovato o non hai i permessi per eliminarlo');
-      }
-      
-      console.log(`🗑️ [DELETE] Successfully deleted ${data.length} row(s)`);
+
+      console.log(`🗑️ [DELETE] Soft-deleted ${contentType} ${contentId} by ${user.id}`);
     },
     onSuccess: () => {
       toast({
