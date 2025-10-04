@@ -37,7 +37,6 @@ const categoryEmojis: Record<string, string> = {
   "moment_chat": "💬",
   "default": "👥"
 };
-
 const GroupCard = ({
   group,
   type = "user",
@@ -244,10 +243,12 @@ export default function Gruppi() {
     setShowBanner(false);
     localStorage.setItem('gruppi-banner-dismissed', 'true');
   };
-
   const handleRulesClick = () => {
     if (bannerRef.current) {
-      bannerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      bannerRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
       // Ensure banner is expanded
       const expandedState = localStorage.getItem("groupRulesBannerExpanded");
       if (expandedState === "false") {
@@ -414,20 +415,7 @@ export default function Gruppi() {
                     {/* CASO 2: Nessun gruppo disponibile - Mostra card per espandere banner */}
                     {sortedMyGroups.length === 0 && <>
                         {/* Card che porta al banner delle regole */}
-                        <Card className="cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20" onClick={handleRulesClick}>
-                          <CardContent className="p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Users className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <h4 className="font-semibold">Regole dei Gruppi</h4>
-                                <p className="text-xs text-muted-foreground">Scopri come funzionano</p>
-                              </div>
-                            </div>
-                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                          </CardContent>
-                        </Card>
+                        
                       </>}
 
                     {/* CASO 3: Mostra sempre i gruppi dell'utente (se esistono) */}
