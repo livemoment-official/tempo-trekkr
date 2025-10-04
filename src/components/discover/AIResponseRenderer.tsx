@@ -15,10 +15,12 @@ export function AIResponseRenderer({ content }: AIResponseRendererProps) {
     // Check for navigation links in the response
     const linkPatterns = [
       { pattern: /\[Inviti\]/g, route: '/inviti', icon: Users, label: 'Vai agli Inviti' },
-      { pattern: /\[Eventi\]/g, route: '/momenti-eventi', icon: Calendar, label: 'Vedi Eventi' },
-      { pattern: /\[Momenti\]/g, route: '/momenti-eventi', icon: MapPin, label: 'Esplora Momenti' },
+      { pattern: /\[Eventi\]/g, route: '/', icon: Calendar, label: 'Vedi Eventi' },
+      { pattern: /\[Momenti\]/g, route: '/', icon: MapPin, label: 'Esplora Momenti' },
       { pattern: /\[Profili\]/g, route: '/profili', icon: Music, label: 'Scopri Profili' },
-      { pattern: /\[TrovaAmici\]/g, route: '/trova-amici', icon: Users, label: 'Trova Amici' }
+      { pattern: /\[TrovaAmici\]/g, route: '/trova-amici', icon: Users, label: 'Trova Amici' },
+      { pattern: /\[Agenda\]/g, route: '/agenda', icon: Calendar, label: 'Vai all\'Agenda' },
+      { pattern: /\[Gruppi\]/g, route: '/gruppi', icon: Users, label: 'Vedi Gruppi' }
     ];
 
     let processedContent = content;

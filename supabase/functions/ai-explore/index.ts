@@ -83,10 +83,12 @@ ${contextData.moments.samples.length > 0 ? 'Momenti recenti:\n' + contextData.mo
 
 IMPORTANTE: Quando suggerisci azioni specifiche, includi nella risposta i link appropriati usando questi tag:
 - [Inviti] per creare inviti o cercare persone
-- [Eventi] per partecipare agli eventi
-- [Momenti] per esplorare momenti condivisi
+- [Eventi] per partecipare agli eventi sulla mappa
+- [Momenti] per esplorare momenti condivisi sulla mappa
 - [Profili] per scoprire artisti e professionisti
 - [TrovaAmici] per trovare nuove persone
+- [Agenda] per vedere l'agenda degli appuntamenti
+- [Gruppi] per scoprire e creare gruppi
 
 Le tue risposte devono essere:
 - Brevi e coinvolgenti (max 150 parole)
