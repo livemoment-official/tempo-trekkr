@@ -274,7 +274,7 @@ export default function Abbonamento() {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   {Object.entries(pricingPlans).map(([key, plan]) => <button key={key} onClick={() => setSelectedPlan(key as '1' | '3' | '6')} className={`relative p-4 rounded-3xl border-2 transition-all duration-200 ${selectedPlan === key ? 'border-primary bg-primary text-white shadow-xl shadow-primary/30' : 'border-border bg-muted/30 hover:border-primary/50'}`}>
-                      {key === '1' && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap ring-1 ring-black">
+                      {key === '3' && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap ring-1 ring-black">
                           ⭐ Popolare
                         </div>}
                       
