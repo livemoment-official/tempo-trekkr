@@ -26,7 +26,6 @@ export default function ArtistSelectionStep({
   const [minScore, setMinScore] = useState(50);
   const [paymentType, setPaymentType] = useState<'both' | 'with_cachet' | 'without_cachet'>('both');
   const [collaborationType, setCollaborationType] = useState<'both' | 'emergent' | 'professional'>('both');
-  
   const {
     data: artists,
     isLoading
@@ -37,11 +36,7 @@ export default function ArtistSelectionStep({
   });
   const filteredArtists = artists?.filter(artist => {
     // Text search
-    const matchesSearch = artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || 
-      artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+    const matchesSearch = artist.name.toLowerCase().includes(searchQuery.toLowerCase()) || artist.stage_name?.toLowerCase().includes(searchQuery.toLowerCase()) || artist.genres?.some(genre => genre.toLowerCase().includes(searchQuery.toLowerCase())) || artist.artist_type?.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
     // Payment type filter
@@ -56,12 +51,10 @@ export default function ArtistSelectionStep({
       // We consider "emergent" as artists with less experience or without cachet
       // and "professional" as verified or with cachet
       const isEmergent = !artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0);
-      const isProfessional = artist.verified || (artist.cachet_info && Object.keys(artist.cachet_info).length > 0);
-      
+      const isProfessional = artist.verified || artist.cachet_info && Object.keys(artist.cachet_info).length > 0;
       if (collaborationType === 'emergent' && !isEmergent) return false;
       if (collaborationType === 'professional' && !isProfessional) return false;
     }
-
     return true;
   }) || [];
   const handleSearch = (query: string) => {
@@ -69,9 +62,7 @@ export default function ArtistSelectionStep({
   };
   const toggleArtistSelection = (artistId: string) => {
     const currentSelected = data.selectedArtists || [];
-    const selectedArtists = safeIncludes(currentSelected, artistId) 
-      ? currentSelected.filter((id: string) => id !== artistId) 
-      : [...currentSelected, artistId];
+    const selectedArtists = safeIncludes(currentSelected, artistId) ? currentSelected.filter((id: string) => id !== artistId) : [...currentSelected, artistId];
     onChange({
       ...data,
       selectedArtists
@@ -93,32 +84,13 @@ export default function ArtistSelectionStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="complete-only" className="text-sm">Solo profili completi</Label>
-            <Switch 
-              id="complete-only"
-              checked={onlyComplete} 
-              onCheckedChange={setOnlyComplete} 
-            />
+            <Switch id="complete-only" checked={onlyComplete} onCheckedChange={setOnlyComplete} />
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="verified-only" className="text-sm">Solo verificati</Label>
-            <Switch 
-              id="verified-only"
-              checked={onlyVerified} 
-              onCheckedChange={setOnlyVerified} 
-            />
+            <Switch id="verified-only" checked={onlyVerified} onCheckedChange={setOnlyVerified} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-sm">Punteggio minimo: {minScore}%</Label>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              step="10"
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value))}
-              className="w-full accent-primary"
-            />
-          </div>
+          
         </div>
 
         {/* Advanced Filters */}
@@ -126,31 +98,13 @@ export default function ArtistSelectionStep({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Tipo di Compenso</Label>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={paymentType === 'both' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentType('both')}
-                className="flex-1"
-              >
+              <Button type="button" variant={paymentType === 'both' ? 'default' : 'outline'} size="sm" onClick={() => setPaymentType('both')} className="flex-1">
                 Tutti
               </Button>
-              <Button
-                type="button"
-                variant={paymentType === 'with_cachet' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentType('with_cachet')}
-                className="flex-1"
-              >
+              <Button type="button" variant={paymentType === 'with_cachet' ? 'default' : 'outline'} size="sm" onClick={() => setPaymentType('with_cachet')} className="flex-1">
                 Con Cachet
               </Button>
-              <Button
-                type="button"
-                variant={paymentType === 'without_cachet' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentType('without_cachet')}
-                className="flex-1"
-              >
+              <Button type="button" variant={paymentType === 'without_cachet' ? 'default' : 'outline'} size="sm" onClick={() => setPaymentType('without_cachet')} className="flex-1">
                 Senza Cachet
               </Button>
             </div>
@@ -159,31 +113,13 @@ export default function ArtistSelectionStep({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Tipo di Collaborazione</Label>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={collaborationType === 'both' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('both')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'both' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('both')} className="flex-1">
                 Tutti
               </Button>
-              <Button
-                type="button"
-                variant={collaborationType === 'emergent' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('emergent')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'emergent' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('emergent')} className="flex-1">
                 Progetto Emergente
               </Button>
-              <Button
-                type="button"
-                variant={collaborationType === 'professional' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('professional')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'professional' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('professional')} className="flex-1">
                 Lavoro Artistico
               </Button>
             </div>
@@ -225,12 +161,7 @@ export default function ArtistSelectionStep({
                           {artist.stage_name && <span className="text-sm text-muted-foreground">({artist.stage_name})</span>}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <ProfileQualityBadge 
-                            completenessScore={artist.completeness_score || 0}
-                            isComplete={artist.is_complete || false}
-                            isVerified={artist.verified}
-                            size="sm"
-                          />
+                          <ProfileQualityBadge completenessScore={artist.completeness_score || 0} isComplete={artist.is_complete || false} isVerified={artist.verified} size="sm" />
                           {artist.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">{artist.artist_type}</p>
@@ -241,26 +172,17 @@ export default function ArtistSelectionStep({
                             </Badge>)}
                         </div>
                         <div className="flex gap-1 flex-wrap">
-                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && (
-                            <Badge variant="secondary" className="text-xs">
+                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && <Badge variant="secondary" className="text-xs">
                               💰 Con Cachet
-                            </Badge>
-                          )}
-                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && (
-                            <Badge variant="outline" className="text-xs">
+                            </Badge>}
+                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && <Badge variant="outline" className="text-xs">
                               🌱 Emergente
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
                     </div>
                     <div className="flex sm:flex-col gap-2 sm:items-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => toggleArtistSelection(artist.id)}
-                        className="min-w-[80px]"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleArtistSelection(artist.id)} className="min-w-[80px]">
                         Rimuovi
                       </Button>
                     </div>
@@ -290,12 +212,7 @@ export default function ArtistSelectionStep({
                           {artist.stage_name && <span className="text-sm text-muted-foreground">({artist.stage_name})</span>}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <ProfileQualityBadge 
-                            completenessScore={artist.completeness_score || 0}
-                            isComplete={artist.is_complete || false}
-                            isVerified={artist.verified}
-                            size="sm"
-                          />
+                          <ProfileQualityBadge completenessScore={artist.completeness_score || 0} isComplete={artist.is_complete || false} isVerified={artist.verified} size="sm" />
                           {artist.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">{artist.artist_type}</p>
@@ -307,26 +224,17 @@ export default function ArtistSelectionStep({
                             </Badge>)}
                         </div>
                         <div className="flex gap-1 flex-wrap">
-                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && (
-                            <Badge variant="secondary" className="text-xs">
+                          {artist.cachet_info && Object.keys(artist.cachet_info).length > 0 && <Badge variant="secondary" className="text-xs">
                               💰 Con Cachet
-                            </Badge>
-                          )}
-                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && (
-                            <Badge variant="outline" className="text-xs">
+                            </Badge>}
+                          {!artist.verified && (!artist.cachet_info || Object.keys(artist.cachet_info).length === 0) && <Badge variant="outline" className="text-xs">
                               🌱 Emergente
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
                     </div>
                     <div className="flex sm:flex-col gap-2 sm:items-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => toggleArtistSelection(artist.id)}
-                        className="min-w-[80px]"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleArtistSelection(artist.id)} className="min-w-[80px]">
                         <Plus className="h-4 w-4 mr-1" />
                         Aggiungi
                       </Button>
