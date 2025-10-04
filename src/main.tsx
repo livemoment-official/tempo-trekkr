@@ -27,6 +27,7 @@ import Crea from './pages/Crea'
 import CreaInvito from './pages/CreaInvito'
 import CreaMomento from './pages/CreaMomento'
 import CreaEvento from './pages/CreaEvento'
+import CreaGruppo from './pages/CreaGruppo'
 import MomentDetail from './pages/MomentDetail'
 import Chat from './pages/Chat'
 import ChatFullscreen from './pages/ChatFullscreen'
@@ -64,6 +65,7 @@ createRoot(document.getElementById("root")!).render(
             {/* Routes with Minimal Layout (only back button) */}
             <Route path="crea/invito" element={<MinimalLayoutWrapper title="Crea Invito"><CreaInvito /></MinimalLayoutWrapper>} />
             <Route path="crea/momento" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomento /></MinimalLayoutWrapper>} />
+            <Route path="crea/gruppo" element={<MinimalLayoutWrapper title="Crea Gruppo"><CreaGruppo /></MinimalLayoutWrapper>} />
             <Route path="crea/evento" element={<MinimalLayoutWrapper title="Crea Evento"><CreaEvento /></MinimalLayoutWrapper>} />
             {/* Profile route unified to ID-based */}
             <Route path="user/:id" element={<MinimalLayoutWrapper title="Profilo"><UserDetailById /></MinimalLayoutWrapper>} />
