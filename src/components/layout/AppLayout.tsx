@@ -55,9 +55,7 @@ const Header = ({
           
           {/* My Events with notification */}
           <NavLink to="/my-events" className="relative">
-            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl">
-              <CalendarDays className="h-5 w-5" />
-            </Button>
+            
             <NotificationBadge className="absolute -top-1 -right-1" />
           </NavLink>
           
