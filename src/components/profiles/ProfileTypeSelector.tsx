@@ -45,7 +45,7 @@ const profileTypes = [
 
 export function ProfileTypeSelector({ onSelectType, className }: ProfileTypeSelectorProps) {
   return (
-    <div className={`grid gap-4 md:grid-cols-3 ${className}`}>
+    <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-4 ${className}`}>
       {profileTypes.map(({ type, icon: Icon, title, description, color, iconColor }) => (
         <Card
           key={type}
