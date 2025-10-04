@@ -191,6 +191,130 @@ export default function CreaEvento() {
       <StandardHeader 
         title="Crea Evento" 
         onBack={() => navigate('/crea')}
+        rightActions={
+          currentStep === steps.length ? (
+            <Button
+              onClick={async () => {
+                try {
+                  // Get current user first
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    throw new Error('Utente non autenticato');
+                  }
+
+                  // Save event to database
+                  const eventToSave = {
+                    title: eventData.title,
+                    description: eventData.description,
+                    host_id: user.id,
+                    when_at: eventData.date && eventData.startTime
+                      ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
+                      : null,
+                    end_at: eventData.date && eventData.endTime
+                      ? new Date(`${eventData.date.toDateString()} ${eventData.endTime}`).toISOString()
+                      : null,
+                    place: eventData.location.coordinates
+                      ? {
+                          name: eventData.location.name,
+                          address: eventData.location.name,
+                          lat: eventData.location.coordinates[1],
+                          lng: eventData.location.coordinates[0],
+                          coordinates: {
+                            lat: eventData.location.coordinates[1],
+                            lng: eventData.location.coordinates[0],
+                          },
+                        }
+                      : null,
+                    max_participants: eventData.capacity,
+                    max_venues: 3,
+                    tags: eventData.tags,
+                    photos: eventData.photos,
+                    ticketing: eventData.ticketing,
+                    advanced_ticketing: eventData.advancedTicketing as any,
+                    discovery_on: true,
+                  };
+
+                  const { data: savedEvent, error } = await supabase
+                    .from('events')
+                    .insert(eventToSave)
+                    .select()
+                    .single();
+
+                  if (error) throw error;
+
+                  // Save artist and venue selections
+                  if (eventData.selectedArtists.length > 0) {
+                    const { error: artistError } = await supabase
+                      .from('event_artists')
+                      .insert(
+                        eventData.selectedArtists.map((artistId) => ({
+                          event_id: savedEvent.id,
+                          artist_id: artistId,
+                          status: 'invited',
+                          invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`,
+                        }))
+                      );
+
+                    if (artistError) console.error('Error saving artist invitations:', artistError);
+                  }
+
+                  if (eventData.selectedVenues.length > 0) {
+                    const { error: venueError } = await supabase
+                      .from('event_venues')
+                      .insert(
+                        eventData.selectedVenues.map((venueId, index) => ({
+                          event_id: savedEvent.id,
+                          venue_id: venueId,
+                          status: 'contacted',
+                          priority_order: index + 1,
+                          contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`,
+                        }))
+                      );
+
+                    if (venueError) console.error('Error saving venue contacts:', venueError);
+                  }
+
+                  // Send notifications to artists and venues (non-blocking)
+                  if (eventData.selectedArtists.length > 0 || eventData.selectedVenues.length > 0) {
+                    try {
+                      console.log('Sending notifications for event:', savedEvent.id);
+                      await supabase.functions.invoke('send-event-notifications', {
+                        body: {
+                          eventId: savedEvent.id,
+                          artistIds: eventData.selectedArtists,
+                          venueIds: eventData.selectedVenues,
+                        },
+                      });
+                      console.log('Notifications sent successfully');
+                    } catch (notificationError) {
+                      console.error('Error sending notifications:', notificationError);
+                      // Don't block event creation if notifications fail
+                    }
+                  }
+
+                  handleAutoSave(eventData);
+                  toast({
+                    title: "Evento pubblicato!",
+                    description: "Il tuo evento è ora visibile a tutti",
+                    duration: 3000,
+                  });
+                  navigate(`/event/${savedEvent.id}`);
+                } catch (error) {
+                  console.error('Error saving event:', error);
+                  toast({
+                    title: "Errore",
+                    description: "Errore nella pubblicazione dell'evento",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              disabled={!validation.overall.isValid}
+              className="bg-gradient-primary hover:opacity-90"
+            >
+              Pubblica
+            </Button>
+          ) : null
+        }
       />
 
       {/* Main Content */}
@@ -209,23 +333,23 @@ export default function CreaEvento() {
         </div>
       </main>
 
-      {/* Fixed Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
-        <div className="container py-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-            {/* Back Button - Icon Only */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-              className="shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+      {/* Fixed Bottom Navigation Bar - Hidden on last step */}
+      {currentStep < steps.length && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
+          <div className="container py-4">
+            <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+              {/* Back Button - Icon Only */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
+                className="shrink-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
 
-            {/* Next/Publish Button - Prominent */}
-            {currentStep < steps.length ? (
+              {/* Next Button */}
               <Button
                 onClick={handleNext}
                 disabled={!canProceedToNext()}
@@ -234,130 +358,9 @@ export default function CreaEvento() {
                 Avanti
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
-            ) : (
-              <Button
-                onClick={async () => {
-                  try {
-                    // Get current user first
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (!user) {
-                      throw new Error('Utente non autenticato');
-                    }
-
-                    // Save event to database
-                    const eventToSave = {
-                      title: eventData.title,
-                      description: eventData.description,
-                      host_id: user.id,
-                      when_at: eventData.date && eventData.startTime
-                        ? new Date(`${eventData.date.toDateString()} ${eventData.startTime}`).toISOString()
-                        : null,
-                      end_at: eventData.date && eventData.endTime
-                        ? new Date(`${eventData.date.toDateString()} ${eventData.endTime}`).toISOString()
-                        : null,
-                      place: eventData.location.coordinates
-                        ? {
-                            name: eventData.location.name,
-                            address: eventData.location.name,
-                            lat: eventData.location.coordinates[1],
-                            lng: eventData.location.coordinates[0],
-                            coordinates: {
-                              lat: eventData.location.coordinates[1],
-                              lng: eventData.location.coordinates[0],
-                            },
-                          }
-                        : null,
-                      max_participants: eventData.capacity,
-                      max_venues: 3,
-                      tags: eventData.tags,
-                      photos: eventData.photos,
-                      ticketing: eventData.ticketing,
-                      advanced_ticketing: eventData.advancedTicketing as any,
-                      discovery_on: true,
-                    };
-
-                    const { data: savedEvent, error } = await supabase
-                      .from('events')
-                      .insert(eventToSave)
-                      .select()
-                      .single();
-
-                    if (error) throw error;
-
-                    // Save artist and venue selections
-                    if (eventData.selectedArtists.length > 0) {
-                      const { error: artistError } = await supabase
-                        .from('event_artists')
-                        .insert(
-                          eventData.selectedArtists.map((artistId) => ({
-                            event_id: savedEvent.id,
-                            artist_id: artistId,
-                            status: 'invited',
-                            invitation_message: `Ti invitiamo a partecipare all'evento "${eventData.title}"`,
-                          }))
-                        );
-
-                      if (artistError) console.error('Error saving artist invitations:', artistError);
-                    }
-
-                    if (eventData.selectedVenues.length > 0) {
-                      const { error: venueError } = await supabase
-                        .from('event_venues')
-                        .insert(
-                          eventData.selectedVenues.map((venueId, index) => ({
-                            event_id: savedEvent.id,
-                            venue_id: venueId,
-                            status: 'contacted',
-                            priority_order: index + 1,
-                            contact_message: `Siamo interessati alla vostra location per l'evento "${eventData.title}"`,
-                          }))
-                        );
-
-                      if (venueError) console.error('Error saving venue contacts:', venueError);
-                    }
-
-                    // Send notifications to artists and venues (non-blocking)
-                    if (eventData.selectedArtists.length > 0 || eventData.selectedVenues.length > 0) {
-                      try {
-                        console.log('Sending notifications for event:', savedEvent.id);
-                        await supabase.functions.invoke('send-event-notifications', {
-                          body: {
-                            eventId: savedEvent.id,
-                            artistIds: eventData.selectedArtists,
-                            venueIds: eventData.selectedVenues,
-                          },
-                        });
-                        console.log('Notifications sent successfully');
-                      } catch (notificationError) {
-                        console.error('Error sending notifications:', notificationError);
-                        // Don't block event creation if notifications fail
-                      }
-                    }
-
-                    handleAutoSave(eventData);
-                    toast({
-                      title: "Evento pubblicato!",
-                      description: "Il tuo evento è ora visibile a tutti",
-                      duration: 3000,
-                    });
-                    navigate(`/event/${savedEvent.id}`);
-                  } catch (error) {
-                    console.error('Error saving event:', error);
-                    toast({
-                      title: "Errore",
-                      description: "Errore nella pubblicazione dell'evento",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                disabled={!validation.overall.isValid}
-                className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold h-12"
-              >
-                Pubblica Evento
-              </Button>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>;
 }

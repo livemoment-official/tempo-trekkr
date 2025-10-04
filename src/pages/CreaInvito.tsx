@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import StandardHeader from "@/components/layout/StandardHeader";
 import ActivitySuggestionStep from "@/components/create/invite/ActivitySuggestionStep";
 import PeopleSelectionStep from "@/components/create/invite/PeopleSelectionStep";
 import InviteDetailsStep from "@/components/create/invite/InviteDetailsStep";
@@ -185,15 +186,34 @@ export default function CreaInvito() {
       setIsSending(false);
     }
   };
-  return <div className="space-y-4 pb-8">
+  return <div className="min-h-screen bg-background">
       <Helmet>
         <title>LiveMoment · Crea Invito</title>
         <meta name="description" content="Invita persone per un'attività basata su disponibilità e affinità." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Progress indicator with improved styling */}
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+      {/* Header */}
+      <StandardHeader 
+        title="Crea Invito" 
+        onBack={() => navigate('/crea')}
+        rightActions={
+          currentStep === steps.length ? (
+            <Button 
+              onClick={handleSendInvites}
+              disabled={isSending || inviteData.selectedPeople.length === 0}
+            >
+              {isSending ? "Invio..." : "Invia"}
+            </Button>
+          ) : null
+        }
+      />
+
+      {/* Main Content */}
+      <main className="container py-6 pb-32">
+        <div className="max-w-4xl mx-auto space-y-4">
+          {/* Progress indicator with improved styling */}
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
         {steps.map((step, index) => <div key={step.id} className="flex items-center shrink-0">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep >= step.id ? "bg-primary text-primary-foreground shadow-lg scale-110" : "bg-muted text-muted-foreground"}`}>
               {step.id}
@@ -203,46 +223,45 @@ export default function CreaInvito() {
             </span>
             {index < steps.length - 1 && <div className={`w-12 h-1 mx-2 rounded-full transition-all ${currentStep > step.id ? "bg-primary" : "bg-muted"}`} />}
           </div>)}
-      </div>
+          </div>
 
-      <Card>
-        <CardHeader>
-          
-        </CardHeader>
-        <CardContent>
-          {CurrentStepComponent && <CurrentStepComponent data={inviteData} onChange={setInviteData} onNext={handleNext} />}
-          
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Indietro
-            </Button>
-            
-            {currentStep < steps.length ? (
+          <Card>
+            <CardHeader>
+              
+            </CardHeader>
+            <CardContent>
+              {CurrentStepComponent && <CurrentStepComponent data={inviteData} onChange={setInviteData} onNext={handleNext} />}
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+
+      {/* Fixed Bottom Navigation Bar - Hidden on last step */}
+      {currentStep < steps.length && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-20">
+          <div className="container py-4">
+            <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
+                className="shrink-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              
               <Button 
                 onClick={handleNext}
                 disabled={currentStep === 2 && inviteData.selectedPeople.length === 0}
+                className="flex-1 bg-gradient-primary hover:opacity-90 text-white font-semibold h-12"
               >
                 Avanti
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
-            ) : (
-              <Button 
-                onClick={handleSendInvites}
-                disabled={isSending || inviteData.selectedPeople.length === 0}
-              >
-                {isSending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Invio in corso...
-                  </>
-                ) : (
-                  'Invia Inviti'
-                )}
-              </Button>
-            )}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>;
 }
