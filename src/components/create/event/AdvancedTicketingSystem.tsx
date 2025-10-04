@@ -142,9 +142,7 @@ export const AdvancedTicketingSystem = ({
     return total;
   };
   const currencySymbol = ticketingData.currency === 'EUR' ? '€' : ticketingData.currency === 'USD' ? '$' : '£';
-  
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -153,28 +151,21 @@ export const AdvancedTicketingSystem = ({
                 <Ticket className="h-5 w-5" />
                 {simplified ? "Biglietti a Pagamento" : "Sistema di Ticketing Avanzato"}
               </CardTitle>
-              <CardDescription>
-                {simplified 
-                  ? "Configura il prezzo per la partecipazione" 
-                  : "Configura fasi di vendita e divisione ricavi"}
-              </CardDescription>
+              
             </div>
-            <Switch
-              checked={ticketingData.enabled}
-              onCheckedChange={(enabled) => updateData({ enabled })}
-            />
+            <Switch checked={ticketingData.enabled} onCheckedChange={enabled => updateData({
+            enabled
+          })} />
           </div>
         </CardHeader>
 
-        {ticketingData.enabled && (
-          <CardContent className="space-y-6">
+        {ticketingData.enabled && <CardContent className="space-y-6">
             {/* Currency Selection */}
             <div className="space-y-2">
               <Label>Valuta</Label>
-              <Select
-                value={ticketingData.currency}
-                onValueChange={(value: 'EUR' | 'USD' | 'GBP') => updateData({ currency: value })}
-              >
+              <Select value={ticketingData.currency} onValueChange={(value: 'EUR' | 'USD' | 'GBP') => updateData({
+            currency: value
+          })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -203,21 +194,13 @@ export const AdvancedTicketingSystem = ({
                 </Button>
               </div>
 
-              {ticketingData.phases.map((phase, index) => (
-                <Card key={index}>
+              {ticketingData.phases.map((phase, index) => <Card key={index}>
                   <CardContent className="pt-6 space-y-4">
                     <div className="flex items-center justify-between">
-                      <Input
-                        value={phase.name}
-                        onChange={(e) => updatePhase(index, { name: e.target.value })}
-                        placeholder="Nome fase"
-                        className="max-w-xs"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removePhase(index)}
-                      >
+                      <Input value={phase.name} onChange={e => updatePhase(index, {
+                  name: e.target.value
+                })} placeholder="Nome fase" className="max-w-xs" />
+                      <Button variant="ghost" size="icon" onClick={() => removePhase(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -225,35 +208,23 @@ export const AdvancedTicketingSystem = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Prezzo ({currencySymbol})</Label>
-                        <Input
-                          type="number"
-                          value={phase.price}
-                          onChange={(e) => updatePhase(index, { price: Number(e.target.value) })}
-                          min="0"
-                          step="0.01"
-                        />
+                        <Input type="number" value={phase.price} onChange={e => updatePhase(index, {
+                    price: Number(e.target.value)
+                  })} min="0" step="0.01" />
                       </div>
                       <div className="space-y-2">
                         <Label>Biglietti Disponibili</Label>
-                        <Input
-                          type="number"
-                          value={phase.maxTickets}
-                          onChange={(e) => updatePhase(index, { maxTickets: Number(e.target.value) })}
-                          min="0"
-                          max={maxParticipants}
-                          placeholder={maxParticipants ? `Max ${maxParticipants}` : "Nessun limite"}
-                        />
-                        {maxParticipants && (
-                          <p className="text-xs text-muted-foreground">
+                        <Input type="number" value={phase.maxTickets} onChange={e => updatePhase(index, {
+                    maxTickets: Number(e.target.value)
+                  })} min="0" max={maxParticipants} placeholder={maxParticipants ? `Max ${maxParticipants}` : "Nessun limite"} />
+                        {maxParticipants && <p className="text-xs text-muted-foreground">
                             Massimo: {maxParticipants} partecipanti
-                          </p>
-                        )}
+                          </p>}
                       </div>
                     </div>
 
                     {/* Price Preview for Simplified Mode */}
-                    {simplified && phase.price > 0 && (
-                      <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-xs">
+                    {simplified && phase.price > 0 && <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-xs">
                         <div className="flex justify-between">
                           <span>Prezzo base:</span>
                           <span className="font-medium">{phase.price.toFixed(2)} {currencySymbol}</span>
@@ -266,16 +237,13 @@ export const AdvancedTicketingSystem = ({
                           <span>Totale utente:</span>
                           <span>{(phase.price * 1.05).toFixed(2)} {currencySymbol}</span>
                         </div>
-                      </div>
-                    )}
+                      </div>}
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
 
             {/* Artist Payment Splits - Only for events (not simplified mode) */}
-            {!simplified && selectedArtists.length > 0 && (
-              <>
+            {!simplified && selectedArtists.length > 0 && <>
                 <Separator />
                 <div className="space-y-4">
                   <div>
@@ -285,12 +253,10 @@ export const AdvancedTicketingSystem = ({
                     </p>
                   </div>
 
-                  {selectedArtists.map((artist) => {
-                    const split = ticketingData.artistSplits?.find(s => s.artistId === artist.id);
-                    if (!split) return null;
-
-                    return (
-                      <Card key={artist.id}>
+                  {selectedArtists.map(artist => {
+              const split = ticketingData.artistSplits?.find(s => s.artistId === artist.id);
+              if (!split) return null;
+              return <Card key={artist.id}>
                         <CardContent className="pt-6 space-y-4">
                           <div className="flex items-center gap-3">
                             <Avatar>
@@ -305,12 +271,9 @@ export const AdvancedTicketingSystem = ({
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label>Tipo Pagamento</Label>
-                              <Select
-                                value={split.paymentType}
-                                onValueChange={(value: 'none' | 'percentage' | 'fixed') =>
-                                  updateArtistSplit(artist.id, { paymentType: value })
-                                }
-                              >
+                              <Select value={split.paymentType} onValueChange={(value: 'none' | 'percentage' | 'fixed') => updateArtistSplit(artist.id, {
+                        paymentType: value
+                      })}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -322,49 +285,29 @@ export const AdvancedTicketingSystem = ({
                               </Select>
                             </div>
 
-                            {split.paymentType === 'percentage' && (
-                              <div className="space-y-2">
+                            {split.paymentType === 'percentage' && <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                   <Label>Percentuale</Label>
                                   <span className="text-sm font-medium">{split.percentage}%</span>
                                 </div>
-                                <Slider
-                                  value={[split.percentage]}
-                                  onValueChange={([value]) =>
-                                    updateArtistSplit(artist.id, { percentage: value })
-                                  }
-                                  min={0}
-                                  max={100 - LIVEMOMENT_FEE}
-                                  step={1}
-                                />
-                              </div>
-                            )}
+                                <Slider value={[split.percentage]} onValueChange={([value]) => updateArtistSplit(artist.id, {
+                        percentage: value
+                      })} min={0} max={100 - LIVEMOMENT_FEE} step={1} />
+                              </div>}
 
-                            {split.paymentType === 'fixed' && (
-                              <div className="space-y-2">
+                            {split.paymentType === 'fixed' && <div className="space-y-2">
                                 <Label>Importo Fisso ({currencySymbol})</Label>
-                                <Input
-                                  type="number"
-                                  value={split.fixedAmount}
-                                  onChange={(e) =>
-                                    updateArtistSplit(artist.id, { fixedAmount: Number(e.target.value) })
-                                  }
-                                  min="0"
-                                  step="0.01"
-                                />
-                              </div>
-                            )}
+                                <Input type="number" value={split.fixedAmount} onChange={e => updateArtistSplit(artist.id, {
+                        fixedAmount: Number(e.target.value)
+                      })} min="0" step="0.01" />
+                              </div>}
                           </div>
                         </CardContent>
-                      </Card>
-                    );
-                  })}
+                      </Card>;
+            })}
                 </div>
-              </>
-            )}
-          </CardContent>
-        )}
+              </>}
+          </CardContent>}
       </Card>
-    </div>
-  );
+    </div>;
 };
