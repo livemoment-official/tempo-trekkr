@@ -341,7 +341,7 @@ export default function Profilo() {
                 <button onClick={() => setShowStaffWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <Users className="h-4 w-4 text-accent-foreground" />
-                    <span className="text-sm font-medium">Profilo Staff</span>
+                    <span className="text-sm font-medium">Crea il tuo Format</span>
                   </div>
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </button>
