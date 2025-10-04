@@ -188,12 +188,11 @@ export default function InviteCard({
 
               {/* Invito accettato - mostra Crea il Momento e Chatta */}
               {invite.status === 'accepted' && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-2">
                   <Button 
                     onClick={handleCreateMoment} 
-                    className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}
+                    className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all`}
                   >
-                    <Sparkles className="h-4 w-4 mr-2" />
                     Crea il Momento
                   </Button>
                   
@@ -204,7 +203,7 @@ export default function InviteCard({
                       }
                     }} 
                     variant="outline" 
-                    className={`${isMobile ? "border border-black text-black hover:bg-gray-100 hover:border-black font-medium h-11 px-4" : "border-2 border-black text-black hover:bg-gray-100 hover:border-black font-medium h-12 px-6"} rounded-xl transition-all`}
+                    className={`flex-1 ${isMobile ? "border border-black text-black hover:bg-gray-100 hover:border-black font-semibold h-11" : "border-2 border-black text-black hover:bg-gray-100 hover:border-black font-semibold h-12"} rounded-xl transition-all`}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Chatta
