@@ -305,23 +305,30 @@ export default function MomentDetail() {
             {/* Compact Location & Date Cards - SOPRA IL TITOLO */}
             <div className="flex gap-3 mb-4">
               {/* Card Luogo */}
-              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium truncate">
-                    {locationInfo ? `${locationInfo.city}, ${locationInfo.province}` : moment.place?.name || 'Posizione non specificata'}
-                  </span>
+              <div 
+                className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 cursor-pointer hover:bg-muted/50 transition-colors min-h-[90px]"
+                onClick={openInMaps}
+              >
+                <div className="flex items-start gap-2 mb-2">
+                  <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">
+                      {locationInfo?.province || locationInfo?.city || 'Provincia'}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {locationInfo?.street || moment.place?.name || 'Via non specificata'}
+                    </p>
+                  </div>
+                  <Navigation className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                 </div>
-                {locationInfo?.street && (
-                  <p className="text-xs text-muted-foreground truncate ml-6">
-                    {locationInfo.street}
-                  </p>
-                )}
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={openInMaps}
-                  className="mt-2 h-7 text-xs w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openInMaps();
+                  }}
+                  className="h-7 text-xs w-full"
                 >
                   <Navigation className="h-3 w-3 mr-1" />
                   Vai a Maps
@@ -329,16 +336,18 @@ export default function MomentDetail() {
               </div>
 
               {/* Card Data/Ora */}
-              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {moment.when_at && format(new Date(moment.when_at), "EEE dd MMM", { locale: it })}
-                  </span>
+              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 min-h-[90px]">
+                <div className="flex items-start gap-2 h-full">
+                  <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <p className="text-sm font-semibold">
+                      {moment.when_at && format(new Date(moment.when_at), "EEE, dd.MM", { locale: it })}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {moment.when_at && format(new Date(moment.when_at), "HH:mm")}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground ml-6">
-                  {moment.when_at && format(new Date(moment.when_at), "HH:mm")}
-                </p>
               </div>
             </div>
 

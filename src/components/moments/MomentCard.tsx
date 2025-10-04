@@ -3,7 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle, Share2, CreditCard } from "lucide-react";
+import { MapPin, Clock, Users, Heart, ThumbsUp, Star, Flame, MessageCircle, Share2, CreditCard, Navigation } from "lucide-react";
+import { format } from "date-fns";
+import { it } from "date-fns/locale/it";
 import { useNavigate } from "react-router-dom";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
@@ -257,32 +259,43 @@ export function MomentCard({
           {/* Compact Location & Date Cards */}
           <div className="flex gap-3">
             {/* Card Luogo */}
-            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium truncate">
-                  {locationInfo ? `${locationInfo.city}, ${locationInfo.province}` : place?.name || 'Posizione non specificata'}
-                </span>
+            <div 
+              className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 cursor-pointer hover:bg-muted/50 transition-colors min-h-[80px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (place?.lat && place?.lng) {
+                  window.open(`https://www.google.com/maps?q=${place.lat},${place.lng}`, '_blank');
+                }
+              }}
+            >
+              <div className="flex items-start gap-2 h-full">
+                <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <p className="text-sm font-semibold truncate">
+                    {locationInfo?.province || locationInfo?.city || 'Provincia'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {locationInfo?.street || place?.name || 'Via non specificata'}
+                  </p>
+                </div>
+                <Navigation className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
               </div>
-              {locationInfo?.street && (
-                <p className="text-xs text-muted-foreground truncate ml-6">
-                  {locationInfo.street}
-                </p>
-              )}
             </div>
 
             {/* Card Data/Ora */}
-            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium truncate">
-                  {time.split(' ')[0]}
-                </span>
+            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 min-h-[80px]">
+              <div className="flex items-start gap-2 h-full">
+                <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <p className="text-sm font-semibold">
+                    {when_at ? format(new Date(when_at), "EEE, dd.MM", { locale: it }) : time.split(' ')[0]}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {when_at ? format(new Date(when_at), "HH:mm") : time.split(' ').slice(1).join(' ')}
+                    {end_at && ` - ${format(new Date(end_at), "HH:mm")}`}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground ml-6">
-                {time.split(' ').slice(1).join(' ')}
-                {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`}
-              </p>
             </div>
           </div>
 
