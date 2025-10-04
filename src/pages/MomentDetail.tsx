@@ -302,6 +302,46 @@ export default function MomentDetail() {
         {/* Main Info */}
         <Card>
           <CardHeader className="pb-4">
+            {/* Compact Location & Date Cards - SOPRA IL TITOLO */}
+            <div className="flex gap-3 mb-4">
+              {/* Card Luogo */}
+              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium truncate">
+                    {locationInfo ? `${locationInfo.city}, ${locationInfo.province}` : moment.place?.name || 'Posizione non specificata'}
+                  </span>
+                </div>
+                {locationInfo?.street && (
+                  <p className="text-xs text-muted-foreground truncate ml-6">
+                    {locationInfo.street}
+                  </p>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={openInMaps}
+                  className="mt-2 h-7 text-xs w-full"
+                >
+                  <Navigation className="h-3 w-3 mr-1" />
+                  Vai a Maps
+                </Button>
+              </div>
+
+              {/* Card Data/Ora */}
+              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {moment.when_at && format(new Date(moment.when_at), "EEE dd MMM", { locale: it })}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground ml-6">
+                  {moment.when_at && format(new Date(moment.when_at), "HH:mm")}
+                </p>
+              </div>
+            </div>
+
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold leading-tight">{moment.title}</h1>
@@ -316,38 +356,8 @@ export default function MomentDetail() {
           </CardHeader>
           
           <CardContent className="space-y-4">
-            {/* Time & Location */}
+            {/* Participants & Price */}
             <div className="space-y-3">
-              {moment.when_at && <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">
-                      {format(new Date(moment.when_at), "EEEE d MMMM", {
-                    locale: it
-                  })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(moment.when_at), "HH:mm")}
-                    </p>
-                  </div>
-                </div>}
-              
-              {moment.place && <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                  <div className="flex-1">
-                    {locationInfo ? <div className="space-y-1">
-                        <p className="font-medium">{locationInfo.city}, {locationInfo.province}</p>
-                        <p className="text-sm text-muted-foreground">{locationInfo.street}</p>
-                      </div> : <p className="font-medium">{moment.place.name}</p>}
-                    <div className="flex gap-2 mt-2">
-                      
-                      <Button variant="outline" size="sm" onClick={openInMaps} className="text-xs">
-                        <Navigation className="h-3 w-3 mr-1" />
-                        Apri in Maps
-                      </Button>
-                    </div>
-                  </div>
-                </div>}
 
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />

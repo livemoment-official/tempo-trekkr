@@ -254,30 +254,35 @@ export function MomentCard({
           {/* Title */}
           <h3 className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{title}</h3>
           
-          {/* Time & Location */}
-          <div className="flex items-center gap-4 text-muted-foreground flex-wrap md:flex-col md:items-start md:gap-2">
-            <div className="flex items-center gap-2">
-              
-              <span className="text-sm">
-                {time}
-                {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}`}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
-              <MapPin className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
-              <div className="flex flex-col min-w-0">
-                {locationInfo ? <>
-                    <span className="text-sm font-medium truncate">
-                      {locationInfo.city}, {locationInfo.province}
-                    </span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {locationInfo.street}
-                    </span>
-                  </> : <span className="text-sm truncate">{place?.name || 'Posizione non specificata'}</span>}
+          {/* Compact Location & Date Cards */}
+          <div className="flex gap-3">
+            {/* Card Luogo */}
+            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium truncate">
+                  {locationInfo ? `${locationInfo.city}, ${locationInfo.province}` : place?.name || 'Posizione non specificata'}
+                </span>
               </div>
+              {locationInfo?.street && (
+                <p className="text-xs text-muted-foreground truncate ml-6">
+                  {locationInfo.street}
+                </p>
+              )}
+            </div>
+
+            {/* Card Data/Ora */}
+            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium truncate">
+                  {time.split(' ')[0]}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                {time.split(' ').slice(1).join(' ')}
+                {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`}
+              </p>
             </div>
           </div>
 
