@@ -148,34 +148,81 @@ export default function InviteCard({
 
           {/* Azioni per inviti ricevuti */}
           {type === 'received' && (
-            <div className="space-y-3 pt-2">
-              {/* Bottoni principali */}
-              <div className="flex gap-3">
-                <Button onClick={handleCreateMoment} className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}>
-                  Crea il Momento
-                </Button>
-                
-                <Button onClick={() => {
-                  if (invite.sender?.id) {
-                    navigate(`/chat/friend/${invite.sender.id}`);
-                  }
-                }} variant="outline" className={`${isMobile ? "border border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-11 px-3" : "border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-12 px-5"} rounded-xl transition-all`}>
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                  {isMobile ? "Chat" : "Chatta"}
-                </Button>
-              </div>
-              
-              {/* Bottoni secondari - solo per inviti pending */}
+            <div className="pt-2">
+              {/* Invito in attesa - mostra Accetta, Chatta, Rifiuta */}
               {invite.status === 'pending' && (
-                <div className="flex gap-3">
-                  <Button onClick={handleAccept} variant="outline" className={`flex-1 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 font-medium ${isMobile ? "h-9 text-xs" : "h-10 text-sm"} rounded-lg transition-all`}>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleAccept} 
+                    className={`flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-md hover:shadow-lg transition-all`}
+                  >
                     <Check className="h-4 w-4 mr-2" />
                     Accetta
                   </Button>
-                  <Button onClick={handleReject} variant="outline" size="sm" className={`px-3 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium ${isMobile ? "h-9" : "h-10"} rounded-lg transition-all`}>
-                    <X className="h-3 w-3" />
+                  
+                  <Button 
+                    onClick={() => {
+                      if (invite.sender?.id) {
+                        navigate(`/chat/friend/${invite.sender.id}`);
+                      }
+                    }} 
+                    variant="outline" 
+                    className={`${isMobile ? "h-11 px-4" : "h-12 px-6"} border-2 rounded-xl font-medium transition-all`}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Chatta
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleReject} 
+                    variant="outline" 
+                    className={`${isMobile ? "h-11 px-3" : "h-12 px-4"} border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl font-medium transition-all`}
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
+              )}
+
+              {/* Invito accettato - mostra Crea il Momento e Chatta */}
+              {invite.status === 'accepted' && (
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleCreateMoment} 
+                    className={`flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold ${isMobile ? "h-11 text-sm" : "h-12"} rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]`}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Crea il Momento
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => {
+                      if (invite.sender?.id) {
+                        navigate(`/chat/friend/${invite.sender.id}`);
+                      }
+                    }} 
+                    variant="outline" 
+                    className={`${isMobile ? "border border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-11 px-4" : "border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-12 px-6"} rounded-xl transition-all`}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Chatta
+                  </Button>
+                </div>
+              )}
+
+              {/* Altri stati - mostra solo Chatta */}
+              {invite.status !== 'pending' && invite.status !== 'accepted' && (
+                <Button 
+                  onClick={() => {
+                    if (invite.sender?.id) {
+                      navigate(`/chat/friend/${invite.sender.id}`);
+                    }
+                  }} 
+                  variant="outline" 
+                  className={`w-full ${isMobile ? "border border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-11" : "border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/30 font-medium h-12"} rounded-xl transition-all`}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Chatta
+                </Button>
               )}
             </div>
           )}
