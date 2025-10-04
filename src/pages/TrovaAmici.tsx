@@ -12,7 +12,9 @@ import { UserListItem } from "@/components/profile/UserListItem";
 import { FriendsSearchFilters } from "@/components/invites/FriendsSearchFilters";
 import { useUnifiedGeolocation } from "@/hooks/useUnifiedGeolocation";
 import { useFriendship } from "@/hooks/useFriendship";
+import { usePhoneContacts } from "@/hooks/usePhoneContacts";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 export default function TrovaAmici() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,6 +43,9 @@ export default function TrovaAmici() {
 
   // Get friendship functionality
   const { sendFriendRequest, friends } = useFriendship();
+
+  // Get phone contacts functionality
+  const { syncContacts, isLoading: isSyncingContacts, contacts: phoneContacts } = usePhoneContacts();
 
   const usersLoading = nearbyUsersLoading || allUsersLoading;
 
@@ -116,6 +121,10 @@ export default function TrovaAmici() {
   const handleInvite = (userId: string, userName: string) => {
     // Navigate to create invite with pre-selected user
     navigate('/crea-invito', { state: { preselectedUser: userId } });
+  };
+
+  const handleSyncContacts = async () => {
+    await syncContacts();
   };
   return <div className="min-h-screen bg-[#FFFCEF]">
       <Helmet>
@@ -207,18 +216,58 @@ export default function TrovaAmici() {
           </TabsContent>
 
           <TabsContent value="contatti" className="space-y-4 mt-4">
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold text-foreground mb-2">
-                Invita i Tuoi Contatti
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-                Connetti la tua rubrica per trovare amici che usano già LiveMoment
-              </p>
-              <Button variant="outline" onClick={() => toast.info("Funzionalità in arrivo!")} className="mx-auto">
-                Connetti Rubrica
-              </Button>
-            </div>
+            {isSyncingContacts ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-2" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : phoneContacts.length > 0 ? (
+              <div className="space-y-2">
+                {phoneContacts.map((contact) => (
+                  <UserListItem
+                    key={contact.id}
+                    user={{
+                      id: contact.id,
+                      name: contact.name,
+                      avatar_url: contact.avatar_url,
+                      city: "Unknown",
+                      age: 25,
+                      distance_km: undefined,
+                      is_available: false,
+                      preferred_moments: []
+                    }}
+                    onFollow={handleFollow}
+                    onInvite={handleInvite}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-semibold text-foreground mb-2">
+                  Invita i Tuoi Contatti
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Connetti la tua rubrica per trovare amici che usano già LiveMoment
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSyncContacts} 
+                  className="mx-auto"
+                  disabled={isSyncingContacts}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  {isSyncingContacts ? "Sincronizzazione..." : "Connetti Rubrica"}
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

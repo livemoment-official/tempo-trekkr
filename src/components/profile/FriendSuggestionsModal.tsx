@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserDiscoveryCard } from "@/components/profile/UserDiscoveryCard";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
+import { usePhoneContacts } from "@/hooks/usePhoneContacts";
 import { Search, MapPin, Users, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,10 +60,19 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
   });
 
   const { data: nearbyUsers, isLoading } = useNearbyUsers(userLocation, 10);
+  const { syncContacts, isLoading: isSyncingContacts, contacts: phoneContacts } = usePhoneContacts();
 
-  const filteredContacts = mockContacts.filter(contact =>
+  // Filter phone contacts based on search query
+  const filteredPhoneContacts = phoneContacts.filter(contact =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     contact.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Combine mock contacts with phone contacts
+  const allContacts = [...mockContacts, ...filteredPhoneContacts];
+  const filteredContacts = allContacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ('username' in contact && contact.username.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const filteredNearbyUsers = nearbyUsers?.filter(user =>
@@ -157,8 +167,14 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
                 <p className="text-sm text-muted-foreground">
                   Contatti che usano LiveMoment
                 </p>
-                <Button variant="outline" size="sm">
-                  Sincronizza contatti
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={syncContacts}
+                  disabled={isSyncingContacts}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  {isSyncingContacts ? "Sincronizzazione..." : "Sincronizza"}
                 </Button>
               </div>
               
@@ -173,7 +189,7 @@ export const FriendSuggestionsModal = ({ open, onOpenChange }: FriendSuggestions
                         avatar_url: contact.avatar_url,
                         city: 'Milano',
                         is_available: true,
-                        preferred_moments: contact.interests || [],
+                        preferred_moments: ('interests' in contact && Array.isArray(contact.interests)) ? contact.interests : [],
                       }}
                       onInvite={() => console.log('Invite', contact.id)}
                     />

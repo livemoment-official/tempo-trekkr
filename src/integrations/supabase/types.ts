@@ -1142,6 +1142,8 @@ export type Database = {
           personality_type:
             | Database["public"]["Enums"]["personality_type"]
             | null
+          phone_discoverable: boolean | null
+          phone_hash: string | null
           preferred_moments: string[] | null
           privacy_level:
             | Database["public"]["Enums"]["privacy_level_type"]
@@ -1178,6 +1180,8 @@ export type Database = {
           personality_type?:
             | Database["public"]["Enums"]["personality_type"]
             | null
+          phone_discoverable?: boolean | null
+          phone_hash?: string | null
           preferred_moments?: string[] | null
           privacy_level?:
             | Database["public"]["Enums"]["privacy_level_type"]
@@ -1214,6 +1218,8 @@ export type Database = {
           personality_type?:
             | Database["public"]["Enums"]["personality_type"]
             | null
+          phone_discoverable?: boolean | null
+          phone_hash?: string | null
           preferred_moments?: string[] | null
           privacy_level?:
             | Database["public"]["Enums"]["privacy_level_type"]
