@@ -86,7 +86,7 @@ const Index = () => {
         }) : ""} location={moment.place?.name || ""} organizer={{
           name: moment.host?.name || "Organizzatore",
           avatar: moment.host?.avatar_url || ""
-        }} participants={moment.participant_count || 0} maxParticipants={moment.max_participants || 0} distance={moment.distance_km} onJoin={() => joinMoment(moment.id)} onLeave={() => leaveMoment(moment.id)} tags={moment.tags || []} hostId={moment.host_id} reactions={{
+        }} participants={moment.participant_count || 0} maxParticipants={moment.max_participants || 0} distance={moment.distance_km} onJoin={() => joinMoment(moment.id)} onLeave={() => leaveMoment(moment.id)} tags={moment.tags || []} hostId={moment.host_id} when_at={moment.when_at} end_at={moment.end_at} reactions={{
           hearts: 0,
           likes: 0,
           stars: 0,

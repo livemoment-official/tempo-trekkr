@@ -3,13 +3,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUnifiedGeolocation } from "./useUnifiedGeolocation";
-import { generateMockMoments } from "@/utils/mockData";
+import { getEventStatus, shouldDisplayEvent } from "@/utils/eventStatus";
 
 export interface Moment {
   id: string;
   title: string;
   description?: string;
   when_at?: string;
+  end_at?: string;
   place?: {
     lat: number;
     lng: number;
@@ -45,6 +46,7 @@ export interface Moment {
   updated_at: string;
   distance_km?: number;
   participant_count?: number;
+  eventStatus?: string;
 }
 
 export interface MomentsFilters {
@@ -136,9 +138,10 @@ export function useMoments() {
         .order('created_at', { ascending: false })
         .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
 
-      // Filter out past moments by default (only show current and future moments)
-      // Show moments with no date OR moments in the future
-      query = query.or('when_at.is.null,when_at.gte.' + new Date().toISOString());
+      // Show moments that haven't ended yet
+      // Filter based on end_at if available, otherwise use when_at
+      const now = new Date().toISOString();
+      query = query.or(`when_at.is.null,end_at.is.null,end_at.gte.${now}`);
 
       // Apply filters
       if (currentFilters.query) {
@@ -234,18 +237,23 @@ export function useMoments() {
         // Get host data from separate query
         const host = hostData[moment.host_id] || undefined;
 
+        // Calculate event status
+        const statusInfo = getEventStatus(moment.when_at, moment.end_at);
+
         return {
           ...moment,
           place: validPlace,
-          host: host
+          host: host,
+          eventStatus: statusInfo?.status
         };
       }) as unknown as Moment[];
 
-      // If we have few real moments, add mock data to enrich the experience
-      if (processedMoments.length < 5 && currentPage === 0) {
-        const mockMoments = generateMockMoments(15).map(mock => convertMockToMoment(mock, location?.lat, location?.lng));
-        processedMoments = [...processedMoments, ...mockMoments];
-      }
+      // Filter out completely ended events
+      processedMoments = processedMoments.filter(moment => 
+        shouldDisplayEvent(moment.when_at, moment.end_at)
+      );
+
+      // Only show real moments from database - no mock data
 
       // Add distance calculation if user location is available
       if (location && processedMoments.length > 0) {

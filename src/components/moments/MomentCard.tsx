@@ -12,6 +12,7 @@ import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
+import { getEventStatus } from "@/utils/eventStatus";
 
 interface MomentCardProps {
   id: string;
@@ -45,6 +46,8 @@ interface MomentCardProps {
   paymentRequired?: boolean;
   price?: number;
   currency?: string;
+  when_at?: string;
+  end_at?: string;
 }
 
 const reactionIcons = {
@@ -73,7 +76,9 @@ export function MomentCard({
   videoUrl,
   paymentRequired = false,
   price = 0,
-  currency = 'EUR'
+  currency = 'EUR',
+  when_at,
+  end_at
 }: MomentCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -84,6 +89,9 @@ export function MomentCard({
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const isCurrentUserOwner = user?.id === hostId;
+  
+  // Calculate event status
+  const eventStatusInfo = getEventStatus(when_at, end_at);
 
   const handleReaction = (reactionType: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -163,6 +171,18 @@ export function MomentCard({
           
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
+
+          {/* Event Status Badge - Bottom Left */}
+          {eventStatusInfo && eventStatusInfo.status !== 'upcoming' && (
+            <div className="absolute bottom-4 left-4 z-20">
+              <Badge 
+                className={`${eventStatusInfo.className} backdrop-blur-md px-3 py-1.5 text-xs font-semibold shadow-lg border-0`}
+              >
+                <span className="mr-1.5">{eventStatusInfo.icon}</span>
+                {eventStatusInfo.label}
+              </Badge>
+            </div>
+          )}
 
           {/* Top Section */}
           <div className="absolute top-0 left-0 right-0 z-20 p-4">

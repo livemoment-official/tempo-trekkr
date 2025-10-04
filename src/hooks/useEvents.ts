@@ -3,12 +3,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUnifiedGeolocation } from "./useUnifiedGeolocation";
+import { getEventStatus, shouldDisplayEvent } from "@/utils/eventStatus";
 
 export interface Event {
   id: string;
   title: string;
   description?: string;
   when_at?: string;
+  end_at?: string;
   place?: {
     lat: number;
     lng: number;
@@ -39,6 +41,7 @@ export interface Event {
   distance_km?: number;
   participant_count?: number;
   ticketing?: any;
+  eventStatus?: string;
 }
 
 export function useEvents() {
@@ -62,9 +65,10 @@ export function useEvents() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      // Filter out past events by default (only show current and future events)
-      // Show events with no date OR events in the future
-      query = query.or('when_at.is.null,when_at.gte.' + new Date().toISOString());
+      // Show events that haven't ended yet
+      // Filter based on end_at if available
+      const now = new Date().toISOString();
+      query = query.or(`when_at.is.null,end_at.is.null,end_at.gte.${now}`);
 
       const { data, error } = await query;
 
@@ -110,12 +114,21 @@ export function useEvents() {
 
         const host = hostData[event.host_id] || undefined;
 
+        // Calculate event status
+        const statusInfo = getEventStatus(event.when_at, event.end_at);
+
         return {
           ...event,
           place: validPlace,
-          host: host
+          host: host,
+          eventStatus: statusInfo?.status
         };
       }) as unknown as Event[];
+
+      // Filter out completely ended events
+      processedEvents = processedEvents.filter(event => 
+        shouldDisplayEvent(event.when_at, event.end_at)
+      );
 
       // Add distance calculation if user location is available
       if (location && processedEvents.length > 0) {
