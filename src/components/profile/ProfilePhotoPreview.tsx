@@ -77,7 +77,7 @@ export function ProfilePhotoPreview({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Camera className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium text-sm">Anteprima Profilo</span>
+            <span className="font-medium text-sm">Foto che ti rappresentano:</span>
           </div>
           <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" id="preview-photo-upload" />
           <label htmlFor="preview-photo-upload">
