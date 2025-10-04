@@ -16,7 +16,7 @@ import { useProfileMetrics } from '@/hooks/useProfileMetrics';
 import { QuickAvatarUpload } from '@/components/profile/QuickAvatarUpload';
 import { ArtistRegistrationWizard } from '@/components/profiles/artist/ArtistRegistrationWizard';
 import { LocationRegistrationWizard } from '@/components/profiles/location/LocationRegistrationWizard';
-import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy, LogOut } from 'lucide-react';
+import { Edit, MapPin, Calendar, Users, Camera, Settings, Bell, Globe, MessageCircle, Heart, Award, HelpCircle, BookOpen, Gift, Music, Briefcase, User, Shield, Smartphone, ChevronRight, Crown, UserPlus, UserCheck, Clock, Trophy, LogOut, Sparkles } from 'lucide-react';
 import { CollapsibleSection } from '@/components/profile/CollapsibleSection';
 import { ProfileEditDialog } from '@/components/profile/ProfileEditDialog';
 import { ProfilePhotoPreview } from '@/components/profile/ProfilePhotoPreview';
@@ -338,9 +338,9 @@ export default function Profilo() {
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => setShowStaffWizard(true)} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <button onClick={() => navigate('/profili?create=format')} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <Users className="h-4 w-4 text-accent-foreground" />
+                    <Sparkles className="h-4 w-4 text-accent-foreground" />
                     <span className="text-sm font-medium">Crea il tuo Format</span>
                   </div>
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />

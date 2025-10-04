@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,11 @@ import { useUserProfiles, type ProfileType } from '@/hooks/useUserProfiles';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Music, MapPin, Users, Edit, Trash2, CheckCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Profili() {
   const { isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     profiles,
     loading,
@@ -35,6 +37,15 @@ export default function Profili() {
 
   const canonical = `${window.location.origin}/profili`;
 
+  // Handle query params for auto-opening create forms
+  useEffect(() => {
+    const createParam = searchParams.get('create');
+    if (createParam && ['artist', 'venue', 'staff', 'format'].includes(createParam)) {
+      setCreateType(createParam as ProfileType);
+      setShowCreateForm(true);
+    }
+  }, [searchParams]);
+
   if (!isAuthenticated) {
     return <AuthGuard>Accedi per gestire i tuoi profili</AuthGuard>;
   }
@@ -42,6 +53,16 @@ export default function Profili() {
   const handleCreateProfile = (type: ProfileType) => {
     setCreateType(type);
     setShowCreateForm(true);
+  };
+
+  const closeCreateForm = () => {
+    setShowCreateForm(false);
+    setCreateType(null);
+    // Remove create query param
+    setSearchParams(prev => {
+      prev.delete('create');
+      return prev;
+    });
   };
 
   const handleCreateSubmit = async (type: ProfileType, data: any) => {
@@ -61,8 +82,7 @@ export default function Profili() {
           await createFormatProfile(data);
           break;
       }
-      setShowCreateForm(false);
-      setCreateType(null);
+      closeCreateForm();
     } catch (error) {
       console.error('Error creating profile:', error);
     } finally {
@@ -197,10 +217,7 @@ export default function Profili() {
         return (
           <CreateArtistProfile
             onSubmit={(data) => handleCreateSubmit('artist', data)}
-            onCancel={() => {
-              setShowCreateForm(false);
-              setCreateType(null);
-            }}
+            onCancel={closeCreateForm}
             loading={actionLoading}
           />
         );
@@ -208,10 +225,7 @@ export default function Profili() {
         return (
           <CreateVenueProfile
             onSubmit={(data) => handleCreateSubmit('venue', data)}
-            onCancel={() => {
-              setShowCreateForm(false);
-              setCreateType(null);
-            }}
+            onCancel={closeCreateForm}
             loading={actionLoading}
           />
         );
@@ -219,10 +233,7 @@ export default function Profili() {
         return (
           <CreateStaffProfile
             onSubmit={(data) => handleCreateSubmit('staff', data)}
-            onCancel={() => {
-              setShowCreateForm(false);
-              setCreateType(null);
-            }}
+            onCancel={closeCreateForm}
             loading={actionLoading}
           />
         );
@@ -230,10 +241,7 @@ export default function Profili() {
         return (
           <CreateFormatProfile
             onSubmit={(data) => handleCreateSubmit('format', data)}
-            onCancel={() => {
-              setShowCreateForm(false);
-              setCreateType(null);
-            }}
+            onCancel={closeCreateForm}
           />
         );
     }
@@ -243,7 +251,7 @@ export default function Profili() {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>LiveMoment · I Tuoi Profili</title>
-        <meta name="description" content="Gestisci i tuoi profili artista, location e staff su LiveMoment." />
+        <meta name="description" content="Gestisci i tuoi profili artista, location, staff e format su LiveMoment." />
         <link rel="canonical" href={canonical} />
       </Helmet>
 
@@ -254,7 +262,7 @@ export default function Profili() {
             <div>
               <h1 className="text-3xl font-bold">I Tuoi Profili</h1>
               <p className="text-muted-foreground mt-2">
-                Gestisci i tuoi profili professionali per artisti, location e staff
+                Gestisci i tuoi profili professionali per artisti, location, staff e format
               </p>
             </div>
             

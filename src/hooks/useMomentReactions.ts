@@ -127,10 +127,19 @@ export function useMomentReactions(momentId: string) {
         queryClient.setQueryData(['moment-reactions', momentId], context.previousReactions);
       }
       
-      console.error('Add reaction error:', error);
+      console.error('Add reaction error:', {
+        error,
+        momentId,
+        reactionType,
+        userId: user?.id,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorDetails: error
+      });
+      
+      const errorMessage = error instanceof Error ? error.message : "Non è stato possibile aggiungere la reazione";
       toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Non è stato possibile aggiungere la reazione",
+        title: "Errore nell'aggiungere la reazione",
+        description: `${errorMessage}. Verifica di avere accesso a questo momento.`,
         variant: "destructive"
       });
     },
