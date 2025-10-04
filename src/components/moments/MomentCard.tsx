@@ -446,9 +446,7 @@ export function MomentCard({
               className="h-9 w-9 p-0"
               onClick={(e) => {
                 e.stopPropagation();
-                if (hostId) {
-                  navigate(`/chat/conversation/${hostId}`);
-                }
+                navigate(`/chat/moment/${id}`);
               }}
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
