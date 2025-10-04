@@ -86,15 +86,28 @@ export function useMomentReactions(momentId: string) {
     mutationFn: async (reactionType: ReactionType) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { error } = await supabase
+      console.log('🎯 Attempting to add reaction:', {
+        momentId,
+        userId: user.id,
+        reactionType
+      });
+
+      const { data, error } = await supabase
         .from('moment_reactions')
         .insert({
           moment_id: momentId,
           user_id: user.id,
           reaction_type: reactionType
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error adding reaction:', error);
+        throw error;
+      }
+
+      console.log('✅ Reaction added successfully:', data);
+      return data;
     },
     onMutate: async (reactionType: ReactionType) => {
       // Cancel outgoing refetches
@@ -127,19 +140,22 @@ export function useMomentReactions(momentId: string) {
         queryClient.setQueryData(['moment-reactions', momentId], context.previousReactions);
       }
       
-      console.error('Add reaction error:', {
+      console.error('❌ Add reaction error:', {
         error,
         momentId,
-        reactionType,
         userId: user?.id,
+        reactionType,
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         errorDetails: error
       });
       
-      const errorMessage = error instanceof Error ? error.message : "Non è stato possibile aggiungere la reazione";
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Non è stato possibile aggiungere la reazione";
+      
       toast({
-        title: "Errore nell'aggiungere la reazione",
-        description: `${errorMessage}. Verifica di avere accesso a questo momento.`,
+        title: "Errore reazione",
+        description: errorMessage,
         variant: "destructive"
       });
     },
@@ -196,7 +212,14 @@ export function useMomentReactions(momentId: string) {
 
   // Toggle reaction
   const toggleReaction = (reactionType: ReactionType) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: "Accesso richiesto",
+        description: "Devi effettuare l'accesso per reagire",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (userReaction) {
       if (userReaction.reaction_type === reactionType) {
