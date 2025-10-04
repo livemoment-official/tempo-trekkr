@@ -8,8 +8,10 @@ import { MomentFilters } from "@/components/moments/MomentFilters";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
 import { LocationPermissionCard } from "@/components/location/LocationPermissionCard";
-import { useMoments } from "@/hooks/useMoments";
+import { useUnifiedFeed } from "@/hooks/useUnifiedFeed";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { Badge } from "@/components/ui/badge";
+
 const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,18 +21,18 @@ const Index = () => {
     location: userLocation
   } = useUnifiedGeolocation();
 
-  // Use real moments data
+  // Use unified feed (moments + events)
   const {
-    moments,
+    items,
     isLoading,
     hasMore,
     filters,
-    loadMoments,
+    loadFeed,
     applyFilters,
     loadMore,
     joinMoment,
     leaveMoment
-  } = useMoments();
+  } = useUnifiedFeed();
 
   // Infinite scroll
   const {
@@ -43,7 +45,7 @@ const Index = () => {
 
   // Load initial data
   useEffect(() => {
-    loadMoments({}, true);
+    loadFeed({}, true);
   }, []);
 
   // Handle filter changes with proper state
@@ -80,37 +82,65 @@ const Index = () => {
       {/* Content */}
       {view === 'list' ? <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {moments.map(moment => <MomentCard key={moment.id} id={moment.id} image={moment.photos?.[0] || ""} title={moment.title} description={moment.description || ""} category={moment.mood_tag || "generale"} time={moment.when_at ? new Date(moment.when_at).toLocaleTimeString('it-IT', {
-          hour: '2-digit',
-          minute: '2-digit'
-        }) : ""} location={moment.place?.name || ""} organizer={{
-          name: moment.host?.name || "Organizzatore",
-          avatar: moment.host?.avatar_url || ""
-        }} participants={moment.participant_count || 0} maxParticipants={moment.max_participants || 0} distance={moment.distance_km} onJoin={() => joinMoment(moment.id)} onLeave={() => leaveMoment(moment.id)} tags={moment.tags || []} hostId={moment.host_id} when_at={moment.when_at} end_at={moment.end_at} reactions={{
-          hearts: 0,
-          likes: 0,
-          stars: 0,
-          fire: 0
-        }} />)}
+            {items.map(item => (
+              <div key={`${item.contentType}-${item.id}`} className="relative">
+                {item.contentType === 'event' && (
+                  <Badge className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground">
+                    Evento
+                  </Badge>
+                )}
+                <MomentCard 
+                  id={item.id} 
+                  image={item.photos?.[0] || ""} 
+                  title={item.title} 
+                  description={item.description || ""} 
+                  category={item.mood_tag || "generale"} 
+                  time={item.when_at ? new Date(item.when_at).toLocaleTimeString('it-IT', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) : ""} 
+                  location={item.place?.name || ""} 
+                  organizer={{
+                    name: item.host?.name || "Organizzatore",
+                    avatar: item.host?.avatar_url || ""
+                  }} 
+                  participants={item.participant_count || 0} 
+                  maxParticipants={item.max_participants || 0} 
+                  distance={item.distance_km} 
+                  onJoin={item.contentType === 'moment' ? () => joinMoment(item.id) : undefined} 
+                  onLeave={item.contentType === 'moment' ? () => leaveMoment(item.id) : undefined} 
+                  tags={item.tags || []} 
+                  hostId={item.host_id} 
+                  when_at={item.when_at} 
+                  end_at={item.end_at} 
+                  reactions={{
+                    hearts: 0,
+                    likes: 0,
+                    stars: 0,
+                    fire: 0
+                  }} 
+                />
+              </div>
+            ))}
           </div>
           
           {/* Loading indicator */}
           {isLoading && <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
-              <span className="ml-2 text-sm text-muted-foreground">Caricamento momenti...</span>
+              <span className="ml-2 text-sm text-muted-foreground">Caricamento contenuti...</span>
             </div>}
           
           {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-4" />
           
           {/* No more data message */}
-          {!hasMore && moments.length > 0 && <div className="text-center py-8 text-sm text-muted-foreground">
-              Non ci sono altri momenti da caricare
+          {!hasMore && items.length > 0 && <div className="text-center py-8 text-sm text-muted-foreground">
+              Non ci sono altri contenuti da caricare
             </div>}
           
           {/* Empty state */}
-          {!isLoading && moments.length === 0 && <div className="text-center py-16">
-              <h3 className="text-lg font-semibold mb-2">Nessun momento trovato</h3>
+          {!isLoading && items.length === 0 && <div className="text-center py-16">
+              <h3 className="text-lg font-semibold mb-2">Nessun contenuto trovato</h3>
               <p className="text-muted-foreground mb-4">
                 Prova a cambiare i filtri o crea il tuo primo momento!
               </p>
@@ -118,7 +148,7 @@ const Index = () => {
                 Crea momento
               </Button>
             </div>}
-        </div> : <MomentsMap moments={moments} onMomentClick={momentId => navigate(`/moment/${momentId}`)} />}
+        </div> : <MomentsMap moments={items.filter(i => i.contentType === 'moment')} onMomentClick={momentId => navigate(`/moment/${momentId}`)} />}
     </div>;
 };
 export default Index;
