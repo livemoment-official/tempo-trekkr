@@ -50,24 +50,24 @@ serve(async (req) => {
       logStep("No existing customer found");
     }
 
-    // Determine pricing based on plan and duration
-    let unitAmount = 799; // Default Pro monthly
-    let productName = "Pro Subscription";
-    
-    if (planType === "business") {
-      productName = "Business Subscription";
-      unitAmount = 1999;
-    }
+    // Determine pricing based on duration (in cents)
+    let unitAmount = 499; // Base: 4,99€ per 1 mese
+    let productName = "Abbonamento Pro";
+    let intervalCount = 1;
 
-    // Apply duration discounts
-    if (duration === "3") {
-      unitAmount = Math.round(unitAmount * 0.9); // 10% discount
-      productName += " (3 mesi)";
-    } else if (duration === "12") {
-      unitAmount = Math.round(unitAmount * 0.8); // 20% discount
-      productName += " (12 mesi)";
-    } else {
+    // Apply pricing for different durations
+    if (duration === "1") {
+      unitAmount = 499; // 4,99€
+      intervalCount = 1;
       productName += " (1 mese)";
+    } else if (duration === "3") {
+      unitAmount = 999; // 9,99€ ogni 3 mesi
+      intervalCount = 3;
+      productName += " (3 mesi)";
+    } else if (duration === "6") {
+      unitAmount = 1999; // 19,99€ ogni 6 mesi
+      intervalCount = 6;
+      productName += " (6 mesi)";
     }
 
     logStep("Pricing calculated", { planType, duration, unitAmount, productName });
@@ -81,7 +81,10 @@ serve(async (req) => {
             currency: "eur",
             product_data: { name: productName },
             unit_amount: unitAmount,
-            recurring: { interval: "month" },
+            recurring: { 
+              interval: "month",
+              interval_count: intervalCount 
+            },
           },
           quantity: 1,
         },

@@ -81,7 +81,7 @@ const accountTypes = [{
 export default function Abbonamento() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [selectedPlan, setSelectedPlan] = useState<'1' | '3' | '12'>('3');
+  const [selectedPlan, setSelectedPlan] = useState<'1' | '3' | '6'>('3');
   const [selectedBusinessType, setSelectedBusinessType] = useState<string>('location');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
@@ -116,21 +116,21 @@ export default function Abbonamento() {
   const pricingPlans = {
     '1': {
       months: '1',
-      price: '9,99€',
-      total: '9,99€',
+      price: '4,99€',
+      total: '4,99€',
       saving: ''
     },
     '3': {
       months: '3',
-      price: '6,99€',
-      total: '19,99€',
-      saving: 'Risparmi 9,98€'
+      price: '3,33€',
+      total: '9,99€',
+      saving: 'Risparmi 5,00€'
     },
-    '12': {
-      months: '12',
-      price: '5,00€',
-      total: '59,99€',
-      saving: 'Risparmi 59,89€'
+    '6': {
+      months: '6',
+      price: '3,33€',
+      total: '19,99€',
+      saving: 'Risparmi 10,00€'
     }
   };
   const handleSubscribe = async () => {
@@ -253,7 +253,7 @@ export default function Abbonamento() {
               {/* Pricing */}
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(pricingPlans).map(([key, plan]) => <button key={key} onClick={() => setSelectedPlan(key as '1' | '3' | '12')} className={`relative p-3 rounded-xl border-2 transition-all ${selectedPlan === key ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}>
+                  {Object.entries(pricingPlans).map(([key, plan]) => <button key={key} onClick={() => setSelectedPlan(key as '1' | '3' | '6')} className={`relative p-3 rounded-xl border-2 transition-all ${selectedPlan === key ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}`}>
                       <div className="text-center">
                         <div className={`text-2xl font-bold ${selectedPlan === key ? 'text-orange-600' : 'text-gray-900'}`}>
                           {plan.months}
