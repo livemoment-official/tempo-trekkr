@@ -255,9 +255,9 @@ export default function Abbonamento() {
         <div className="p-1 bg-muted/30 rounded-full mb-4 flex border border-border/50">
           <button 
             onClick={() => setActiveTab('pro')} 
-            className={`flex-1 py-2.5 px-5 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2.5 px-5 rounded-full text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
               activeTab === 'pro' 
-                ? 'bg-primary text-white shadow-md' 
+                ? 'bg-primary text-white shadow-md ring-2 ring-black' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -266,9 +266,9 @@ export default function Abbonamento() {
           </button>
           <button 
             onClick={() => setActiveTab('business')} 
-            className={`flex-1 py-2.5 px-5 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2.5 px-5 rounded-full text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
               activeTab === 'business' 
-                ? 'bg-primary text-white shadow-md' 
+                ? 'bg-primary text-white shadow-md ring-2 ring-black' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -289,7 +289,7 @@ export default function Abbonamento() {
                         {feature.icon}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-base mb-1">
+                        <h3 className="font-bold text-sm mb-1">
                           {feature.title}
                         </h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
@@ -316,13 +316,13 @@ export default function Abbonamento() {
                       }`}
                     >
                       {key === '1' && (
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap ring-1 ring-black">
                           ⭐ Popolare
                         </div>
                       )}
                       
                       <div className="text-center">
-                        <div className={`text-6xl font-bold mb-1 ${
+                        <div className={`text-5xl font-bold mb-1 ${
                           selectedPlan === key ? 'text-white' : 'text-foreground'
                         }`}>
                           {plan.months}
@@ -349,10 +349,10 @@ export default function Abbonamento() {
                   <CardContent className="p-5">
                     <div className="text-center space-y-2">
                       <div>
-                        <span className="text-5xl font-bold text-foreground">
+                        <span className="text-4xl font-bold text-foreground">
                           {pricingPlans[selectedPlan].price}
                         </span>
-                        <span className="text-muted-foreground text-base">/mese</span>
+                        <span className="text-muted-foreground text-sm">/mese</span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         Fatturato ogni {pricingPlans[selectedPlan].months} {pricingPlans[selectedPlan].months === '1' ? 'mese' : 'mesi'}: <span className="font-bold text-foreground">{pricingPlans[selectedPlan].total}</span>
@@ -377,7 +377,7 @@ export default function Abbonamento() {
                         {feature.icon}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-base mb-1">{feature.title}</h3>
+                        <h3 className="font-bold text-sm mb-1">{feature.title}</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           {feature.description.split('Attualmente')[0]}
                           <strong>Attualmente</strong>{feature.description.split('Attualmente')[1]}
