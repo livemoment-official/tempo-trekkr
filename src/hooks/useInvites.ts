@@ -67,6 +67,7 @@ export function useCreateInvite() {
         name: string;
         coordinates?: [number, number];
       };
+      activity_category?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -80,6 +81,7 @@ export function useCreateInvite() {
           participants: inviteData.participants,
           when_at: inviteData.when_at?.toISOString(),
           place: inviteData.place,
+          activity_category: inviteData.activity_category,
           status: 'pending'
         })
         .select()
@@ -88,8 +90,36 @@ export function useCreateInvite() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['my-invites'] });
+      
+      // Send push notifications to all participants
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await Promise.all(
+            variables.participants.map(async (participantId) => {
+              if (participantId !== user.id) {
+                await supabase.functions.invoke('send-push-notification', {
+                  body: {
+                    userId: participantId,
+                    title: `Nuovo invito: ${data.title}`,
+                    message: `Hai ricevuto un invito per ${data.title}`,
+                    data: {
+                      type: 'invite_received',
+                      invite_id: data.id
+                    }
+                  }
+                });
+              }
+            })
+          );
+        }
+      } catch (notifError) {
+        console.error('Error sending push notifications:', notifError);
+        // Don't fail the entire operation if notifications fail
+      }
+      
       toast({
         title: "Invito inviato!",
         description: "Il tuo invito è stato inviato con successo.",

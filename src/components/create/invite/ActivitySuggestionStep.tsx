@@ -1,7 +1,12 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Coffee, Utensils, Wine, Camera, Music, ShoppingBag } from "lucide-react";
+import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
+import { 
+  Wine, Coffee, Utensils, Camera, Music, ShoppingBag, 
+  Dumbbell, Palette, Clapperboard, BookOpen, Beer, 
+  Plane, Gamepad2, Sparkles, Cake, Heart 
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface ActivitySuggestionStepProps {
   data: any;
@@ -9,18 +14,45 @@ interface ActivitySuggestionStepProps {
   onNext: () => void;
 }
 
-const activities = [
-  { title: "Aperitivo", category: "Aperitivo", icon: Wine, duration: 120 },
-  { title: "Caffè", category: "Caffè", icon: Coffee, duration: 60 },
-  { title: "Cena", category: "Cena", icon: Utensils, duration: 180 },
-  { title: "Shopping", category: "Shopping", icon: ShoppingBag, duration: 120 },
-  { title: "Fotografia", category: "Fotografia", icon: Camera, duration: 90 },
-  { title: "Concerto", category: "Musica", icon: Music, duration: 150 }
-];
+// Map MOMENT_CATEGORIES to icons and durations
+const categoryMapping: Record<string, { icon: LucideIcon; duration: number }> = {
+  "🍽️ Aperitivo": { icon: Wine, duration: 120 },
+  "☕ Caffè": { icon: Coffee, duration: 60 },
+  "🍷 Cena": { icon: Utensils, duration: 180 },
+  "🎭 Teatro": { icon: Clapperboard, duration: 150 },
+  "🎨 Arte": { icon: Palette, duration: 90 },
+  "🎵 Musica Live": { icon: Music, duration: 180 },
+  "🏋️ Sport": { icon: Dumbbell, duration: 90 },
+  "📚 Cultura": { icon: BookOpen, duration: 120 },
+  "🎬 Cinema": { icon: Clapperboard, duration: 150 },
+  "📷 Fotografia": { icon: Camera, duration: 90 },
+  "🛍️ Shopping": { icon: ShoppingBag, duration: 120 },
+  "🍺 Pub": { icon: Beer, duration: 120 },
+  "✈️ Viaggio": { icon: Plane, duration: 240 },
+  "🎮 Gaming": { icon: Gamepad2, duration: 120 },
+  "✨ Festa": { icon: Sparkles, duration: 180 },
+  "🎂 Compleanno": { icon: Cake, duration: 180 },
+  "💑 Romantico": { icon: Heart, duration: 120 }
+};
+
+// Create activities array from unified categories
+const activities = MOMENT_CATEGORIES.map(category => {
+  const mapping = categoryMapping[category] || { icon: Wine, duration: 120 };
+  return {
+    title: category,
+    category: category,
+    icon: mapping.icon,
+    duration: mapping.duration
+  };
+});
 
 export default function ActivitySuggestionStep({ data, onChange, onNext }: ActivitySuggestionStepProps) {
   const handleActivitySelect = (activity: any) => {
-    onChange({ ...data, activity });
+    onChange({ 
+      ...data, 
+      activity: activity.title,
+      activity_category: activity.category 
+    });
     onNext();
   };
 

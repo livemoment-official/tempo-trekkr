@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProfileEditForm } from './ProfileEditForm';
 import { LocationPermissionCard } from '@/components/location/LocationPermissionCard';
+import { NotificationPermissionCard } from '@/components/notifications/NotificationPermissionCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -53,6 +54,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
         <div className="space-y-6">
           <LocationPermissionCard />
+          <NotificationPermissionCard />
           
           <ProfileEditForm
             onClose={handleComplete}

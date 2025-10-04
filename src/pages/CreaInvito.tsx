@@ -161,6 +161,7 @@ export default function CreaInvito() {
           participants: [personId],
           when_at: whenAt || undefined,
           place: place,
+          activity_category: inviteData.activity.category,
         })
       );
 
@@ -212,17 +213,37 @@ export default function CreaInvito() {
       {/* Main Content */}
       <main className="container py-6 pb-32">
         <div className="max-w-4xl mx-auto space-y-4">
-          {/* Progress indicator with improved styling */}
-          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-        {steps.map((step, index) => <div key={step.id} className="flex items-center shrink-0">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep >= step.id ? "bg-primary text-primary-foreground shadow-lg scale-110" : "bg-muted text-muted-foreground"}`}>
-              {step.id}
-            </div>
-            <span className={`ml-2 text-sm font-medium whitespace-nowrap ${currentStep >= step.id ? "text-foreground" : "text-muted-foreground"}`}>
-              {step.title}
-            </span>
-            {index < steps.length - 1 && <div className={`w-12 h-1 mx-2 rounded-full transition-all ${currentStep > step.id ? "bg-primary" : "bg-muted"}`} />}
-          </div>)}
+          {/* Minimal Progress Indicator */}
+          <div className="flex items-center justify-center mb-8">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                {/* Step Circle */}
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                      index < currentStep 
+                        ? 'bg-primary text-primary-foreground' 
+                        : index === currentStep 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {step.id}
+                  </div>
+                  {/* Label - hidden on mobile, visible on desktop */}
+                  <span className="hidden md:block text-xs mt-2 text-center text-muted-foreground max-w-[80px]">
+                    {step.title}
+                  </span>
+                </div>
+                
+                {/* Connector Line */}
+                {index < steps.length - 1 && (
+                  <div className={`h-0.5 w-8 md:w-16 mx-1 md:mx-2 rounded transition-colors ${
+                    index < currentStep ? 'bg-primary' : 'bg-muted'
+                  }`} />
+                )}
+              </div>
+            ))}
           </div>
 
           <Card>

@@ -608,6 +608,7 @@ export type Database = {
       }
       invites: {
         Row: {
+          activity_category: string | null
           can_be_public: boolean | null
           created_at: string
           deleted_at: string | null
@@ -626,6 +627,7 @@ export type Database = {
           when_at: string | null
         }
         Insert: {
+          activity_category?: string | null
           can_be_public?: boolean | null
           created_at?: string
           deleted_at?: string | null
@@ -644,6 +646,7 @@ export type Database = {
           when_at?: string | null
         }
         Update: {
+          activity_category?: string | null
           can_be_public?: boolean | null
           created_at?: string
           deleted_at?: string | null
