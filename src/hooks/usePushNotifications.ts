@@ -131,21 +131,45 @@ export function usePushNotifications() {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          const notification = payload.new;
+        async (payload) => {
+          const notification = payload.new as any;
           
-          // Show toast notification
+          // Fetch sender info if available
+          let senderName = null;
+          let senderAvatar = null;
+          
+          const notifData = notification.data as any;
+          if (notifData?.user_id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name, avatar_url')
+              .eq('id', notifData.user_id)
+              .single();
+            
+            if (profile) {
+              senderName = profile.name;
+              senderAvatar = profile.avatar_url;
+            }
+          }
+          
+          // Create personalized message
+          const message = senderName ? 
+            `${senderName} ${notification.message.toLowerCase().replace('qualcuno', '').replace('ti ha', 'ha')}` :
+            notification.message;
+          
+          // Show custom toast with red background
           toast({
             title: notification.title,
-            description: notification.message,
-            duration: 5000
+            description: message,
+            duration: 5000,
+            className: "bg-red-500 text-white border-red-600"
           });
 
           // Show browser notification if permission granted
           if (Notification.permission === 'granted') {
             new Notification(notification.title, {
-              body: notification.message,
-              icon: '/logo.png',
+              body: message,
+              icon: senderAvatar || '/logo.png',
               tag: notification.id
             });
           }
