@@ -66,7 +66,7 @@ createRoot(document.getElementById("root")!).render(
             </Route>
 
             {/* Routes with Minimal Layout (only back button) */}
-            <Route path="crea/invito" element={<MinimalLayoutWrapper title="Crea Invito"><CreaInvito /></MinimalLayoutWrapper>} />
+            <Route path="crea/invito" element={<CreaInvito />} />
             <Route path="crea/momento" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomento /></MinimalLayoutWrapper>} />
             <Route path="crea/gruppo" element={<MinimalLayoutWrapper title="Crea Gruppo"><CreaGruppo /></MinimalLayoutWrapper>} />
             <Route path="crea/evento" element={<CreaEvento />} />

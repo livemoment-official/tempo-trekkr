@@ -121,14 +121,22 @@ export default function ActivitySuggestionStep({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {activities.map(activity => {
         const Icon = activity.icon;
-        return <Card key={activity.title} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleActivitySelect(activity)}>
+        return <Card key={activity.title} className="cursor-pointer hover:shadow-md hover:border-primary/50 transition-all border-2" onClick={() => handleActivitySelect(activity)}>
               <CardContent className="p-4 flex items-center gap-4">
+                {/* Icon */}
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
                 
                 <div className="flex-1">
+                  {/* Title */}
+                  <h4 className="font-medium text-base">{activity.title}</h4>
                   
+                  {/* Duration badge */}
                   <div className="flex items-center gap-2 mt-1">
-                    
-                    
+                    <Badge variant="secondary" className="text-xs">
+                      ~{activity.duration} min
+                    </Badge>
                   </div>
                 </div>
               </CardContent>
