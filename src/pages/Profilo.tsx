@@ -314,7 +314,7 @@ export default function Profilo() {
 
       {/* Sezione Premi - Moved Up */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Premi</h2>
+        <h2 className="text-lg font-semibold">Crea il Profilo per Organizzare Eventi</h2>
         
         <Card className="shadow-card hover:shadow-sm transition-smooth">
           <CardContent className="p-4">
