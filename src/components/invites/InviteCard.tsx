@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Users, Clock, MessageSquare, Share2, Check, X, User, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, MessageSquare, Check, X, User, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface InviteCardProps {
   invite: any;
@@ -48,18 +47,19 @@ export default function InviteCard({
       navigate(`/user/${invite.sender.id}`);
     }
   };
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): 'success' | 'danger' | 'warning' | 'info' => {
     switch (status) {
       case 'accepted':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'success';
       case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'danger';
       case 'postponed':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'warning';
       default:
-        return 'bg-white text-gray-700 border-gray-200';
+        return 'info';
     }
   };
+  
   const getStatusText = (status: string) => {
     switch (status) {
       case 'accepted':
@@ -75,9 +75,12 @@ export default function InviteCard({
   return <Card className="hover:shadow-md transition-all duration-200 relative overflow-hidden">
       <CardContent className={isMobile ? "p-4" : "p-6"}>
         {/* Status Badge - Posizionato assolutamente in alto a destra */}
-        <Badge className={`absolute ${isMobile ? "top-3 right-3" : "top-4 right-4"} ${getStatusColor(invite.status)} text-xs font-medium`}>
-          {getStatusText(invite.status)}
-        </Badge>
+        <StatusPill
+          label={getStatusText(invite.status)}
+          color={getStatusColor(invite.status)}
+          tone="light"
+          className={`absolute ${isMobile ? "top-3 right-3" : "top-4 right-4"} text-xs font-medium`}
+        />
 
         <div className={isMobile ? "space-y-4" : "space-y-6"}>
           {/* Header migliorato */}

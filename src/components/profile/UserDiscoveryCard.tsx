@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
-import { MapPin, Heart, MessageCircle, UserPlus } from "lucide-react";
+import { StatusPill } from "@/components/ui/StatusPill";
+import { MapPin, Heart, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuickInviteModal from "@/components/invites/QuickInviteModal";
 import { useNavigate } from "react-router-dom";
@@ -77,20 +77,12 @@ export function UserDiscoveryCard({ user, onInvite, className }: UserProfileCard
     )} onClick={handleViewProfile}>
       {/* Availability Badge - positioned at top right */}
       <div className="absolute top-3 right-3 z-10">
-        <Badge 
-          className={cn(
-            "text-xs px-2 py-1.5 bg-brand-cream text-foreground border border-border/30 shadow-sm",
-            user.is_available 
-              ? "text-foreground" 
-              : "text-muted-foreground"
-          )}
-        >
-          <div className={cn(
-            "w-2 h-2 rounded-full mr-1.5",
-            user.is_available ? "bg-green-500" : "bg-gray-400"
-          )} />
-          {getAvailabilityText()}
-        </Badge>
+        <StatusPill
+          label={getAvailabilityText()}
+          color={user.is_available ? "success" : "muted"}
+          tone="dark"
+          className="text-xs px-2 py-1.5"
+        />
       </div>
 
       {/* Profile Image */}

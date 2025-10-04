@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { EnhancedImage } from '@/components/ui/enhanced-image';
-import { X, Heart, MapPin, Star, Calendar } from 'lucide-react';
+import { X, MapPin, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 interface SwipeUser {
@@ -151,10 +152,12 @@ export function SwipeUserCard({
 
       {/* Top Info */}
       <div className={cn("absolute left-4 right-4 flex justify-between items-start z-20", isMobile ? "top-4" : "top-6")}>
-        <Badge className={cn("bg-black/40 backdrop-blur-sm text-white border-white/20", user.is_available ? "text-green-300" : "text-gray-300", isMobile ? "text-xs px-2 py-1" : "")}>
-          <div className={cn("rounded-full mr-1.5", user.is_available ? "bg-green-400" : "bg-gray-400", isMobile ? "w-1.5 h-1.5" : "w-2 h-2")} />
-          {user.is_available ? "Disponibile" : "Occupato"}
-        </Badge>
+        <StatusPill
+          label={user.is_available ? "Disponibile" : "Occupato"}
+          color={user.is_available ? "success" : "muted"}
+          tone="dark"
+          className={cn(isMobile ? "text-xs px-2 py-1" : "")}
+        />
         
         {user.distance_km && <Badge className={cn("bg-black/40 backdrop-blur-sm text-white border-white/20", isMobile ? "text-xs px-2 py-1" : "")}>
             <MapPin className={cn(isMobile ? "w-2.5 h-2.5 mr-1" : "w-3 h-3 mr-1")} />
