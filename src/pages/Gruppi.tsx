@@ -189,24 +189,53 @@ const GroupCard = ({
   const participantCount = Array.isArray(group.participants) ? group.participants.length : 0;
   const emoji = categoryEmojis[group.category] || categoryEmojis.default;
   const locationName = group.location?.name || group.location || "Posizione non specificata";
+  
+  // FASE 5: Format last message time
+  const formatTime = (timestamp?: string) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Ora';
+    if (diffMins < 60) return `${diffMins}m fa`;
+    if (diffHours < 24) return `${diffHours}h fa`;
+    if (diffDays < 7) return `${diffDays}g fa`;
+    return date.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+  };
 
   return <Card className="mb-3">
       <CardContent className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl shrink-0 relative">
             {group.avatar_url ? (
               <img src={group.avatar_url} alt={group.title} className="w-full h-full rounded-full object-cover" />
             ) : (
               emoji
             )}
-          </div>
-          <div>
-            <h3 className="font-semibold">{group.title}</h3>
-            <p className="text-sm text-primary">{participantCount} Partecipanti</p>
-            <p className="text-sm text-muted-foreground">{locationName}</p>
-            {group.description && (
-              <p className="text-xs text-muted-foreground line-clamp-1">{group.description}</p>
+            {group.unread_count && group.unread_count > 0 && (
+              <Badge variant="default" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                {group.unread_count}
+              </Badge>
             )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold truncate">{group.title}</h3>
+            {group.last_message && (
+              <p className="text-sm text-muted-foreground truncate">{group.last_message}</p>
+            )}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{participantCount} {participantCount === 1 ? 'partecipante' : 'partecipanti'}</span>
+              {group.last_message_at && (
+                <>
+                  <span>•</span>
+                  <span>{formatTime(group.last_message_at)}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <AuthGuard fallback={<Button variant="outline" size="sm" disabled>
@@ -287,10 +316,31 @@ export default function Gruppi() {
     localStorage.setItem('gruppi-banner-dismissed', 'true');
   };
 
-  // For "I tuoi Gruppi" tab - show only normal groups where user is host (exclude moment chats)
-  // For other views - combine user groups and public groups, removing duplicates
-  const hostedGroups = userGroups.filter(g => g.host_id === user?.id && g.category !== 'moment_chat');
-  const allGroups = [...userGroups, ...groups.filter(g => !userGroups.some(ug => ug.id === g.id))];
+  // FASE 2: Filter moment_chat groups from "I tuoi Gruppi" tab
+  // Show only normal groups (not moment_chat) where user is participant or host
+  const myNormalGroups = userGroups.filter(g => g.category !== 'moment_chat');
+  
+  // FASE 3: For Esplora tab - show only public groups where user is NOT a participant
+  const exploreGroups = groups.filter(g => 
+    g.is_public && 
+    !userGroups.some(ug => ug.id === g.id) &&
+    g.host_id !== user?.id
+  );
+  
+  // FASE 5: Sort groups - unread first, then by last message time
+  const sortedMyGroups = [...myNormalGroups].sort((a, b) => {
+    // First priority: unread messages
+    if (a.unread_count && !b.unread_count) return -1;
+    if (!a.unread_count && b.unread_count) return 1;
+    
+    // Second priority: last message time
+    if (a.last_message_at && b.last_message_at) {
+      return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+    }
+    
+    // Fallback: creation date
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
   
   const filteredProvince = provincieItaliane.filter(provincia => 
     provincia.toLowerCase().includes(searchQuery.toLowerCase())
@@ -303,7 +353,13 @@ export default function Gruppi() {
     });
   }, [filteredProvince.length]);
   
-  const filteredGruppi = allGroups.filter(gruppo => 
+  const filteredMyGroups = sortedMyGroups.filter(gruppo => 
+    gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredExploreGroups = exploreGroups.filter(gruppo => 
     gruppo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     gruppo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     gruppo.category?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -387,8 +443,9 @@ export default function Gruppi() {
 
       <div className="p-4">
         <Tabs defaultValue="gruppi" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
-            <TabsTrigger value="gruppi" className="text-xs">I tuoi Gruppi</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsTrigger value="gruppi" className="text-xs">I Miei</TabsTrigger>
+            <TabsTrigger value="esplora" className="text-xs">Esplora</TabsTrigger>
             <TabsTrigger value="citta" className="text-xs">Città</TabsTrigger>
             <TabsTrigger value="amici" className="text-xs">Amici</TabsTrigger>
             <TabsTrigger value="momenti" className="text-xs">Momenti</TabsTrigger>
@@ -445,8 +502,8 @@ export default function Gruppi() {
                   </Card>
                 ))}
               </div>
-            ) : filteredGruppi.length > 0 ? (
-              filteredGruppi.map(gruppo => (
+            ) : filteredMyGroups.length > 0 ? (
+              filteredMyGroups.map(gruppo => (
                 <GroupCard 
                   key={gruppo.id} 
                   group={gruppo} 
@@ -470,6 +527,55 @@ export default function Gruppi() {
                     <Button className="rounded-xl">
                       <Plus className="mr-2 h-4 w-4" />
                       Crea il primo gruppo
+                    </Button>
+                  </CreateGroupModal>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="esplora" className="space-y-4">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="mb-3">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-16 rounded-xl" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredExploreGroups.length > 0 ? (
+              filteredExploreGroups.map(gruppo => (
+                <GroupCard 
+                  key={gruppo.id} 
+                  group={gruppo} 
+                  type="user"
+                  onJoin={handleJoinGroup}
+                  isJoining={joiningGroups.has(gruppo.id)}
+                  currentUserId={user?.id}
+                />
+              ))
+            ) : (
+              <Card className="bg-muted/50">
+                <CardContent className="p-6 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Nessun gruppo pubblico disponibile</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {searchQuery ? "Non ci sono gruppi pubblici che corrispondono alla tua ricerca." : "Non ci sono ancora gruppi pubblici disponibili nella tua zona."}
+                  </p>
+                  <CreateGroupModal>
+                    <Button className="rounded-xl">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Crea un gruppo pubblico
                     </Button>
                   </CreateGroupModal>
                 </CardContent>

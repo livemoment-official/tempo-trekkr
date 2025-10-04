@@ -15,6 +15,9 @@ interface Group {
   avatar_url?: string;
   created_at: string;
   updated_at: string;
+  unread_count?: number; // FASE 4: Add unread count
+  last_message?: string; // FASE 5: Add last message
+  last_message_at?: string; // FASE 5: Add last message timestamp
 }
 
 export function useGroups() {
@@ -42,14 +45,53 @@ export function useGroups() {
     if (!user?.id) return;
 
     try {
+      // FASE 4 & 5: Load groups with unread count and last message info
       const { data, error } = await supabase
         .from('groups')
-        .select('*')
+        .select(`
+          *,
+          group_messages (
+            id,
+            content,
+            created_at,
+            sender_id
+          )
+        `)
         .or(`host_id.eq.${user.id},participants.cs.{${user.id}}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserGroups(data || []);
+
+      // Process groups to add unread count and last message
+      const processedGroups = await Promise.all((data || []).map(async (group: any) => {
+        // Get unread notifications count for this group
+        const { count } = await supabase
+          .from('notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('type', 'group_message')
+          .eq('read', false)
+          .eq('data->>group_id', group.id);
+
+        // Get last message from group_messages array
+        const messages = group.group_messages || [];
+        const sortedMessages = messages.sort((a: any, b: any) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const lastMessage = sortedMessages[0];
+
+        // Remove group_messages array and add processed fields
+        const { group_messages, ...groupWithoutMessages } = group;
+        
+        return {
+          ...groupWithoutMessages,
+          unread_count: count || 0,
+          last_message: lastMessage?.content,
+          last_message_at: lastMessage?.created_at
+        };
+      }));
+
+      setUserGroups(processedGroups);
     } catch (error) {
       console.error('Error loading user groups:', error);
     } finally {
@@ -140,9 +182,11 @@ export function useGroups() {
     loadUserGroups();
   }, [user?.id]);
 
-  // Set up real-time subscription for groups
+  // FASE 6: Set up real-time subscriptions for groups and notifications
   useEffect(() => {
-    const subscription = supabase
+    if (!user?.id) return;
+
+    const groupsChannel = supabase
       .channel('groups_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'groups' },
@@ -153,8 +197,24 @@ export function useGroups() {
       )
       .subscribe();
 
+    const notificationsChannel = supabase
+      .channel('group_notifications')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        if (payload.new && (payload.new as any).type === 'group_message') {
+          // Refresh user groups to update unread counts
+          loadUserGroups();
+        }
+      })
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(groupsChannel);
+      supabase.removeChannel(notificationsChannel);
     };
   }, [user?.id]);
 

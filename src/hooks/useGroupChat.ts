@@ -54,6 +54,33 @@ export function useGroupChat(groupType: 'moment' | 'event' | 'city' | 'group', g
     }
   }, [groupInfo, groupId]);
 
+  // FASE 4: Mark group notifications as read when entering chat
+  useEffect(() => {
+    const markNotificationsAsRead = async () => {
+      if (!user?.id || !groupId) return;
+
+      try {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', user.id)
+          .eq('type', 'group_message')
+          .eq('read', false)
+          .eq('data->>group_id', groupId);
+        
+        console.log('Marked group notifications as read for group:', groupId);
+      } catch (error) {
+        console.error('Error marking notifications as read:', error);
+      }
+    };
+
+    if (groupId && user?.id) {
+      // Small delay to ensure user actually opened the chat
+      const timer = setTimeout(markNotificationsAsRead, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [groupId, user?.id]);
+
   // Set up real-time subscription for new messages
   useEffect(() => {
     if (!groupId) return;

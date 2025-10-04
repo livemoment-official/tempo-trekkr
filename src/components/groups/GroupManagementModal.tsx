@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ export function GroupManagementModal({
   groupCategory,
 }: GroupManagementModalProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { deleteGroup } = useGroups();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,6 +56,11 @@ export function GroupManagementModal({
           description: 'Il gruppo è stato eliminato con successo.',
         });
         setShowDeleteDialog(false);
+        
+        // FASE 1: Navigate to /gruppi after successful deletion
+        setTimeout(() => {
+          navigate('/gruppi');
+        }, 500);
       } else {
         toast({
           title: 'Errore',
