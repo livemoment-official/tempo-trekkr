@@ -66,6 +66,10 @@ export default function CreaInvito() {
     id: 3,
     title: "Dettagli",
     component: InviteDetailsStep
+  }, {
+    id: 4,
+    title: "Anteprima",
+    component: InvitePreviewStep
   }];
   const currentStepData = steps.find(step => step.id === currentStep);
   const CurrentStepComponent = currentStepData?.component;
@@ -207,9 +211,9 @@ export default function CreaInvito() {
                 <div className="flex flex-col items-center">
                   <div 
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                      index < currentStep 
+                      index < currentStep - 1
                         ? 'bg-primary text-primary-foreground' 
-                        : index === currentStep 
+                        : index === currentStep - 1
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-muted text-muted-foreground'
                     }`}
@@ -225,7 +229,7 @@ export default function CreaInvito() {
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
                   <div className={`h-0.5 w-8 md:w-16 mx-1 md:mx-2 rounded transition-colors ${
-                    index < currentStep ? 'bg-primary' : 'bg-muted'
+                    index < currentStep - 1 ? 'bg-primary' : 'bg-muted'
                   }`} />
                 )}
               </div>
