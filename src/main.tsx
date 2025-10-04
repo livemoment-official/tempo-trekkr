@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
+import { FiltersProvider } from './contexts/FiltersContext'
 import { Toaster } from './components/ui/toaster'
 import { PushNotificationService } from './components/notifications/PushNotificationService'
 
@@ -43,8 +44,9 @@ createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
+        <FiltersProvider>
+          <BrowserRouter>
+            <Routes>
             {/* Routes with App Layout (bottom nav + header) */}
             <Route path="/" element={<AppLayout />}>
               <Route index element={<MomentiEventi />} />
@@ -78,10 +80,11 @@ createRoot(document.getElementById("root")!).render(
             <Route path="chat/:type/:id" element={<UnifiedChatPage />} />
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-          <PushNotificationService />
-        </BrowserRouter>
+            </Routes>
+            <Toaster />
+            <PushNotificationService />
+          </BrowserRouter>
+        </FiltersProvider>
       </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>

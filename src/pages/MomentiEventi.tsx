@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { MomentFilters } from "@/components/moments/MomentFilters";
+import { ViewToggle } from "@/components/moments/ViewToggle";
 import { MomentCard } from "@/components/moments/MomentCard";
 import { MomentsMap } from "@/components/moments/MomentsMap";
 
 import { useUnifiedFeed } from "@/hooks/useUnifiedFeed";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFilters } from "@/contexts/FiltersContext";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSnapScroll } from "@/hooks/useSnapScroll";
@@ -19,12 +20,8 @@ export default function MomentiEventi() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const canonical = typeof window !== "undefined" ? window.location.origin + location.pathname : "/";
-  const [view, setView] = useState<'list' | 'map'>('list');
+  const { view, setView, filters: globalFilters } = useFilters();
   const isMobile = useIsMobile();
-  
-  // Auto-hide filters on scroll
-  const [showFilters, setShowFilters] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Use unified feed (moments + events)
   const {
@@ -54,44 +51,19 @@ export default function MomentiEventi() {
     }
   });
 
-  // Load initial data
+  // Load initial data with global filters
   useEffect(() => {
-    loadFeed({}, true);
-  }, []);
-
-  // Auto-hide filters on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // Scrolling down & past threshold
-        setShowFilters(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up
-        setShowFilters(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  // Handle filter changes
-  const handleFilterChange = (newFilters: any) => {
     const filters = {
-      category: newFilters.category,
-      subcategories: newFilters.subcategories,
-      mood: newFilters.mood,
-      ageMin: newFilters.ageRange?.[0],
-      ageMax: newFilters.ageRange?.[1],
-      maxDistance: newFilters.maxDistance,
-      tags: newFilters.subcategories
+      category: globalFilters.category,
+      subcategories: globalFilters.subcategories,
+      mood: globalFilters.mood,
+      ageMin: globalFilters.ageRange?.[0],
+      ageMax: globalFilters.ageRange?.[1],
+      maxDistance: globalFilters.maxDistance,
+      tags: globalFilters.subcategories
     };
-    applyFilters(filters);
-  };
+    loadFeed(filters, true);
+  }, [globalFilters]);
 
   return (
     <div className="space-y-4">
@@ -101,18 +73,9 @@ export default function MomentiEventi() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* Filters with auto-hide */}
-      <div 
-        className={`sticky top-16 z-30 bg-background/95 backdrop-blur-sm transition-transform duration-300 -mx-5 px-5 md:-mx-8 md:px-8 ${
-          showFilters ? 'translate-y-0' : '-translate-y-full'
-        }`}
-      >
-        <MomentFilters
-          onFiltersChange={handleFilterChange}
-          currentFilters={filters}
-          view={view}
-          onViewChange={setView}
-        />
+      {/* View Toggle - Always visible */}
+      <div className="flex justify-center mb-6">
+        <ViewToggle view={view} onViewChange={setView} />
       </div>
 
       {/* Content */}

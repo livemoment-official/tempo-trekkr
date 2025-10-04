@@ -15,13 +15,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfileAvatar } from "@/hooks/useProfileAvatar";
 import { FixedChatInput } from "@/components/discover/FixedChatInput";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MomentFilterSheet } from "@/components/moments/MomentFilterSheet";
+import { useFilters } from "@/contexts/FiltersContext";
 import liveMomentLogo from "@/assets/livemoment-logo.png";
 const Header = ({
   onOpenSearch,
-  onOpenFriends
+  onOpenFriends,
+  onOpenFilters
 }: {
   onOpenSearch: () => void;
   onOpenFriends: () => void;
+  onOpenFilters: () => void;
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,6 +51,16 @@ const Header = ({
         </button>
         
         <div className="flex items-center gap-2">
+          {/* Filtri Momenti */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onOpenFilters}
+            className="h-10 w-10 p-0 text-foreground hover:text-primary hover:bg-muted/50 rounded-xl"
+          >
+            <SearchIcon className="h-5 w-5" />
+          </Button>
+
           {/* Aggiungi Amici Banner */}
           <NavLink to="/trova-amici" className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-50 rounded-full text-sm font-medium text-black border border-gray-200 transition-colors hover-scale press-scale">
             <UserPlus className="h-4 w-4" />
@@ -125,7 +139,9 @@ export default function AppLayout() {
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { filters, setFilters } = useFilters();
 
   // Check if we're on the Crea page to hide main UI
   const isCreatePage = pathname === '/crea';
@@ -138,7 +154,7 @@ export default function AppLayout() {
     // Focus management or analytics could go here
   }, [pathname]);
   return <div className="mx-auto flex min-h-svh w-full max-w-screen-sm md:max-w-screen-lg flex-col">
-      {!isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} />}
+      {!isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && <Header onOpenSearch={() => setSearchOpen(true)} onOpenFriends={() => setFriendsOpen(true)} onOpenFilters={() => setFiltersOpen(true)} />}
       {!isAuthenticated && !isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && <GuestBanner />}
       {!isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && <UnconfirmedUserBanner />}
       <main className={isCreatePage || isCreationFlowPage ? "flex-1" : `flex-1 px-5 ${isMobile ? 'md:px-8' : 'md:px-12'} pb-28 pt-4 animate-fade-in`}>
@@ -166,5 +182,13 @@ export default function AppLayout() {
       
       {/* Friends Modal */}
       <FriendSuggestionsModal open={friendsOpen} onOpenChange={setFriendsOpen} />
+
+      {/* Filters Modal */}
+      <MomentFilterSheet 
+        open={filtersOpen} 
+        onOpenChange={setFiltersOpen}
+        onFiltersChange={setFilters}
+        currentFilters={filters}
+      />
     </div>;
 }
