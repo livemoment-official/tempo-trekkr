@@ -9,6 +9,7 @@ import { it } from "date-fns/locale/it";
 import { useNavigate } from "react-router-dom";
 import { ShareModal } from "@/components/shared/ShareModal";
 import { EditDeleteMenu } from "@/components/shared/EditDeleteMenu";
+import { MomentEditModal } from "@/components/moments/MomentEditModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { EnhancedImage } from "@/components/ui/enhanced-image";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,6 +18,7 @@ import { TicketPurchaseModal } from "@/components/tickets/TicketPurchaseModal";
 import { getEventStatus } from "@/utils/eventStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useMomentDetail } from "@/hooks/useMomentDetail";
 interface MomentCardProps {
   id: string;
   title: string;
@@ -104,9 +106,11 @@ export function MomentCard({
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(getEventStatus(when_at, end_at));
   const videoRef = useRef<HTMLVideoElement>(null);
   const isCurrentUserOwner = user?.id === hostId;
+  const { moment, refreshMoment } = useMomentDetail(id);
 
   // Parse location info
   const locationInfo = useMemo(() => {
@@ -264,7 +268,12 @@ export function MomentCard({
               
               {/* Right side - Menu */}
               <div className="flex items-center">
-                {isCurrentUserOwner && <EditDeleteMenu contentType="moments" contentId={id} isOwner={isCurrentUserOwner} />}
+                {isCurrentUserOwner && <EditDeleteMenu 
+                  contentType="moments" 
+                  contentId={id} 
+                  isOwner={isCurrentUserOwner}
+                  onEdit={() => setShowEditModal(true)}
+                />}
               </div>
             </div>
           </div>
@@ -397,5 +406,18 @@ export function MomentCard({
       max_participants: maxParticipants,
       participant_count: participants
     }} />}
-    </div>;
+    
+    {/* Edit Modal */}
+    {moment && showEditModal && (
+      <MomentEditModal 
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        moment={moment}
+        onSuccess={() => {
+          refreshMoment();
+          setShowEditModal(false);
+        }}
+      />
+    )}
+  </div>;
 }
