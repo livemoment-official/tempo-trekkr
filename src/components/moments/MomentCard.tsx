@@ -112,10 +112,13 @@ export function MomentCard({
   const locationInfo = useMemo(() => {
     if (!place?.address) return null;
     const addressParts = place.address.split(',').map(p => p.trim());
+    
+    // Italian addresses: "Street, City, Province/Postal, Country"
+    // We want Province (second to last) or City (third to last)
     return {
       street: addressParts[0] || '',
-      city: addressParts[addressParts.length - 2] || '',
-      province: addressParts[addressParts.length - 1] || ''
+      city: addressParts.length >= 3 ? addressParts[addressParts.length - 3] : addressParts[0],
+      province: addressParts.length >= 2 ? addressParts[addressParts.length - 2] : addressParts[addressParts.length - 1]
     };
   }, [place]);
 
@@ -286,10 +289,10 @@ export function MomentCard({
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <p className="text-sm font-semibold truncate">
-                    {locationInfo?.province || locationInfo?.city || 'Provincia'}
+                    {locationInfo?.province || locationInfo?.city || place?.name?.split(',')[0] || 'Luogo'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {locationInfo?.street || place?.name || 'Via non specificata'}
+                    {locationInfo?.street || place?.name || 'Indirizzo non specificato'}
                   </p>
                 </div>
               </div>
