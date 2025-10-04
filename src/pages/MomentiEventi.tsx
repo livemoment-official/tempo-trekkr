@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,10 @@ export default function MomentiEventi() {
     }
   });
 
+  // Auto-hide toggle on scroll
+  const [showToggle, setShowToggle] = useState(true);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Load initial data with global filters
   useEffect(() => {
     const filters = {
@@ -65,6 +69,39 @@ export default function MomentiEventi() {
     loadFeed(filters, true);
   }, [globalFilters]);
 
+  // Scroll listener for auto-hide toggle
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || view !== 'list') {
+      setShowToggle(true);
+      return;
+    }
+
+    const handleScroll = () => {
+      // Hide toggle when scrolling
+      setShowToggle(false);
+      
+      // Clear previous timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Show toggle after 3 seconds of inactivity
+      scrollTimeoutRef.current = setTimeout(() => {
+        setShowToggle(true);
+      }, 3000);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [view]);
+
   return (
     <div className="space-y-4">
       <Helmet>
@@ -73,10 +110,8 @@ export default function MomentiEventi() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      {/* View Toggle - Always visible */}
-      <div className="flex justify-center mb-6">
-        <ViewToggle view={view} onViewChange={setView} />
-      </div>
+      {/* View Toggle - Floating with auto-hide */}
+      <ViewToggle view={view} onViewChange={setView} isVisible={showToggle} />
 
       {/* Content */}
       {view === 'list' ? (
