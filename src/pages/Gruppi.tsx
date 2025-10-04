@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Plus, X, Users, MapPin, Loader2, MoreVertical, ChevronRight } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
 import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
+import { GroupRulesBanner } from "@/components/groups/GroupRulesBanner";
 import { useGroups } from "@/hooks/useGroups";
 import { useMomentChats } from "@/hooks/useMomentChats";
 import { useChat } from "@/hooks/useChat";
@@ -37,57 +37,7 @@ const categoryEmojis: Record<string, string> = {
   "moment_chat": "💬",
   "default": "👥"
 };
-const GroupInfoModal = ({
-  trigger
-}: {
-  trigger: React.ReactNode;
-}) => {
-  return <Dialog>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="mx-4 rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Come Funzionano i Gruppi di Live Moment</DialogTitle>
-          <DialogDescription asChild>
-            <div className="space-y-4 pt-4">
-              <ul className="space-y-3 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Puoi creare massimo 2 Gruppi.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Puoi partecipare in soli 5 gruppi contemporaneamente.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Ogni gruppo è Geo-localizzato.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Ogni gruppo ha un'Interesse specifico.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Nei gruppi inviti a Momenti persone con passioni specifiche.</span>
-                </li>
-              </ul>
-              <AuthGuard title="Accedi per creare gruppi" description="Accedi per creare e partecipare ai gruppi" fallback={<Button className="w-full mt-6 rounded-xl" size="lg" disabled>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Accedi per Creare un Gruppo
-                  </Button>}>
-                <Button className="w-full mt-6 rounded-xl" size="lg" onClick={() => window.location.href = '/crea/gruppo'}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Crea il Gruppo
-                </Button>
-              </AuthGuard>
-            </div>
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>;
-};
+
 const GroupCard = ({
   group,
   type = "user",
@@ -284,6 +234,7 @@ export default function Gruppi() {
   });
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [leavingGroups, setLeavingGroups] = useState<Set<string>>(new Set());
+  const bannerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (user) {
       loadConversations();
@@ -292,6 +243,18 @@ export default function Gruppi() {
   const dismissBanner = () => {
     setShowBanner(false);
     localStorage.setItem('gruppi-banner-dismissed', 'true');
+  };
+
+  const handleRulesClick = () => {
+    if (bannerRef.current) {
+      bannerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Ensure banner is expanded
+      const expandedState = localStorage.getItem("groupRulesBannerExpanded");
+      if (expandedState === "false") {
+        localStorage.setItem("groupRulesBannerExpanded", "true");
+        window.dispatchEvent(new Event('storage'));
+      }
+    }
   };
 
   // FASE 2: Filter moment_chat groups from "I tuoi Gruppi" tab
@@ -416,26 +379,12 @@ export default function Gruppi() {
             </Button>
           </div>
 
+          {/* Rules Banner - Always visible */}
+          <div ref={bannerRef} className="mb-4">
+            <GroupRulesBanner onDismiss={showBanner ? dismissBanner : undefined} />
+          </div>
+
           <TabsContent value="gruppi" className="space-y-4">
-            {showBanner && <Card className="bg-muted/50 border-2 border-dashed border-primary/30 relative">
-                <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0" onClick={dismissBanner}>
-                  <X className="h-4 w-4" />
-                </Button>
-                <CardContent className="p-6 text-center">
-                  <h3 className="text-xl font-bold mb-2">Come Funzionano i Gruppi di Live Moment</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
-                    <li>• Puoi creare massimo 2 Gruppi.</li>
-                    <li>• Puoi partecipare in soli 5 gruppi contemporaneamente.</li>
-                    <li>• Ogni gruppo è Geo-localizzato.</li>
-                    <li>• Ogni gruppo ha un'Interesse specifico.</li>
-                    <li>• Nei gruppi inviti a Momenti persone con passioni specifiche.</li>
-                  </ul>
-                  <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crea un Gruppo
-                  </Button>
-                </CardContent>
-              </Card>}
 
             {isLoading ? <div className="space-y-3">
                 {[1, 2, 3].map(i => <Card key={i} className="mb-3">
@@ -462,28 +411,23 @@ export default function Gruppi() {
                       </p>
                     </CardContent>
                   </Card> : <>
-                    {/* CASO 2: Nessun gruppo disponibile - Mostra banner + pop-up regole */}
+                    {/* CASO 2: Nessun gruppo disponibile - Mostra card per espandere banner */}
                     {sortedMyGroups.length === 0 && <>
-                        {/* Banner "Crea il primo gruppo" */}
-                        <Card className="bg-muted/50">
-                          
+                        {/* Card che porta al banner delle regole */}
+                        <Card className="cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20" onClick={handleRulesClick}>
+                          <CardContent className="p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Users className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold">Regole dei Gruppi</h4>
+                                <p className="text-xs text-muted-foreground">Scopri come funzionano</p>
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                          </CardContent>
                         </Card>
-
-                        {/* Pop-up con le regole dei gruppi */}
-                        <GroupInfoModal trigger={<Card className="mt-4 cursor-pointer hover:bg-muted/50 transition-colors border-2 border-primary/20">
-                              <CardContent className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Users className="h-5 w-5 text-primary" />
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold">Regole dei Gruppi</h4>
-                                    <p className="text-xs text-muted-foreground">Scopri come funzionano</p>
-                                  </div>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                              </CardContent>
-                            </Card>} />
                       </>}
 
                     {/* CASO 3: Mostra sempre i gruppi dell'utente (se esistono) */}
