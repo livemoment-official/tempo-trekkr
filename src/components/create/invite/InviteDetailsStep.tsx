@@ -42,7 +42,7 @@ export default function InviteDetailsStep({
       <div>
         <h3 className="text-base font-medium">Dettagli dell'invito</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Specifica quando e dove per il tuo {data.activity.title.toLowerCase()}
+          Specifica quando e dove per il tuo {data.activity?.title?.toLowerCase() || 'invito'}
         </p>
       </div>
 
@@ -88,7 +88,7 @@ export default function InviteDetailsStep({
         <Textarea id="message" value={data.message} onChange={e => onChange({
         ...data,
         message: e.target.value
-      })} placeholder={`Ciao! Che ne dici di un ${data.activity.title.toLowerCase()} insieme?`} className="mt-2" rows={3} />
+      })} placeholder={`Ciao! Che ne dici di ${data.activity?.title ? `un ${data.activity.title.toLowerCase()}` : 'uscire'} insieme?`} className="mt-2" rows={3} />
       </div>
 
       
