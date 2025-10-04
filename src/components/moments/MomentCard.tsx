@@ -307,39 +307,58 @@ export function MomentCard({
 
         {/* Content Section */}
         <div className="flex-1 md:flex-initial px-4 py-4 space-y-3 bg-background md:rounded-b-xl">
-          {/* Title */}
-          <h3 className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{title}</h3>
-          
-          {/* Time & Location */}
-          <div className="flex items-center gap-4 text-muted-foreground flex-wrap md:flex-col md:items-start md:gap-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" strokeWidth={1.5} />
-              <span className="text-sm">
-                {time}
-                {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}`}
-              </span>
+          {/* Compact Location & Date Cards */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {/* Location Card */}
+            <div className="rounded-2xl bg-muted/30 border border-border/20 p-3 flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
+                <span className="text-[10px] font-medium uppercase tracking-wide">Luogo</span>
+              </div>
+              {locationInfo ? (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold truncate">
+                    {locationInfo.city}, {locationInfo.province}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate leading-tight">
+                    {locationInfo.street}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-xs font-bold truncate">{place?.name || 'Non specificato'}</span>
+              )}
             </div>
-            <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
-              <MapPin className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
-              <div className="flex flex-col min-w-0">
-                {locationInfo ? (
-                  <>
-                    <span className="text-sm font-medium truncate">
-                      {locationInfo.city}, {locationInfo.province}
-                    </span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {locationInfo.street}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm truncate">{place?.name || 'Posizione non specificata'}</span>
-                )}
+
+            {/* Date & Time Card */}
+            <div className="rounded-2xl bg-muted/30 border border-border/20 p-3 flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
+                <span className="text-[10px] font-medium uppercase tracking-wide">Quando</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold">
+                  {when_at ? new Date(when_at).toLocaleDateString('it-IT', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                  }) : time}
+                </span>
+                <span className="text-[10px] text-muted-foreground leading-tight">
+                  {when_at && new Date(when_at).toLocaleTimeString('it-IT', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                  {end_at && ` - ${new Date(end_at).toLocaleTimeString('it-IT', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}`}
+                </span>
               </div>
             </div>
           </div>
+
+          {/* Title */}
+          <h3 className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{title}</h3>
 
           {/* Participants */}
           <div className="flex items-center gap-3">
