@@ -68,7 +68,6 @@ export default function Abbonamento() {
   const [searchParams] = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState<'1' | '3' | '6'>('3');
   const [selectedBusinessType, setSelectedBusinessType] = useState<string>('location');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState<{
@@ -155,10 +154,6 @@ export default function Abbonamento() {
     }
   };
   const handleSubscribe = async () => {
-    if (!acceptedTerms) {
-      toast.error("Devi accettare i termini e condizioni per continuare");
-      return;
-    }
     if (!session) {
       toast.error("Devi essere autenticato per abbonarti");
       return;
@@ -442,21 +437,6 @@ export default function Abbonamento() {
       {/* Fixed Bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 z-40">
         <div className="container mx-auto max-w-2xl space-y-3">
-          <div className="flex items-center gap-2 justify-center">
-            <Checkbox 
-              id="terms" 
-              checked={acceptedTerms} 
-              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)} 
-              className="border-primary data-[state=checked]:bg-primary" 
-            />
-            <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
-              Accetto i{' '}
-              <a href="#" className="text-primary underline hover:text-orange-400 transition-colors">
-                termini e condizioni
-              </a>
-            </label>
-          </div>
-
           <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
             {subscribed ? <div className="space-y-1.5">
                 <div className="text-center py-1.5 px-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
@@ -468,7 +448,7 @@ export default function Abbonamento() {
                 <Button onClick={handleManageSubscription} disabled={isLoading} className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-muted to-muted hover:from-muted/80 hover:to-muted/80">
                   {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Caricamento...</> : "Gestisci Abbonamento"}
                 </Button>
-              </div> : <Button onClick={handleSubscribe} disabled={!acceptedTerms || isLoading} className="group w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] disabled:bg-muted disabled:text-muted-foreground transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]">
+              </div> : <Button onClick={handleSubscribe} disabled={isLoading} className="group w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] disabled:bg-muted disabled:text-muted-foreground transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]">
                 {isLoading ? <span className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Caricamento...
