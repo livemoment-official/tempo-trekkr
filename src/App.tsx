@@ -69,13 +69,17 @@ const App = () => (
                 <Route path="/trova-amici" element={<TrovaAmici />} />
                 <Route path="/profili" element={<Profili />} />
                 <Route path="/premi" element={<Premi />} />
-                <Route path="/abbonamento" element={<Abbonamento />} />
+                
                 <Route path="/evento/:id" element={<EventDetail />} />
                 <Route path="/artist/:id" element={<ArtistDetail />} />
                 <Route path="/location/:id" element={<VenueDetail />} />
                 <Route path="/user/:id" element={<UserDetailById />} />
                 <Route path="/my-events" element={<MyEvents />} />
               </Route>
+
+              {/* Abbonamento - Outside AppLayout for clean, isolated experience */}
+              <Route path="/abbonamento" element={<Abbonamento />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
         </BrowserRouter>

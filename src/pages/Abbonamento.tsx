@@ -3,13 +3,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, MessageSquare, Check, Ticket, Users, MessageCircle, Shield, Star, Gift, Crown, MapPin, Palette, Clipboard, Camera, Calendar, Heart, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, Ticket, Users, MessageCircle, Shield, Star, Crown, MapPin, Palette, Clipboard, Calendar, Loader2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import StandardHeader from "@/components/layout/StandardHeader";
 const proFeatures = [{
   icon: <Check className="h-5 w-5" />,
   title: "Partecipa e Crea senza limiti",
@@ -204,16 +203,26 @@ export default function Abbonamento() {
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen bg-gray-50 flex flex-col">
+  return <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>LiveMoment · Upgrade Profilo</title>
         <meta name="description" content="Upgrade il tuo profilo LiveMoment con funzionalità premium" />
       </Helmet>
 
-      {/* Header */}
-      <StandardHeader title="Abbonamenti" />
+      {/* Minimal Custom Header */}
+      <div className="sticky top-0 z-10 bg-background border-b border-border">
+        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+          <button 
+            onClick={() => navigate(-1)}
+            className="p-2 -ml-2 hover:bg-accent rounded-full transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-lg font-semibold">Abbonamenti</h1>
+        </div>
+      </div>
 
-      <div className="flex-1 max-w-md mx-auto w-full pb-32 overflow-y-auto">
+      <div className="flex-1 max-w-md mx-auto w-full pb-40 overflow-y-auto">
         {/* Plan Toggle */}
         <div className="p-4">
           <div className="flex bg-gray-200 rounded-full p-1">
@@ -329,7 +338,7 @@ export default function Abbonamento() {
       </div>
 
       {/* Fixed CTA Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-2xl z-50">
         <div className="max-w-md mx-auto p-4">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
