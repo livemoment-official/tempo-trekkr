@@ -1655,6 +1655,18 @@ export type Database = {
         Args: { inviter_id?: string; target_user_id: string }
         Returns: number
       }
+      create_payment_session: {
+        Args: {
+          p_amount_cents: number
+          p_currency?: string
+          p_livemoment_fee_cents: number
+          p_moment_id: string
+          p_organizer_fee_cents: number
+          p_stripe_session_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_city_participant_count: {
         Args: { target_city_name: string }
         Returns: number
