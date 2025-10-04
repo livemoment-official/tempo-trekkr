@@ -30,14 +30,14 @@ export function useProfileMetrics() {
     try {
       setMetrics(prev => ({ ...prev, loading: true }));
 
-      // Get profile for friends count
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('followers_count, following_count')
-        .eq('id', user.id)
-        .single();
+      // Get accepted friendships count
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('id')
+        .or(`user_id.eq.${user.id},friend_user_id.eq.${user.id}`)
+        .eq('status', 'accepted');
 
-      const friendsCount = (profile?.followers_count || 0) + (profile?.following_count || 0);
+      const friendsCount = friendships?.length || 0;
 
       // Get events created by user
       const { data: createdMoments } = await supabase

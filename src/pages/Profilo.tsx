@@ -23,7 +23,7 @@ import { ProfilePhotoPreview } from '@/components/profile/ProfilePhotoPreview';
 import { AvailabilityToggle } from '@/components/profile/AvailabilityToggle';
 import { ChatPermissionSettings } from '@/components/profile/ChatPermissionSettings';
 import { EnhancedPhotoGallery } from '@/components/profile/EnhancedPhotoGallery';
-import { FriendRequestsModal } from '@/components/profile/FriendRequestsModal';
+import { FriendsModal } from '@/components/profile/FriendsModal';
 import { FriendSuggestionsModal } from '@/components/profile/FriendSuggestionsModal';
 import { OnboardingModal } from '@/components/profile/OnboardingModal';
 import { EnhancedAvailabilityList } from '@/components/availability/EnhancedAvailabilityList';
@@ -59,10 +59,12 @@ export default function Profilo() {
     incrementRedirectCounter
   } = useOnboardingState();
   const {
-    metrics
+    metrics,
+    refetch: refetchMetrics
   } = useProfileMetrics();
   const {
-    pendingRequests
+    pendingRequests,
+    friends
   } = useFriendship();
   useEffect(() => {
     if (isAuthenticated && user && isOnboardingRequired === false) {
@@ -539,8 +541,12 @@ export default function Profilo() {
       {/* Chat Permission Settings */}
       {showChatSettings && <ChatPermissionSettings currentPermission={profile?.chat_permission} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />}
 
-      {/* Friend Requests Modal */}
-      <FriendRequestsModal open={showFriendRequests} onOpenChange={open => setShowFriendRequests(open)} />
+      {/* Friends Modal */}
+      <FriendsModal 
+        open={showFriendRequests} 
+        onOpenChange={open => setShowFriendRequests(open)}
+        onMetricsRefetch={refetchMetrics}
+      />
 
       {/* Friend Suggestions Modal */}
       <FriendSuggestionsModal open={showFriendSuggestions} onOpenChange={open => setShowFriendSuggestions(open)} />
