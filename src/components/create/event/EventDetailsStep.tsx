@@ -117,10 +117,21 @@ export default function EventDetailsStep({
           <Label htmlFor="capacity" className="text-base font-medium">
             Capacità massima
           </Label>
-          <Input id="capacity" type="number" value={data.capacity || ""} onChange={e => onChange({
-          ...data,
-          capacity: parseInt(e.target.value) || null
-        })} placeholder="Es. 100" className="mt-2" min="1" />
+          <Input 
+            id="capacity" 
+            type="number" 
+            inputMode="numeric"
+            pattern="[0-9]*"
+            min="1"
+            step="1"
+            value={data.capacity || ""} 
+            onChange={e => onChange({
+              ...data,
+              capacity: parseInt(e.target.value) || null
+            })} 
+            placeholder="Es. 100" 
+            className="mt-2" 
+          />
         </div>
 
         <div className="flex items-center space-x-2 mt-6">
@@ -171,18 +182,31 @@ export default function EventDetailsStep({
 
         <div>
           <Label htmlFor="startTime" className="text-base font-medium">Ora inizio *</Label>
-          <Input id="startTime" type="time" value={data.startTime} onChange={e => onChange({
-          ...data,
-          startTime: e.target.value
-        })} className="mt-2" required />
+          <Input 
+            id="startTime" 
+            type="time" 
+            value={data.startTime} 
+            onChange={e => onChange({
+              ...data,
+              startTime: e.target.value
+            })} 
+            className="mt-2 h-12 sm:h-11 text-base sm:text-sm" 
+            required 
+          />
         </div>
 
         <div>
           <Label htmlFor="endTime" className="text-base font-medium">Ora fine</Label>
-          <Input id="endTime" type="time" value={data.endTime} onChange={e => onChange({
-          ...data,
-          endTime: e.target.value
-        })} className="mt-2" />
+          <Input 
+            id="endTime" 
+            type="time" 
+            value={data.endTime} 
+            onChange={e => onChange({
+              ...data,
+              endTime: e.target.value
+            })} 
+            className="mt-2 h-12 sm:h-11 text-base sm:text-sm" 
+          />
         </div>
       </div>
 

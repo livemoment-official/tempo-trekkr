@@ -69,7 +69,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="crea/invito" element={<MinimalLayoutWrapper title="Crea Invito"><CreaInvito /></MinimalLayoutWrapper>} />
             <Route path="crea/momento" element={<MinimalLayoutWrapper title="Crea Momento"><CreaMomento /></MinimalLayoutWrapper>} />
             <Route path="crea/gruppo" element={<MinimalLayoutWrapper title="Crea Gruppo"><CreaGruppo /></MinimalLayoutWrapper>} />
-            <Route path="crea/evento" element={<MinimalLayoutWrapper title="Crea Evento"><CreaEvento /></MinimalLayoutWrapper>} />
+            <Route path="crea/evento" element={<CreaEvento />} />
             {/* Profile route unified to ID-based */}
             <Route path="user/:id" element={<MinimalLayoutWrapper title="Profilo"><UserDetailById /></MinimalLayoutWrapper>} />
             <Route path="moment/:id" element={<MinimalLayoutWrapper title="Momento"><MomentDetail /></MinimalLayoutWrapper>} />

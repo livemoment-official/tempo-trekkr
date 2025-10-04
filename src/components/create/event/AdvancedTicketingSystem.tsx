@@ -116,20 +116,29 @@ export const AdvancedTicketingSystem = ({
     });
   };
   const calculateBreakdown = (price: number) => {
-    const livemomentFee = price * LIVEMOMENT_FEE / 100;
-    let artistsTotal = 0;
-    (ticketingData.artistSplits || []).forEach(split => {
-      if (split.paymentType === 'percentage') {
-        artistsTotal += price * split.percentage / 100;
-      } else if (split.paymentType === 'fixed') {
-        artistsTotal += split.fixedAmount / 100;
-      }
-    });
-    const organizerAmount = price - livemomentFee - artistsTotal;
+    const liveMomentFee = price * 0.05;
+    const remainingForSplits = price - liveMomentFee;
+    
+    const artistsTotalPercentage = ticketingData.artistSplits?.reduce((sum, split) => {
+      if (split.paymentType === 'percentage') return sum + split.percentage;
+      return sum;
+    }, 0) || 0;
+
+    const artistsTotalFixed = ticketingData.artistSplits?.reduce((sum, split) => {
+      if (split.paymentType === 'fixed') return sum + split.fixedAmount;
+      return sum;
+    }, 0) || 0;
+
+    const artistsFromPercentage = remainingForSplits * (artistsTotalPercentage / 100);
+    const totalToArtists = artistsFromPercentage + artistsTotalFixed;
+    const toOrganizer = remainingForSplits - totalToArtists;
+
     return {
-      livemomentFee,
-      artistsTotal,
-      organizerAmount
+      liveMomentFee,
+      totalToArtists,
+      toOrganizer,
+      artistsPercentage: artistsTotalPercentage,
+      artistsFixed: artistsTotalFixed
     };
   };
   const getTotalPercentageAllocated = () => {
@@ -143,7 +152,7 @@ export const AdvancedTicketingSystem = ({
   };
   const currencySymbol = ticketingData.currency === 'EUR' ? '€' : ticketingData.currency === 'USD' ? '$' : '£';
   return <div className="space-y-6">
-      <Card>
+      <Card className="border-0 shadow-none bg-transparent md:shadow-card md:border md:bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -159,7 +168,7 @@ export const AdvancedTicketingSystem = ({
           </div>
         </CardHeader>
 
-        {ticketingData.enabled && <CardContent className="space-y-6">
+        {ticketingData.enabled && <CardContent className="space-y-6 pt-6 px-0 md:px-6">
             {/* Currency Selection */}
             <div className="space-y-2">
               <Label>Valuta</Label>
@@ -194,8 +203,8 @@ export const AdvancedTicketingSystem = ({
                 </Button>
               </div>
 
-              {ticketingData.phases.map((phase, index) => <Card key={index}>
-                  <CardContent className="pt-6 space-y-4">
+              {ticketingData.phases.map((phase, index) => <Card key={index} className="border-0 shadow-none bg-muted/30 md:shadow-card md:border md:bg-card">
+                  <CardContent className="pt-6 space-y-4 px-4 md:px-6">
                     <div className="flex items-center justify-between">
                       <Input value={phase.name} onChange={e => updatePhase(index, {
                   name: e.target.value
@@ -226,17 +235,20 @@ export const AdvancedTicketingSystem = ({
                     {/* Price Preview for Simplified Mode */}
                     {simplified && phase.price > 0 && <div className="p-3 bg-muted/50 rounded-lg space-y-1 text-xs">
                         <div className="flex justify-between">
-                          <span>Prezzo base:</span>
+                          <span>Prezzo per l'utente:</span>
                           <span className="font-medium">{phase.price.toFixed(2)} {currencySymbol}</span>
                         </div>
                         <div className="flex justify-between text-muted-foreground">
-                          <span>Fee LiveMoment (5%):</span>
+                          <span>Fee LiveMoment (5%) inclusa:</span>
                           <span>{(phase.price * 0.05).toFixed(2)} {currencySymbol}</span>
                         </div>
                         <div className="flex justify-between font-semibold pt-1 border-t">
-                          <span>Totale utente:</span>
-                          <span>{(phase.price * 1.05).toFixed(2)} {currencySymbol}</span>
+                          <span>All'organizzatore:</span>
+                          <span>{(phase.price * 0.95).toFixed(2)} {currencySymbol}</span>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2 pt-1 border-t">
+                          La fee è già inclusa nel prezzo mostrato al cliente
+                        </p>
                       </div>}
                   </CardContent>
                 </Card>)}

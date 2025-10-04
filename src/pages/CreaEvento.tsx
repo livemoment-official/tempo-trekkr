@@ -318,18 +318,22 @@ export default function CreaEvento() {
       />
 
       {/* Main Content */}
-      <main className="container py-6 pb-32">
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              
-              <SmartProgressIndicator currentStep={currentStep} eventData={eventData} onStepChange={handleStepChange} steps={steps} />
-            </CardHeader>
-            
-            <CardContent className="space-y-6">
-              {CurrentStepComponent && <CurrentStepComponent data={eventData} onChange={handleDataChange} onNext={handleNext} />}
-            </CardContent>
-          </Card>
+      <main className="flex-1 container max-w-4xl mx-auto px-4 pb-32">
+        <div className="py-4">
+          <SmartProgressIndicator 
+            currentStep={currentStep} 
+            eventData={eventData}
+            steps={steps}
+            onStepChange={handleStepChange}
+          />
+          
+          <div className="mt-6">
+            <CurrentStepComponent 
+              data={eventData} 
+              onChange={handleDataChange}
+              onNext={handleNext}
+            />
+          </div>
         </div>
       </main>
 

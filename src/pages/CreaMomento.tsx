@@ -50,7 +50,7 @@ export default function CreaMomento() {
     end_at: null,
     place: null,
     is_public: true,
-    max_participants: 8
+    max_participants: 3
   });
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -429,10 +429,21 @@ export default function CreaMomento() {
           {/* Max Participants */}
           <div className="space-y-2">
             <Label htmlFor="maxParticipants">Massimo partecipanti</Label>
-            <Input id="maxParticipants" type="number" min="2" max="50" value={momentData.max_participants || 8} onChange={e => setMomentData(prev => ({
-            ...prev,
-            max_participants: parseInt(e.target.value) || 8
-          }))} className="w-24" />
+            <Input 
+              id="maxParticipants" 
+              type="number" 
+              inputMode="numeric"
+              pattern="[0-9]*"
+              min="1" 
+              step="1"
+              value={momentData.max_participants || ""} 
+              onChange={e => setMomentData(prev => ({
+                ...prev,
+                max_participants: parseInt(e.target.value) || 3
+              }))} 
+              placeholder="3"
+              className="w-28 sm:w-24" 
+            />
           </div>
 
           {/* Categories */}
@@ -490,7 +501,7 @@ export default function CreaMomento() {
 
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="pl-10" />
+                <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="pl-10 h-12 sm:h-11 text-base sm:text-sm" />
               </div>
             </div>
 
@@ -512,7 +523,7 @@ export default function CreaMomento() {
 
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="pl-10" />
+                <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="pl-10 h-12 sm:h-11 text-base sm:text-sm" />
               </div>
             </div>
           </div>
