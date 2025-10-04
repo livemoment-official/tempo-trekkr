@@ -83,7 +83,15 @@ export default function Abbonamento() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
   const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState<{ hours: number; minutes: number; seconds: number }>({ hours: 23, minutes: 59, seconds: 59 });
+  const [countdown, setCountdown] = useState<{
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({
+    hours: 23,
+    minutes: 59,
+    seconds: 59
+  });
   const {
     session,
     subscribed,
@@ -97,19 +105,28 @@ export default function Abbonamento() {
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
+          return {
+            ...prev,
+            seconds: prev.seconds - 1
+          };
         } else if (prev.minutes > 0) {
-          return { hours: prev.hours, minutes: prev.minutes - 1, seconds: 59 };
+          return {
+            hours: prev.hours,
+            minutes: prev.minutes - 1,
+            seconds: 59
+          };
         } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+          return {
+            hours: prev.hours - 1,
+            minutes: 59,
+            seconds: 59
+          };
         }
         return prev;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
-
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
@@ -228,7 +245,6 @@ export default function Abbonamento() {
       navigate('/');
     }
   };
-
   return <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <Helmet>
         <title>LiveMoment · Passa a Pro</title>
@@ -236,53 +252,19 @@ export default function Abbonamento() {
       </Helmet>
 
       {/* Enhanced Header */}
-      <StandardHeader 
-        title="Passa a Pro"
-        onBack={handleBack}
-        rightActions={
-          <img 
-            src="/livemoment-mascot.png" 
-            alt="LiveMoment" 
-            className="h-8 w-8 animate-bounce-slow"
-          />
-        }
-      />
+      <StandardHeader title="Passa a Pro" onBack={handleBack} rightActions={<img src="/livemoment-mascot.png" alt="LiveMoment" className="h-8 w-8 animate-bounce-slow" />} />
 
       {/* Scarcity Timer */}
-      <div className="bg-gradient-to-r from-primary/10 via-orange-500/10 to-primary/10 border-y border-primary/20 py-2 md:py-3">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm font-medium flex items-center justify-center gap-2 flex-wrap">
-            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-            <span>Offerta speciale termina tra:</span>
-            <span className="font-mono font-bold text-primary">
-              {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
-            </span>
-          </p>
-        </div>
-      </div>
+      
 
       <div className="container mx-auto px-4 py-4 md:py-6 pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-[calc(80px+env(safe-area-inset-bottom))] max-w-2xl">
         {/* Enhanced Plan Toggle */}
         <div className="p-0.5 bg-muted/50 backdrop-blur-sm rounded-full mb-3 md:mb-6 flex">
-          <button 
-            onClick={() => setActiveTab('pro')} 
-            className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-              activeTab === 'pro' 
-                ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
+          <button onClick={() => setActiveTab('pro')} className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'pro' ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' : 'text-muted-foreground hover:text-foreground'}`}>
             <Crown className="h-4 w-4" />
             <span>Pro</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('business')} 
-            className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-              activeTab === 'business' 
-                ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
+          <button onClick={() => setActiveTab('business')} className={`flex-1 py-2 px-4 md:py-3 md:px-6 rounded-full text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'business' ? 'bg-gradient-to-r from-primary to-orange-400 text-white shadow-lg scale-105' : 'text-muted-foreground hover:text-foreground'}`}>
             <TrendingUp className="h-4 w-4" />
             <span>Business</span>
           </button>
@@ -293,17 +275,9 @@ export default function Abbonamento() {
           {activeTab === 'pro' ? <>
               {/* Enhanced Pro Features */}
               <div className="space-y-2 md:space-y-3">
-                {proFeatures.map((feature, index) => (
-                  <Card 
-                    key={index} 
-                    className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
-                  >
+                {proFeatures.map((feature, index) => <Card key={index} className="group border border-primary/10 bg-gradient-to-br from-background/95 to-primary/5 backdrop-blur-sm hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]">
                     <CardContent className="flex items-start gap-3 p-4 md:gap-4 md:p-5">
-                      <div className={`p-2.5 md:p-3 rounded-xl transition-all ${
-                        feature.highlight 
-                          ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' 
-                          : 'bg-gradient-to-br from-muted to-muted/50'
-                      }`}>
+                      <div className={`p-2.5 md:p-3 rounded-xl transition-all ${feature.highlight ? 'bg-gradient-to-br from-primary to-orange-400 shadow-lg' : 'bg-gradient-to-br from-muted to-muted/50'}`}>
                         <div className={feature.highlight ? 'text-white' : ''}>
                           {feature.icon}
                         </div>
@@ -311,37 +285,23 @@ export default function Abbonamento() {
                       <div className="flex-1">
                         <h3 className="font-semibold flex items-center gap-2 mb-0.5">
                           {feature.title}
-                          {feature.highlight && (
-                            <span className="text-xs px-2 py-1 bg-gradient-to-r from-primary to-orange-400 text-white rounded-full shadow-sm animate-pulse">
+                          {feature.highlight && <span className="text-xs px-2 py-1 bg-gradient-to-r from-primary to-orange-400 text-white rounded-full shadow-sm animate-pulse">
                               🔥 Hot
-                            </span>
-                          )}
+                            </span>}
                         </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
 
               {/* Enhanced Pricing */}
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-2 md:gap-3">
-                  {Object.entries(pricingPlans).map(([key, plan]) => (
-                    <button 
-                      key={key} 
-                      onClick={() => setSelectedPlan(key as '1' | '3' | '6')} 
-                      className={`relative p-3 md:p-4 rounded-xl border-2 transition-all duration-300 ${
-                        selectedPlan === key 
-                          ? 'border-primary bg-gradient-to-br from-primary/10 to-orange-400/10 shadow-lg shadow-primary/20 scale-105' 
-                          : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
-                      } ${key === '3' ? 'animate-pulse-slow' : ''}`}
-                    >
-                      {key === '3' && (
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                  {Object.entries(pricingPlans).map(([key, plan]) => <button key={key} onClick={() => setSelectedPlan(key as '1' | '3' | '6')} className={`relative p-3 md:p-4 rounded-xl border-2 transition-all duration-300 ${selectedPlan === key ? 'border-primary bg-gradient-to-br from-primary/10 to-orange-400/10 shadow-lg shadow-primary/20 scale-105' : 'border-border bg-card hover:border-primary/50 hover:shadow-md'} ${key === '3' ? 'animate-pulse-slow' : ''}`}>
+                      {key === '3' && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
                           ⭐ Più Popolare
-                        </div>
-                      )}
+                        </div>}
                       
                       <div className="text-center">
                         <div className={`text-2xl md:text-3xl font-bold mb-1 ${selectedPlan === key ? 'text-primary' : 'text-foreground'}`}>
@@ -351,22 +311,15 @@ export default function Abbonamento() {
                           {plan.months === '1' ? 'mese' : 'mesi'}
                         </div>
                         
-                        {plan.saving && (
-                          <div className="mt-2 flex items-center justify-center gap-1 text-green-600">
+                        {plan.saving && <div className="mt-2 flex items-center justify-center gap-1 text-green-600">
                             <PiggyBank className="h-3 w-3" />
                             <span className="text-xs font-medium">Risparmi</span>
-                          </div>
-                        )}
+                          </div>}
                       </div>
-                    </button>
-                  ))}
+                    </button>)}
                 </div>
 
-                <Card className={`border-2 transition-all duration-300 ${
-                  selectedPlan 
-                    ? 'border-primary bg-gradient-to-br from-primary/5 via-background to-orange-400/5 shadow-xl' 
-                    : 'border-border'
-                }`}>
+                <Card className={`border-2 transition-all duration-300 ${selectedPlan ? 'border-primary bg-gradient-to-br from-primary/5 via-background to-orange-400/5 shadow-xl' : 'border-border'}`}>
                   <CardContent className="p-4 md:p-6">
                     <div className="text-center space-y-2 md:space-y-3">
                       <div>
@@ -378,12 +331,10 @@ export default function Abbonamento() {
                       <div className="text-sm text-muted-foreground">
                         Fatturato ogni {pricingPlans[selectedPlan].months} {pricingPlans[selectedPlan].months === '1' ? 'mese' : 'mesi'}: <span className="font-bold text-foreground">{pricingPlans[selectedPlan].total}</span>
                       </div>
-                      {pricingPlans[selectedPlan].saving && (
-                        <div className="inline-flex items-center gap-2 text-sm font-semibold text-green-600 bg-green-50 px-4 py-2 rounded-full">
+                      {pricingPlans[selectedPlan].saving && <div className="inline-flex items-center gap-2 text-sm font-semibold text-green-600 bg-green-50 px-4 py-2 rounded-full">
                           <PiggyBank className="h-4 w-4" />
                           {pricingPlans[selectedPlan].saving}
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </CardContent>
                 </Card>
@@ -460,12 +411,7 @@ export default function Abbonamento() {
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t shadow-2xl p-4 z-40">
         <div className="container mx-auto max-w-2xl space-y-3">
           <div className="flex items-center gap-2 justify-center">
-            <Checkbox 
-              id="terms" 
-              checked={acceptedTerms}
-              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-              className="border-primary data-[state=checked]:bg-primary"
-            />
+            <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={checked => setAcceptedTerms(checked as boolean)} className="border-primary data-[state=checked]:bg-primary" />
             <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
               Accetto i{' '}
               <a href="#" className="text-primary underline hover:text-orange-400 transition-colors">
@@ -475,45 +421,25 @@ export default function Abbonamento() {
           </div>
 
           <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
-            {subscribed ? (
-              <div className="space-y-2">
+            {subscribed ? <div className="space-y-2">
                 <div className="text-center py-2 px-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="flex items-center justify-center gap-2 text-sm text-green-700 dark:text-green-300 font-medium">
                     <Check className="h-4 w-4" />
                     <span>Abbonamento attivo: {subscriptionTier}</span>
                   </div>
                 </div>
-                <Button
-                  onClick={handleManageSubscription}
-                  disabled={isLoading}
-                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-muted to-muted hover:from-muted/80 hover:to-muted/80"
-                >
-                  {isLoading ? (
-                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Caricamento...</>
-                  ) : (
-                    "Gestisci Abbonamento"
-                  )}
+                <Button onClick={handleManageSubscription} disabled={isLoading} className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-muted to-muted hover:from-muted/80 hover:to-muted/80">
+                  {isLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Caricamento...</> : "Gestisci Abbonamento"}
                 </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={handleSubscribe}
-                disabled={!acceptedTerms || isLoading}
-                className="group w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] disabled:bg-muted disabled:text-muted-foreground transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
+              </div> : <Button onClick={handleSubscribe} disabled={!acceptedTerms || isLoading} className="group w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] hover:bg-[position:100%_0] disabled:bg-muted disabled:text-muted-foreground transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98]">
+                {isLoading ? <span className="flex items-center gap-2">
                     <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Caricamento...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
+                  </span> : <span className="flex items-center gap-2">
                     {activeTab === 'pro' ? 'Sblocca Pro Ora' : 'Crea Account Premium'}
                     <Sparkles className="h-5 w-5 group-hover:-rotate-12 transition-transform" />
-                  </span>
-                )}
-              </Button>
-            )}
+                  </span>}
+              </Button>}
           </AuthGuard>
           
           {/* Trust Signals */}
