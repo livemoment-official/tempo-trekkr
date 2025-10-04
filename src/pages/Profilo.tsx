@@ -36,7 +36,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export default function Profilo() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, signOut } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    signOut
+  } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
@@ -202,16 +206,12 @@ export default function Profilo() {
               
               {/* Status badges - mood multi-select */}
               <div className="flex items-start gap-1.5 sm:gap-2 mb-3 flex-wrap">
-                {profile?.mood && profile.mood.split(', ').filter(m => m.length > 0).map((moodItem: string) => (
-                  <Badge key={moodItem} variant="outline" className="text-xs sm:text-sm">
+                {profile?.mood && profile.mood.split(', ').filter(m => m.length > 0).map((moodItem: string) => <Badge key={moodItem} variant="outline" className="text-xs sm:text-sm">
                     {moodItem}
-                  </Badge>
-                ))}
-                {profile?.gender && (
-                  <Badge variant="secondary" className="text-xs sm:text-sm">
+                  </Badge>)}
+                {profile?.gender && <Badge variant="secondary" className="text-xs sm:text-sm">
                     {profile.gender}
-                  </Badge>
-                )}
+                  </Badge>}
               </div>
               
               {profile?.bio && <div className="text-sm text-muted-foreground mb-3 line-clamp-2 break-words max-w-full">
@@ -314,7 +314,7 @@ export default function Profilo() {
 
       {/* Sezione Premi - Moved Up */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Crea o Passa al tuo Profilo Business</h2>
+        <h2 className="text-lg font-semibold">Premi</h2>
         
         <Card className="shadow-card hover:shadow-sm transition-smooth">
           <CardContent className="p-4">
@@ -466,7 +466,7 @@ export default function Profilo() {
                   </div>
                   <div>
                     <span className="font-medium text-lg">🏆 Premi e Ricompense</span>
-                    <div className="text-sm text-muted-foreground">Guadagna punti e sblocca ricompense speciali</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -480,11 +480,7 @@ export default function Profilo() {
       <div className="space-y-4">
         <Card className="shadow-card hover:shadow-sm transition-smooth">
           <CardContent className="p-4">
-            <Button 
-              variant="ghost" 
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
+            <Button variant="ghost" onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-destructive hover:text-destructive hover:bg-destructive/10">
               <LogOut className="h-4 w-4" />
               Esci dall'account
             </Button>
@@ -538,11 +534,7 @@ export default function Profilo() {
         </div>}
 
       {/* Profile Edit Dialog */}
-      <ProfileEditDialog 
-        open={showEditForm} 
-        onClose={() => setShowEditForm(false)} 
-        profile={profile} 
-      />
+      <ProfileEditDialog open={showEditForm} onClose={() => setShowEditForm(false)} profile={profile} />
 
       {/* Chat Permission Settings */}
       {showChatSettings && <ChatPermissionSettings currentPermission={profile?.chat_permission} onUpdate={handleChatPermissionUpdate} onClose={() => setShowChatSettings(false)} />}
