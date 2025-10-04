@@ -49,9 +49,9 @@ export function getEventStatus(when_at?: string, end_at?: string): EventStatusIn
     return {
       status: 'in_progress',
       label: 'In corso',
-      className: 'bg-gradient-to-r from-amber-400/90 via-orange-400/90 to-amber-500/90 backdrop-blur-md text-black border border-amber-500/30',
+      className: 'bg-white/90 text-amber-700 border border-amber-200',
       icon: '🔴',
-      iconColor: 'text-orange-700'
+      iconColor: 'text-amber-600'
     };
   }
 

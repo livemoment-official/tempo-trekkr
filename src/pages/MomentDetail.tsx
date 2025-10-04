@@ -121,35 +121,42 @@ export default function MomentDetail() {
       
       setIsParticipating(!!participation);
 
-      // Get participant count and profiles
-      const { data, error } = await supabase
-        .from('moment_participants')
-        .select('user_id, profiles(id, name, avatar_url)')
-        .eq('moment_id', moment.id)
-        .eq('status', 'confirmed')
-        .limit(4);
-      
-      if (!error && data) {
-        setParticipantCount(data.length);
-        setParticipantProfiles(data);
+      // Get participant count from moment.participants array
+      const count = moment.participants?.length || 0;
+      setParticipantCount(count);
+
+      // Get participant profiles (max 6 for display)
+      if (moment.participants && moment.participants.length > 0) {
+        const participantIds = moment.participants.slice(0, 6);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, name, avatar_url')
+          .in('id', participantIds);
+        
+        if (profiles) {
+          setParticipantProfiles(profiles.map(p => ({ user_id: p.id, profiles: p })));
+        }
       }
     };
 
     checkParticipationAndCount();
 
-    // Real-time subscription
+    // Real-time subscription on moments table
     const channel = supabase
-      .channel(`moment_participants:${moment.id}`)
+      .channel(`moment:${moment.id}`)
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'moment_participants', filter: `moment_id=eq.${moment.id}` },
-        () => checkParticipationAndCount()
+        { event: 'UPDATE', schema: 'public', table: 'moments', filter: `id=eq.${moment.id}` },
+        () => {
+          refreshMoment();
+          checkParticipationAndCount();
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [moment?.id, user]);
+  }, [moment?.id, moment?.participants, user, refreshMoment]);
 
   // Load location info when moment is loaded
   useEffect(() => {
@@ -285,7 +292,7 @@ export default function MomentDetail() {
         }}
       />
 
-      <div className="container mx-auto px-4 pt-20 pb-6 space-y-6">{/* Added pt-20 for header spacing */}
+      <div className="container mx-auto px-4 pt-20 pb-24 space-y-6">{/* Added pt-20 for header spacing, pb-24 for bottom fixed buttons */}
         {/* Hero Image with organizer and mood */}
         <div className="relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden rounded-lg">
           {/* Organizer avatar - top left */}
@@ -391,35 +398,34 @@ export default function MomentDetail() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary mt-0.5" />
                   <div className="flex-1">
-                    <p className="font-medium">{moment.place.name}</p>
-                    {locationInfo && (
-                      <div className="space-y-1 mt-1">
-                        <p className="text-sm text-muted-foreground">{locationInfo.formatted_address}</p>
-                        {locationInfo.province && (
-                          <p className="text-sm font-medium text-muted-foreground">{locationInfo.city}, {locationInfo.province}</p>
-                        )}
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowMapModal(true)}
-                            className="text-xs"
-                          >
-                            <MapPin className="h-3 w-3 mr-1" />
-                            Vedi Mappa
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={openInMaps}
-                            className="text-xs"
-                          >
-                            <Navigation className="h-3 w-3 mr-1" />
-                            Apri in Maps
-                          </Button>
-                        </div>
+                    {locationInfo ? (
+                      <div className="space-y-1">
+                        <p className="font-medium">{locationInfo.city}, {locationInfo.province}</p>
+                        <p className="text-sm text-muted-foreground">{locationInfo.street}</p>
                       </div>
+                    ) : (
+                      <p className="font-medium">{moment.place.name}</p>
                     )}
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowMapModal(true)}
+                        className="text-xs"
+                      >
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Vedi Mappa
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openInMaps}
+                        className="text-xs"
+                      >
+                        <Navigation className="h-3 w-3 mr-1" />
+                        Apri in Maps
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -428,20 +434,20 @@ export default function MomentDetail() {
                 <Users className="h-5 w-5 text-primary" />
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    {/* Avatar circolari sovrapposti */}
+                    {/* Avatar in fila */}
                     {participantProfiles.length > 0 && (
-                      <div className="flex -space-x-2">
-                        {participantProfiles.slice(0, 4).map((participant: any, index: number) => (
-                          <Avatar key={participant.user_id} className="h-8 w-8 border-2 border-background" style={{ zIndex: 4 - index }}>
+                      <div className="flex space-x-2">
+                        {participantProfiles.slice(0, 6).map((participant: any) => (
+                          <Avatar key={participant.user_id} className="h-8 w-8 border-2 border-background">
                             <AvatarImage src={participant.profiles?.avatar_url} />
                             <AvatarFallback className="text-xs">
                               {participant.profiles?.name?.charAt(0) || 'U'}
                             </AvatarFallback>
                           </Avatar>
                         ))}
-                        {participantCount > 4 && (
-                          <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium" style={{ zIndex: 0 }}>
-                            +{participantCount - 4}
+                        {participantCount > 6 && (
+                          <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium">
+                            +{participantCount - 6}
                           </div>
                         )}
                       </div>
@@ -670,9 +676,6 @@ export default function MomentDetail() {
             )}
           </div>
         </div>
-
-        {/* Add bottom padding to prevent content being hidden behind fixed buttons */}
-        <div className="h-24" />
 
         {/* Participation Confirmation Modal */}
         <ParticipationConfirmModal
