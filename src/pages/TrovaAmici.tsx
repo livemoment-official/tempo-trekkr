@@ -25,6 +25,7 @@ export default function TrovaAmici() {
   const [radiusKm, setRadiusKm] = useState(5);
   const [selectedMood, setSelectedMood] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const {
     location: userLocation,
     isLoading: locationLoading
@@ -155,7 +156,18 @@ export default function TrovaAmici() {
           </Card>
 
           <TabsContent value="vicinanze" className="space-y-4 mt-4">
-            <FriendsSearchFilters searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedMood={selectedMood} onMoodChange={setSelectedMood} radiusKm={radiusKm} onRadiusChange={setRadiusKm} availabilityFilter={availabilityFilter} onAvailabilityChange={setAvailabilityFilter} />
+            <FriendsSearchFilters 
+              searchQuery={searchQuery} 
+              onSearchChange={setSearchQuery} 
+              selectedMood={selectedMood} 
+              onMoodChange={setSelectedMood} 
+              radiusKm={radiusKm} 
+              onRadiusChange={setRadiusKm} 
+              availabilityFilter={availabilityFilter} 
+              onAvailabilityChange={setAvailabilityFilter}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
 
             {locationLoading || usersLoading ? <div className="text-center py-8">
                 <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />

@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { SlidersHorizontal, Search, X } from "lucide-react";
+import { MOMENT_CATEGORIES } from "@/constants/unifiedTags";
 
 interface FriendsSearchFiltersProps {
   searchQuery: string;
@@ -16,6 +17,10 @@ interface FriendsSearchFiltersProps {
   onRadiusChange: (radius: number) => void;
   availabilityFilter: string;
   onAvailabilityChange: (filter: string) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
+  ageRange?: [number, number];
+  onAgeRangeChange?: (range: [number, number]) => void;
 }
 
 const moods = [
@@ -38,10 +43,23 @@ export const FriendsSearchFilters = ({
   radiusKm, 
   onRadiusChange, 
   availabilityFilter, 
-  onAvailabilityChange 
+  onAvailabilityChange,
+  selectedCategory = "all",
+  onCategoryChange = () => {},
+  ageRange: externalAgeRange,
+  onAgeRangeChange
 }: FriendsSearchFiltersProps) => {
-  const [ageRange, setAgeRange] = useState([18, 65]);
+  const [internalAgeRange, setInternalAgeRange] = useState<[number, number]>([18, 65]);
   const [open, setOpen] = useState(false);
+  
+  const ageRange = externalAgeRange || internalAgeRange;
+  const handleAgeRangeChange = (value: [number, number]) => {
+    if (onAgeRangeChange) {
+      onAgeRangeChange(value);
+    } else {
+      setInternalAgeRange(value);
+    }
+  };
 
   const activeFiltersCount = () => {
     let count = 0;
@@ -49,14 +67,16 @@ export const FriendsSearchFilters = ({
     if (radiusKm !== 5) count++;
     if (selectedMood !== "all") count++;
     if (availabilityFilter !== "all") count++;
+    if (selectedCategory !== "all") count++;
     return count;
   };
 
   const resetFilters = () => {
-    setAgeRange([18, 65]);
+    handleAgeRangeChange([18, 65]);
     onRadiusChange(5);
     onMoodChange("all");
     onAvailabilityChange("all");
+    onCategoryChange("all");
   };
 
   return (
@@ -70,6 +90,42 @@ export const FriendsSearchFilters = ({
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
         />
+      </div>
+
+      {/* Categories Section */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-foreground">Categorie</label>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => onCategoryChange("all")}
+            className="whitespace-nowrap shrink-0"
+          >
+            ✨ Tutti
+          </Button>
+          {MOMENT_CATEGORIES.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "default" : "outline"}
+              size="sm"
+              onClick={() => onCategoryChange(category)}
+              className="whitespace-nowrap shrink-0"
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Age Range Display */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-foreground">Fascia d'età</label>
+          <span className="text-xs text-muted-foreground font-medium">
+            {ageRange[0]} - {ageRange[1]} anni
+          </span>
+        </div>
       </div>
 
       {/* Filters Row */}
@@ -105,7 +161,7 @@ export const FriendsSearchFilters = ({
                 <label className="text-sm font-medium">Fascia d'età</label>
                 <Slider
                   value={ageRange}
-                  onValueChange={(value) => setAgeRange(value as [number, number])}
+                  onValueChange={(value) => handleAgeRangeChange(value as [number, number])}
                   min={18}
                   max={65}
                   step={1}
@@ -220,6 +276,17 @@ export const FriendsSearchFilters = ({
       {/* Active Filters */}
       {activeFiltersCount() > 0 && (
         <div className="flex flex-wrap gap-2">
+          {selectedCategory !== "all" && (
+            <Badge variant="secondary" className="text-xs">
+              {selectedCategory}
+              <button 
+                onClick={() => onCategoryChange("all")}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
           {selectedMood !== "all" && (
             <Badge variant="secondary" className="text-xs">
               {selectedMood}
@@ -247,6 +314,17 @@ export const FriendsSearchFilters = ({
               {radiusKm} km
               <button 
                 onClick={() => onRadiusChange(5)}
+                className="ml-2 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {(ageRange[0] !== 18 || ageRange[1] !== 65) && (
+            <Badge variant="secondary" className="text-xs">
+              {ageRange[0]}-{ageRange[1]} anni
+              <button 
+                onClick={() => handleAgeRangeChange([18, 65])}
                 className="ml-2 hover:text-destructive"
               >
                 ×
