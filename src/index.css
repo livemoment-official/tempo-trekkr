@@ -203,6 +203,11 @@ All colors MUST be HSL.
     @apply bg-primary/10 text-primary rounded-full px-3 py-1.5;
   }
 
+  /* Safe area for mobile bottom bar */
+  .pb-safe {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
   /* Mobile snap scrolling */
   .snap-y {
     scroll-snap-type: y mandatory;

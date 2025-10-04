@@ -205,13 +205,39 @@ export function MomentCard({
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
 
-          {/* Event Status Badge - Bottom Left */}
-          {eventStatusInfo && eventStatusInfo.status !== 'upcoming' && <div className="absolute bottom-4 left-4 z-20">
+          {/* Participants Overlay - Bottom LEFT */}
+          <div className="absolute bottom-4 left-4 z-20">
+            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md rounded-full px-3 py-2 border border-white/20">
+              {/* Avatar stack */}
+              {participantAvatars.length > 0 && (
+                <div className="flex -space-x-2">
+                  {participantAvatars.slice(0, 3).map(participant => (
+                    <Avatar key={participant.id} className="h-6 w-6 border-2 border-white">
+                      <AvatarImage src={participant.avatar_url} />
+                      <AvatarFallback className="text-xs bg-primary text-black">
+                        {participant.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+              )}
+              
+              {/* Count text */}
+              <span className="text-xs font-semibold text-white">
+                {participants}{maxParticipants ? `/${maxParticipants}` : ''}
+              </span>
+            </div>
+          </div>
+
+          {/* Event Status Badge - Bottom RIGHT */}
+          {eventStatusInfo && eventStatusInfo.status !== 'upcoming' && (
+            <div className="absolute bottom-4 right-4 z-20">
               <Badge className={`${eventStatusInfo.className} backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-card`}>
                 <span className={`mr-1.5 ${eventStatusInfo.iconColor}`}>{eventStatusInfo.icon}</span>
                 {eventStatusInfo.label}
               </Badge>
-            </div>}
+            </div>
+          )}
 
           {/* Top Section */}
           <div className="absolute top-0 left-0 right-0 z-20 p-4">
@@ -237,22 +263,10 @@ export function MomentCard({
             </div>
           </div>
 
-          {/* Reactions Overlay */}
-          <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-            {Object.entries(reactions).map(([type, count]) => {
-            if (count === 0) return null;
-            const Icon = reactionIcons[type as keyof typeof reactionIcons];
-            const isActive = userReaction === type;
-            return <button key={type} onClick={e => handleReaction(type, e)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-smooth ${isActive ? 'gradient-brand text-brand-black shadow-brand' : 'bg-white/95 backdrop-blur-md hover:bg-white border border-white/40 shadow-card'}`}>
-                  <Icon className={`h-3 w-3 ${isActive ? 'fill-current' : ''}`} strokeWidth={1.5} />
-                  {count}
-                </button>;
-          })}
-          </div>
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 md:flex-initial px-4 py-4 space-y-3 bg-background md:rounded-b-xl">
+        <div className="flex-1 md:flex-initial px-4 py-3 space-y-2.5 bg-background md:rounded-b-xl">
           {/* Title */}
           <h3 className="font-semibold text-lg md:text-xl leading-tight line-clamp-2">{title}</h3>
           
@@ -260,7 +274,7 @@ export function MomentCard({
           <div className="flex gap-3">
             {/* Card Luogo */}
             <div 
-              className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 cursor-pointer hover:bg-muted/50 transition-colors min-h-[80px]"
+              className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-2.5 cursor-pointer hover:bg-muted/50 transition-colors min-h-[72px]"
               onClick={(e) => {
                 e.stopPropagation();
                 if (place?.lat && place?.lng) {
@@ -283,7 +297,7 @@ export function MomentCard({
             </div>
 
             {/* Card Data/Ora */}
-            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 min-h-[80px]">
+            <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-2.5 min-h-[72px]">
               <div className="flex items-start gap-2 h-full">
                 <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -299,27 +313,6 @@ export function MomentCard({
             </div>
           </div>
 
-          {/* Participants */}
-          <div className="flex items-center gap-3">
-            {participantAvatars.length > 0 && <div className="flex -space-x-2">
-                {participantAvatars.map(participant => <Avatar key={participant.id} className="h-8 w-8 border-2 border-background">
-                    <AvatarImage src={participant.avatar_url} />
-                    <AvatarFallback className="text-xs">
-                      {participant.name?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>)}
-              </div>}
-            
-            <div className="flex flex-col">
-              <span className="text-sm">
-                <span className="font-semibold">{participants}</span>
-                {maxParticipants ? `/${maxParticipants}` : ''} partecipanti
-              </span>
-              {maxParticipants && participants < maxParticipants && <span className="text-xs text-muted-foreground">
-                  {maxParticipants - participants} posti disponibili
-                </span>}
-            </div>
-          </div>
 
           {/* Price Display */}
           {paymentRequired && price > 0 && <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-lg">
@@ -333,7 +326,7 @@ export function MomentCard({
             </div>}
 
           {/* Actions */}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-1 pb-safe">
             <Button size={isMobile ? "default" : "sm"} variant={paymentRequired ? "default" : "default"} className={paymentRequired ? `flex-1 ${isMobile ? "h-12 text-base" : "h-9"} bg-gradient-to-r from-brand to-brand-accent hover:from-brand-accent hover:to-brand text-white font-medium shadow-md hover:shadow-lg transition-all duration-200` : `flex-1 ${isMobile ? "h-12 text-base" : "h-9"} bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200`} onClick={e => {
             e.stopPropagation();
             if (paymentRequired && price > 0) {
