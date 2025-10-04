@@ -182,20 +182,20 @@ export function MomentFilterSheet({
                   key="all"
                   variant={selectedCategory === "all" ? "default" : "outline"}
                   onClick={() => handleCategoryChange("all")}
-                  className="h-auto py-3 flex-col gap-1"
+                  className="h-10 justify-start"
                 >
-                  <span className="text-2xl">✨</span>
-                  <span className="text-xs">Tutti</span>
+                  <span className="text-base mr-2">✨</span>
+                  <span className="text-sm">Tutti</span>
                 </Button>
                 {mainCategories.map((category) => (
                   <Button
                     key={category.id}
                     variant={selectedCategory === category.id ? "default" : "outline"}
                     onClick={() => handleCategoryChange(category.id)}
-                    className="h-auto py-3 flex-col gap-1"
+                    className="h-10 justify-start"
                   >
-                    <span className="text-2xl">{category.emoji}</span>
-                    <span className="text-xs">{category.name}</span>
+                    <span className="text-base mr-2">{category.emoji}</span>
+                    <span className="text-sm">{category.name}</span>
                   </Button>
                 ))}
               </div>
