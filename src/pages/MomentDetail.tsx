@@ -305,10 +305,7 @@ export default function MomentDetail() {
             {/* Compact Location & Date Cards - SOPRA IL TITOLO */}
             <div className="flex gap-3 mb-4">
               {/* Card Luogo */}
-              <div 
-                className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 cursor-pointer hover:bg-muted/50 transition-colors min-h-[90px]"
-                onClick={openInMaps}
-              >
+              <div className="flex-1 rounded-2xl bg-muted/30 border border-border/20 p-3 cursor-pointer hover:bg-muted/50 transition-colors min-h-[90px]" onClick={openInMaps}>
                 <div className="flex items-start gap-2 mb-2">
                   <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -319,17 +316,12 @@ export default function MomentDetail() {
                       {locationInfo?.street || moment.place?.name || 'Via non specificata'}
                     </p>
                   </div>
-                  <Navigation className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                  
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openInMaps();
-                  }}
-                  className="h-7 text-xs w-full"
-                >
+                <Button variant="ghost" size="sm" onClick={e => {
+                e.stopPropagation();
+                openInMaps();
+              }} className="h-7 text-xs w-full">
                   <Navigation className="h-3 w-3 mr-1" />
                   Vai a Maps
                 </Button>
@@ -341,7 +333,9 @@ export default function MomentDetail() {
                   <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <p className="text-sm font-semibold">
-                      {moment.when_at && format(new Date(moment.when_at), "EEE, dd.MM", { locale: it })}
+                      {moment.when_at && format(new Date(moment.when_at), "EEE, dd.MM", {
+                      locale: it
+                    })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {moment.when_at && format(new Date(moment.when_at), "HH:mm")}
@@ -369,7 +363,7 @@ export default function MomentDetail() {
             <div className="space-y-3">
 
               <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-primary" />
+                
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     {/* Avatar in fila */}
