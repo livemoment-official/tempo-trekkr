@@ -19,6 +19,7 @@ import CreaMomento from "./pages/CreaMomento";
 
 import CreaEvento from "./pages/CreaEvento";
 import CreaInvito from "./pages/CreaInvito";
+import CreaGruppo from "./pages/CreaGruppo";
 import Agenda from "./pages/Agenda";
 import UnifiedChatPage from "./pages/UnifiedChatPage";
 import ChatFullscreen from "./pages/ChatFullscreen";
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/crea/momento" element={<CreaMomento />} />
                 <Route path="/crea/evento" element={<CreaEvento />} />
                 <Route path="/crea/invito" element={<CreaInvito />} />
+                <Route path="/crea/gruppo" element={<CreaGruppo />} />
                 <Route path="/agenda" element={<Agenda />} />
                 {/* Unified chat routing */}
                 <Route path="/chat/:type/:id" element={<UnifiedChatPage />} />

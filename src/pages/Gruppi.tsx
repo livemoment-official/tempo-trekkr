@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Plus, X, Users, MapPin, Loader2, MoreVertical } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { cn } from "@/lib/utils";
-import { CreateGroupModal } from "@/components/create/group/CreateGroupModal";
 import { GroupManagementModal } from "@/components/groups/GroupManagementModal";
 import { useGroups } from "@/hooks/useGroups";
 import { useMomentChats } from "@/hooks/useMomentChats";
@@ -79,12 +78,10 @@ const GroupInfoModal = ({
                     <Plus className="mr-2 h-4 w-4" />
                     Accedi per Creare un Gruppo
                   </Button>}>
-                <CreateGroupModal>
-                  <Button className="w-full mt-6 rounded-xl" size="lg">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Crea il Gruppo
-                  </Button>
-                </CreateGroupModal>
+                <Button className="w-full mt-6 rounded-xl" size="lg" onClick={() => window.location.href = '/crea/gruppo'}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Crea il Gruppo
+                </Button>
               </AuthGuard>
             </div>
           </DialogDescription>
@@ -475,12 +472,10 @@ export default function Gruppi() {
                     <li>• Ogni gruppo ha un'Interesse specifico.</li>
                     <li>• Nei gruppi inviti a Momenti persone con passioni specifiche.</li>
                   </ul>
-                  <CreateGroupModal>
-                    <Button className="rounded-xl">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Crea un Gruppo
-                    </Button>
-                  </CreateGroupModal>
+                  <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crea un Gruppo
+                  </Button>
                 </CardContent>
               </Card>}
 
@@ -523,12 +518,10 @@ export default function Gruppi() {
                   <p className="text-sm text-muted-foreground mb-4">
                     {searchQuery ? "Non ci sono gruppi che corrispondono alla tua ricerca." : "Non ci sono ancora gruppi disponibili."}
                   </p>
-                  <CreateGroupModal>
-                    <Button className="rounded-xl">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Crea il primo gruppo
-                    </Button>
-                  </CreateGroupModal>
+                  <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crea il primo gruppo
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -572,12 +565,10 @@ export default function Gruppi() {
                   <p className="text-sm text-muted-foreground mb-4">
                     {searchQuery ? "Non ci sono gruppi pubblici che corrispondono alla tua ricerca." : "Non ci sono ancora gruppi pubblici disponibili nella tua zona."}
                   </p>
-                  <CreateGroupModal>
-                    <Button className="rounded-xl">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Crea un gruppo pubblico
-                    </Button>
-                  </CreateGroupModal>
+                  <Button className="rounded-xl" onClick={() => navigate('/crea/gruppo')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crea un gruppo pubblico
+                  </Button>
                 </CardContent>
               </Card>
             )}
