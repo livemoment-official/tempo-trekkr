@@ -285,7 +285,7 @@ export default function Abbonamento() {
                 {proFeatures.map((feature, index) => (
                   <Card key={index} className="border-0 bg-orange-50/40 hover:bg-orange-50/60 transition-all duration-200">
                     <CardContent className="flex items-start gap-4 p-4">
-                      <div className="flex-shrink-0 text-4xl">
+                      <div className="flex-shrink-0 text-2xl">
                         {feature.icon}
                       </div>
                       <div className="flex-1">
