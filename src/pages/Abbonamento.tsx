@@ -252,7 +252,7 @@ export default function Abbonamento() {
       </Helmet>
 
       {/* Enhanced Header */}
-      <StandardHeader title="Passa a Pro" onBack={handleBack} rightActions={<img src="/livemoment-mascot.png" alt="LiveMoment" className="h-8 w-8 animate-bounce-slow" />} />
+      
 
       {/* Scarcity Timer */}
       
