@@ -68,7 +68,14 @@ export default function EventPhotoUploadStep({
       <Card>
         
         <CardContent className="space-y-6">
-          
+          <div>
+            <Label htmlFor="photo-upload" className="text-base font-medium">
+              Aggiungi foto/grafica al tuo evento
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Carica immagini che rappresentano al meglio il tuo evento. Le prime immagini saranno utilizzate come anteprima.
+            </p>
+          </div>
 
           <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8">
             <div className="text-center">
