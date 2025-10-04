@@ -86,14 +86,17 @@ export default function Abbonamento() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [activeTab, setActiveTab] = useState<'pro' | 'business'>('pro');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { session, subscribed, subscriptionTier, checkSubscription } = useAuth();
+  const {
+    session,
+    subscribed,
+    subscriptionTier,
+    checkSubscription
+  } = useAuth();
 
   // Handle payment result from Stripe redirect
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
-
     if (success === 'true') {
       toast.success("Pagamento completato con successo!", {
         description: "Il tuo abbonamento è stato attivato."
@@ -135,24 +138,24 @@ export default function Abbonamento() {
       toast.error("Devi accettare i termini e condizioni per continuare");
       return;
     }
-
     if (!session) {
       toast.error("Devi essere autenticato per abbonarti");
       return;
     }
-
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-checkout', {
         body: {
           planType: activeTab,
-          duration: selectedPlan,
+          duration: selectedPlan
         },
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
-
       if (error) {
         console.error('Checkout error:', error);
         toast.error("Errore durante la creazione del checkout");
@@ -171,27 +174,26 @@ export default function Abbonamento() {
       setIsLoading(false);
     }
   };
-
   const handleManageSubscription = async () => {
     if (!session) {
       toast.error("Devi essere autenticato per gestire l'abbonamento");
       return;
     }
-
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('customer-portal', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
-
       if (error) {
         console.error('Customer portal error:', error);
         toast.error("Errore durante l'apertura del portale cliente");
         return;
       }
-
       if (data?.url) {
         window.location.href = data.url;
         toast.success("Apertura portale gestione abbonamento...");
@@ -212,10 +214,7 @@ export default function Abbonamento() {
       {/* Minimal Custom Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
-          <button 
-            onClick={() => navigate(-1)}
-            className="p-2 -ml-2 hover:bg-accent rounded-full transition-colors"
-          >
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-accent rounded-full transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-lg font-semibold">Abbonamenti</h1>
@@ -263,7 +262,7 @@ export default function Abbonamento() {
                           {plan.months === '1' ? 'Mese' : 'Mesi'}
                         </div>
                         <div className="text-xs font-semibold text-gray-900">{plan.price}</div>
-                        <div className="text-xs text-gray-500">{plan.total}</div>
+                        
                         {plan.saving && <div className="text-xs text-green-600 font-medium mt-1">{plan.saving}</div>}
                       </div>
                     </button>)}
@@ -342,45 +341,28 @@ export default function Abbonamento() {
         <div className="max-w-md mx-auto p-4">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <Checkbox 
-                id="terms" 
-                checked={acceptedTerms} 
-                onCheckedChange={checked => setAcceptedTerms(checked as boolean)} 
-                className="mt-0.5" 
-              />
+              <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={checked => setAcceptedTerms(checked as boolean)} className="mt-0.5" />
               <label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer">
                 Accetto i termini e le condizioni di Live Moment
               </label>
             </div>
             
             <AuthGuard title="Accesso Richiesto" description="Devi essere autenticato per abbonarti">
-              {subscribed ? (
-                <div className="space-y-2">
+              {subscribed ? <div className="space-y-2">
                   <div className="text-center py-2 px-4 bg-green-50 rounded-lg border border-green-200">
                     <div className="flex items-center justify-center gap-2 text-sm text-green-700 font-medium">
                       <Check className="h-4 w-4" />
                       <span>Abbonamento attivo: {subscriptionTier}</span>
                     </div>
                   </div>
-                  <Button 
-                    onClick={handleManageSubscription}
-                    disabled={isLoading}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base transition-all"
-                  >
+                  <Button onClick={handleManageSubscription} disabled={isLoading} className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-base transition-all">
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Gestisci Abbonamento
                   </Button>
-                </div>
-              ) : (
-                <Button 
-                  onClick={handleSubscribe} 
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" 
-                  disabled={!acceptedTerms || isLoading}
-                >
+                </div> : <Button onClick={handleSubscribe} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-semibold text-base transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled={!acceptedTerms || isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {activeTab === 'pro' ? 'Abbonati a Live Moment' : 'Crea il tuo Account Premium'}
-                </Button>
-              )}
+                </Button>}
             </AuthGuard>
           </div>
         </div>
