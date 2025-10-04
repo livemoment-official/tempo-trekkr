@@ -26,7 +26,6 @@ export default function VenueSelectionStep({
   const [minScore, setMinScore] = useState(50);
   const [accessType, setAccessType] = useState<'both' | 'private_rental' | 'public_booking'>('both');
   const [collaborationType, setCollaborationType] = useState<'both' | 'rental_only' | 'partnership'>('both');
-  
   const {
     data: venues,
     isLoading
@@ -37,18 +36,13 @@ export default function VenueSelectionStep({
   });
   const filteredVenues = venues?.filter(venue => {
     // Text search
-    const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+    const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) || venue.description?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.venue_type?.toLowerCase().includes(searchQuery.toLowerCase()) || venue.amenities?.some(amenity => amenity.toLowerCase().includes(searchQuery.toLowerCase()));
     if (!matchesSearch) return false;
 
     // Access type filter
     if (accessType !== 'both') {
       const hasRental = venue.pricing && (venue.pricing as any).rental_cost;
       const hasPublicBooking = venue.venue_type === 'bar' || venue.venue_type === 'restaurant' || venue.venue_type === 'club';
-      
       if (accessType === 'private_rental' && !hasRental) return false;
       if (accessType === 'public_booking' && !hasPublicBooking) return false;
     }
@@ -57,11 +51,9 @@ export default function VenueSelectionStep({
     if (collaborationType !== 'both') {
       const supportsPartnership = venue.agreement_types?.includes('partnership') || venue.agreement_types?.includes('revenue_share');
       const supportsRental = venue.pricing && (venue.pricing as any).rental_cost;
-      
       if (collaborationType === 'partnership' && !supportsPartnership) return false;
       if (collaborationType === 'rental_only' && !supportsRental) return false;
     }
-
     return true;
   }) || [];
   const handleSearch = (query: string) => {
@@ -72,7 +64,6 @@ export default function VenueSelectionStep({
   const toggleVenueSelection = (venueId: string) => {
     const currentSelected = data.selectedVenues || [];
     const isSelected = safeIncludes(currentSelected, venueId);
-    
     if (isSelected) {
       // Rimuovi venue
       const selectedVenues = currentSelected.filter((id: string) => id !== venueId);
@@ -107,32 +98,13 @@ export default function VenueSelectionStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="venue-complete" className="text-sm">Solo profili completi</Label>
-            <Switch 
-              id="venue-complete"
-              checked={onlyComplete} 
-              onCheckedChange={setOnlyComplete} 
-            />
+            <Switch id="venue-complete" checked={onlyComplete} onCheckedChange={setOnlyComplete} />
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="venue-verified" className="text-sm">Solo verificate</Label>
-            <Switch 
-              id="venue-verified"
-              checked={onlyVerified} 
-              onCheckedChange={setOnlyVerified} 
-            />
+            <Switch id="venue-verified" checked={onlyVerified} onCheckedChange={setOnlyVerified} />
           </div>
-          <div className="space-y-2">
-            <Label className="text-sm">Punteggio minimo: {minScore}%</Label>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              step="10"
-              value={minScore}
-              onChange={(e) => setMinScore(Number(e.target.value))}
-              className="w-full accent-primary"
-            />
-          </div>
+          
         </div>
 
         {/* Advanced Filters */}
@@ -140,31 +112,13 @@ export default function VenueSelectionStep({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Tipo di Accesso</Label>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={accessType === 'both' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setAccessType('both')}
-                className="flex-1"
-              >
+              <Button type="button" variant={accessType === 'both' ? 'default' : 'outline'} size="sm" onClick={() => setAccessType('both')} className="flex-1">
                 Tutti
               </Button>
-              <Button
-                type="button"
-                variant={accessType === 'private_rental' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setAccessType('private_rental')}
-                className="flex-1"
-              >
+              <Button type="button" variant={accessType === 'private_rental' ? 'default' : 'outline'} size="sm" onClick={() => setAccessType('private_rental')} className="flex-1">
                 🏢 Affitto Privato
               </Button>
-              <Button
-                type="button"
-                variant={accessType === 'public_booking' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setAccessType('public_booking')}
-                className="flex-1"
-              >
+              <Button type="button" variant={accessType === 'public_booking' ? 'default' : 'outline'} size="sm" onClick={() => setAccessType('public_booking')} className="flex-1">
                 🌐 Prenotazione Pubblica
               </Button>
             </div>
@@ -173,31 +127,13 @@ export default function VenueSelectionStep({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Modalità di Collaborazione</Label>
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={collaborationType === 'both' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('both')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'both' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('both')} className="flex-1">
                 Tutti
               </Button>
-              <Button
-                type="button"
-                variant={collaborationType === 'rental_only' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('rental_only')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'rental_only' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('rental_only')} className="flex-1">
                 Solo Affitto
               </Button>
-              <Button
-                type="button"
-                variant={collaborationType === 'partnership' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setCollaborationType('partnership')}
-                className="flex-1"
-              >
+              <Button type="button" variant={collaborationType === 'partnership' ? 'default' : 'outline'} size="sm" onClick={() => setCollaborationType('partnership')} className="flex-1">
                 Partnership
               </Button>
             </div>
@@ -249,12 +185,7 @@ export default function VenueSelectionStep({
                           {index === 0 && <Badge variant="default" className="text-xs">Priorità Alta</Badge>}
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <ProfileQualityBadge 
-                            completenessScore={venue.completeness_score || 0}
-                            isComplete={venue.is_complete || false}
-                            isVerified={venue.verified}
-                            size="sm"
-                          />
+                          <ProfileQualityBadge completenessScore={venue.completeness_score || 0} isComplete={venue.is_complete || false} isVerified={venue.verified} size="sm" />
                           {venue.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -271,26 +202,17 @@ export default function VenueSelectionStep({
                             </Badge>)}
                         </div>
                         <div className="flex gap-1 flex-wrap">
-                          {venue.pricing && (venue.pricing as any).rental_cost && (
-                            <Badge variant="secondary" className="text-xs">
+                          {venue.pricing && (venue.pricing as any).rental_cost && <Badge variant="secondary" className="text-xs">
                               💶 Affitto
-                            </Badge>
-                          )}
-                          {venue.agreement_types?.includes('partnership') && (
-                            <Badge variant="outline" className="text-xs">
+                            </Badge>}
+                          {venue.agreement_types?.includes('partnership') && <Badge variant="outline" className="text-xs">
                               🤝 Partnership
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
                     </div>
                     <div className="flex sm:flex-col gap-2 sm:items-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => toggleVenueSelection(venue.id)}
-                        className="min-w-[80px]"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleVenueSelection(venue.id)} className="min-w-[80px]">
                         Rimuovi
                       </Button>
                     </div>
@@ -304,19 +226,12 @@ export default function VenueSelectionStep({
       {!isLoading && <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-medium">Location disponibili</h4>
-          {safeArrayLength(data.selectedVenues) >= maxVenues && (
-            <Badge variant="secondary" className="text-xs">
+          {safeArrayLength(data.selectedVenues) >= maxVenues && <Badge variant="secondary" className="text-xs">
               Limite raggiunto ({maxVenues})
-            </Badge>
-          )}
+            </Badge>}
         </div>
         <div className="grid grid-cols-1 gap-3">
-          {filteredVenues.filter(venue => !safeIncludes(data.selectedVenues || [], venue.id)).map(venue => <Card 
-              key={venue.id} 
-              className={`hover:shadow-md transition-all cursor-pointer ${
-                safeArrayLength(data.selectedVenues) >= maxVenues ? 'opacity-50' : ''
-              }`}
-            >
+          {filteredVenues.filter(venue => !safeIncludes(data.selectedVenues || [], venue.id)).map(venue => <Card key={venue.id} className={`hover:shadow-md transition-all cursor-pointer ${safeArrayLength(data.selectedVenues) >= maxVenues ? 'opacity-50' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -331,12 +246,7 @@ export default function VenueSelectionStep({
                           <span className="font-medium truncate">{venue.name}</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <ProfileQualityBadge 
-                            completenessScore={venue.completeness_score || 0}
-                            isComplete={venue.is_complete || false}
-                            isVerified={venue.verified}
-                            size="sm"
-                          />
+                          <ProfileQualityBadge completenessScore={venue.completeness_score || 0} isComplete={venue.is_complete || false} isVerified={venue.verified} size="sm" />
                           {venue.verified && <Badge variant="secondary" className="text-xs">Verificato</Badge>}
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -354,27 +264,17 @@ export default function VenueSelectionStep({
                             </Badge>)}
                         </div>
                         <div className="flex gap-1 flex-wrap">
-                          {venue.pricing && (venue.pricing as any).rental_cost && (
-                            <Badge variant="secondary" className="text-xs">
+                          {venue.pricing && (venue.pricing as any).rental_cost && <Badge variant="secondary" className="text-xs">
                               💶 Affitto
-                            </Badge>
-                          )}
-                          {venue.agreement_types?.includes('partnership') && (
-                            <Badge variant="outline" className="text-xs">
+                            </Badge>}
+                          {venue.agreement_types?.includes('partnership') && <Badge variant="outline" className="text-xs">
                               🤝 Partnership
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
                     </div>
                     <div className="flex sm:flex-col gap-2 sm:items-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => toggleVenueSelection(venue.id)}
-                        disabled={safeArrayLength(data.selectedVenues) >= maxVenues}
-                        className="min-w-[80px]"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => toggleVenueSelection(venue.id)} disabled={safeArrayLength(data.selectedVenues) >= maxVenues} className="min-w-[80px]">
                         <Plus className="h-4 w-4 mr-1" />
                         Aggiungi
                       </Button>
