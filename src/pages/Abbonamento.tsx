@@ -292,7 +292,7 @@ export default function Abbonamento() {
                         <h3 className="font-bold text-base mb-1">
                           {feature.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           {feature.description.split('Attualmente')[0]}
                           <strong>Attualmente</strong>{feature.description.split('Attualmente')[1]}
                         </p>
