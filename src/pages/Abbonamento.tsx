@@ -252,7 +252,7 @@ export default function Abbonamento() {
             onClick={() => setActiveTab('pro')} 
             className={`flex-1 py-2.5 px-5 rounded-full text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
               activeTab === 'pro' 
-                ? 'bg-primary text-white shadow-md ring-2 ring-black' 
+                ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black shadow-md' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -263,7 +263,7 @@ export default function Abbonamento() {
             onClick={() => setActiveTab('business')} 
             className={`flex-1 py-2.5 px-5 rounded-full text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
               activeTab === 'business' 
-                ? 'bg-primary text-white shadow-md ring-2 ring-black' 
+                ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black shadow-md' 
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
