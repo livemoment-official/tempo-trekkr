@@ -147,6 +147,7 @@ export default function AppLayout() {
   const isCreatePage = pathname === '/crea';
   const isCreationFlowPage = pathname.startsWith('/crea/');
   const isAbbonamentoPage = pathname === '/abbonamento';
+  const isAIChatPage = pathname === '/esplora/chat';
 
   // Check if we need to show the fixed chat input (only on /esplora, not on chat page)
   const showChatInput = pathname === '/esplora';
@@ -162,7 +163,7 @@ export default function AppLayout() {
       </main>
 
       {/* Apple-style Floating Create Button - hidden on create pages */}
-      {!isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
+      {!isCreatePage && !isCreationFlowPage && !isAbbonamentoPage && !isAIChatPage && <div className="fixed bottom-9 left-1/2 z-50 -translate-x-1/2">
           <AuthGuard>
             <NavLink to="/crea" aria-label="Crea">
               <Button className="shadow-ios-floating rounded-full h-12 w-12 p-0 gradient-brand text-brand-black font-medium border border-brand-primary/20 hover-scale press-scale">
