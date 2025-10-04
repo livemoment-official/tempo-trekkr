@@ -38,9 +38,7 @@ export function GroupRulesBanner({
               <Users className="h-5 w-5 text-primary" />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-foreground text-base">
-                Come Funzionano i Gruppi di Live Moment
-              </h3>
+              <h3 className="font-semibold text-foreground text-base">I Gruppi di Live Moment</h3>
               
             </div>
           </div>
