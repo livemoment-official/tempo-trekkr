@@ -61,7 +61,7 @@ export function GroupRulesBanner({
                   <span className="text-xs font-bold text-primary">1</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Crea gruppi pubblici o privati</strong> per organizzare eventi, condividere momenti e chattare con la tua community.
+                  Puoi creare massimo 2 Gruppi.
                 </p>
               </div>
 
@@ -70,7 +70,7 @@ export function GroupRulesBanner({
                   <span className="text-xs font-bold text-primary">2</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Invita amici o lascia che tutti scoprano</strong> il tuo gruppo nella sezione "Esplora" se è pubblico.
+                  Puoi partecipare in soli 5 gruppi contemporaneamente.
                 </p>
               </div>
 
@@ -79,7 +79,7 @@ export function GroupRulesBanner({
                   <span className="text-xs font-bold text-primary">3</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Chatta in tempo reale</strong> con i membri del gruppo, condividi foto, video e vocali.
+                  Ogni gruppo è Geo-localizzato.
                 </p>
               </div>
 
@@ -88,7 +88,7 @@ export function GroupRulesBanner({
                   <span className="text-xs font-bold text-primary">4</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Organizza momenti collettivi</strong> direttamente dal gruppo e coordina le attività con i partecipanti.
+                  Ogni gruppo ha un'Interesse specifico.
                 </p>
               </div>
 
@@ -97,7 +97,7 @@ export function GroupRulesBanner({
                   <span className="text-xs font-bold text-primary">5</span>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed">
-                  <strong>Gestisci i partecipanti</strong>: come host, puoi moderare il gruppo e rimuovere utenti se necessario.
+                  Nei gruppi inviti a Momenti persone con passioni specifiche.
                 </p>
               </div>
             </div>
